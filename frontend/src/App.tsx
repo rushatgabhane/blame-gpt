@@ -16,6 +16,10 @@ function App() {
         For a <span style={{ fontWeight: 'bold' }}>demo</span>, reach out on{' '}
         <a href="mailto:rushatgabhane@gmail.com">[rushatgabhane@gmail.com]</a>
       </p>
+      <h2>Finding the PR causing a deploy blocker</h2>
+      <p>
+        <img src="meme.jpg" />
+      </p>
     </div>
   );
 }
