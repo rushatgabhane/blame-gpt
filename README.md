@@ -2,7 +2,7 @@
 
 Oh... we have deploy blockers ⚠️⚠️⚠️
 
-This tool finds the pull requests responsible so you can go back to shipping.
+This tool finds the pull requests begging to be reverted so you can go back to shipping.
 
 
 (Blame the PR, not your coworker. Probably.)
