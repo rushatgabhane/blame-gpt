@@ -1,6 +1,6 @@
 ## Why is my shiny new feature not on production yet?
 
-Oh... we have deploy blockers ⚠️⚠️⚠️
+Oh... we have deploy blockers!!
 
 This tool finds the pull requests begging to be reverted so you can go back to shipping.
 
