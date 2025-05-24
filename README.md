@@ -8,3 +8,5 @@ This tool finds the PRs responsible so you can go back to shipping.
 
 
 (Blame the PR, not your coworker. Probably.)
+
+![9v12h4](https://github.com/user-attachments/assets/c049bc22-b194-45ef-b2c7-1e58bd6a999b)
