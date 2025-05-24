@@ -1,77 +1,37 @@
-import requests
 import libs.constants as constants
 import logging
 import re
-import os
-from models.issue import Issue
+from models.models import Issue
+from libs.github import repo
+from libs.sqlite.sqlite_client import Database
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-async def get_issue(owner: str, repo: str, issue_number: int) -> Issue:
-    query = """
-    query ($owner: String!, $repo: String!, $issueNumber: Int!) {
-        repository(owner: $owner, name: $repo) {
-            issue(number: $issueNumber) {
-                title
-                body
-                labels(first: 10) {
-                    nodes {
-                        name
-                    }
-                }
-            }
-        }
-    }
-    """
+async def add_issue(issue_number: int, db: Database) -> Issue:
+    try:
+        gh_issue = repo.get_issue(number=issue_number)
 
-    variables = {"owner": owner, "repo": repo, "issueNumber": issue_number}
+        labels = [label.name for label in gh_issue.labels]
+        if constants.LABELS["DeployBlockerCash"] not in labels:
+            logger.info(f"DeployBlockerCash label not found in issue: {issue_number}")
+            return None
 
-    headers = {
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
-        "Content-Type": "application/json",
-    }
+        steps = extract_steps_from_description(gh_issue.body or "")
 
-    response = requests.post(
-        constants.GITHUB_API_URL,
-        json={"query": query, "variables": variables},
-        headers=headers,
-    )
-
-    response_json = response.json()
-    if "errors" in response_json:
-        logging.error(f"GraphQL error: {response_json['errors']}")
-        raise RuntimeError(f"GitHub GraphQL error: {response_json['errors']}")
-
-    if response.status_code != 200:
-        logging.error(
-            f"Failed to fetch issue: {issue_number} {response.status_code} - {response.text}"
+        issue = Issue(
+            id=gh_issue.number,
+            title=gh_issue.title,
+            steps=steps,
+            raw_body=gh_issue.body or "",
+            labels=labels,
         )
-        return RuntimeError(
-            f"Failed to fetch issue: {issue_number} {response.status_code} - {response.text}"
-        )
-
-    issue = response_json["data"]["repository"]["issue"]
-
-    isDeployBlocker = False
-    for label in issue["labels"]["nodes"]:
-        if label["name"] == constants.LABELS["DeployBlockerCash"]:
-            isDeployBlocker = True
-            break
-
-    if not isDeployBlocker:
-        logging.info(f"DeployBlockerCash label not found in issue: {issue_number}")
-        return None
-
-    steps = extract_steps_from_description(issue["body"])
-
-    return Issue(
-        id=issue_number,
-        title=issue["title"],
-        steps=steps,
-        raw_body=issue["body"],
-        labels=[label["name"] for label in issue["labels"]["nodes"]],
-    )
+        db.add_issue(issue)
+        return issue
+    except Exception as e:
+        logger.error(f"Error fetching issue #{issue_number}: {e}")
+        raise
 
 
 def extract_steps_from_description(description: str) -> str:
@@ -91,3 +51,7 @@ def extract_steps_from_description(description: str) -> str:
     else:
         logging.warning("No steps found in the description: {description}")
         return ""
+
+
+def get_all_issues(db: Database) -> List[Issue]:
+    return db.get_all_issues()
