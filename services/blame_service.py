@@ -17,7 +17,13 @@ def get_culprit_pull_requests(issue: Issue, db: Database) -> CulpritPullRequests
         logger.info(f"no pull requests found for issue {issue.id}")
         return None
 
-    culprit_prs = rank_pull_requests(issue, pull_requests)
+    pull_requests_without_cp = [
+        pr for pr in pull_requests if "cp staging" not in pr.title.lower()
+    ]
+
+    logger.info(f"Found {len(pull_requests_without_cp)} pull requests without 'cp staging' for issue {issue.id}")
+
+    culprit_prs = rank_pull_requests(issue, pull_requests_without_cp)
     logger.info(f"Found culprit pull requests for issue {issue.id}")
 
     return culprit_prs
@@ -34,11 +40,7 @@ def rank_pull_requests(
         issue_steps=issue.steps,
         pull_requests_block=pr_block,
     )
-
-    # logger.info("input data for llm: %s", input_data)
-
     response = llm.invoke(input_data)
-    logger.info(f"LLM response received for issue {issue.id} {response}")
     return culprit_parser.parse(response.content)
 
 

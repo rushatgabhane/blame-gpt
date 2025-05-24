@@ -13,12 +13,12 @@ async def get_issues(request: Request):
     return {"issues": issues}
 
 
-
 @issue_router.get("/issues/{issue_number}/pull_requests")
 async def get_pull_requests_for_issue(request: Request, issue_number: int):
     db = cast(Database, request.app.state.db)
     pull_requests = db.get_pull_requests_for_issue(issue_number)
     return {"issue_id": issue_number, "pull_requests": pull_requests}
+
 
 @issue_router.get("/issues/pull_requests")
 async def get_all_pull_requests(request: Request):

@@ -53,7 +53,7 @@ async def blame(request: Request, data: BlameRequest):
 
         logger.info("Top culprit PRs for issue %s:", culprits.issue_id)
         for pr in culprits.pull_requests:
-            logger.info("- PR #%s: %s", pr.pull_request_id, pr.reason)
+            logger.info("- PR #%s: %s, score: %d", pr.pull_request_id, pr.reason, pr.score)
 
     asyncio.create_task(run_blame_pipeline())
 

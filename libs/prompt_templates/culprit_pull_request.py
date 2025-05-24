@@ -33,12 +33,15 @@ Focus on the following criteria to determine if a PR is likely responsible for t
 2. Compare the issue reproduction steps with the test steps of each PR.
 3. Compare the keywords in issue title with PR test steps and PR title.
 4. If a PR adds, removes, or swaps core components or logic responsible for the expected result, consider it very likely to affect observed behavior, even if the PR description only references a similar or edge-case flow.
-5. Provide the 5 PRs most likely responsible for the issue. Give a score how much the flow of issue reproduction steps matches with test steps of each PR and put it in reason. 
+5. Provide the PRs most likely responsible for the issue.
+6. Give a score from 0 to 100 percent how much the flow of issue reproduction steps matches with test steps of each PR and put it in the score field.
 6. See the files changed in each PR and if they are related to the issue reproduction steps, consider it more likely to be the culprit. 
 7. PRs that change unrelated areas or cannot affect the described flow should not be considered.
+8. If scores are similar, prefer PRs that have more files changed.
+9. Use explaination field of PRs to understand the context of the PR. If it is unrelated to the issue, do not consider it as a culprit.
+10. If no keyword matches are found, do not consider the PR as a culprit.
 
-
-Return the result as JSON matching this schema:
+Finally, sort the PRs by their score in descending order, skip score less than 50 and return the result as JSON matching this schema:
 
 {format_instructions}
 

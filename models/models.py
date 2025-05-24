@@ -21,6 +21,7 @@ class PullRequest(BaseModel):
 class CulpritPullRequest(BaseModel):
     pull_request_id: int
     reason: str
+    score: int
 
 
 class CulpritPullRequests(BaseModel):

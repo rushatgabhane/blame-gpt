@@ -27,7 +27,7 @@ def add_new_pull_requests(
     new_ids = get_pull_requests_between(base, head)
     if not new_ids:
         return
-    
+
     for pr_id in new_ids:
         db.add_issue_pull_request(issue_number, pr_id)
 
@@ -40,7 +40,7 @@ def add_new_pull_requests(
 
     result: List[PullRequest] = []
 
-    logging.info(f"processing {len(new_ids)} new pull requests: {new_ids_to_process}")
+    logging.info(f"processing {len(new_ids_to_process)} new pull requests: {new_ids_to_process}")
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
