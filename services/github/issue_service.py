@@ -9,8 +9,11 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
-async def add_issue(issue_number: int, db: Database) -> Issue:
+async def add_issue(issue_number: int, db: Database) -> Issue | None:
     try:
+        if db.get_issue_by_id(issue_number):
+            return db.get_issue_by_id(issue_number)
+
         gh_issue = repo.get_issue(number=issue_number)
 
         labels = [label.name for label in gh_issue.labels]
@@ -26,6 +29,7 @@ async def add_issue(issue_number: int, db: Database) -> Issue:
             steps=steps,
             raw_body=gh_issue.body or "",
             labels=labels,
+            is_processed=False,
         )
         db.add_issue(issue)
         return issue

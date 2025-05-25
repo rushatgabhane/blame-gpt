@@ -26,7 +26,7 @@ Instructions:
 
 Do not predict if the PR could be culprit based on some reason. Just analyze the PRs based on the issue reproduction steps and the test steps of each PR and title.
 eg: This PR addresses report sorting, which might impact how reports are displayed, including potentially empty states in the reports page.
-Do not make any guesses or assumptions about the issue or PRs.
+Do not make any guesses or assumptions about the issue or PRs. Use simple english.
 
 Focus on the following criteria to determine if a PR is likely responsible for the issue:
 1. UI/UX flows and transitions: If a PR alters components or logic used during the flow described in the bug (e.g., after submitting an expense), consider it more likely to be the culprit.

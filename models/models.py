@@ -8,6 +8,7 @@ class Issue(BaseModel):
     steps: str
     raw_body: str
     labels: list[str]
+    is_processed: bool
 
 
 class PullRequest(BaseModel):

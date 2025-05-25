@@ -40,7 +40,9 @@ def add_new_pull_requests(
 
     result: List[PullRequest] = []
 
-    logging.info(f"processing {len(new_ids_to_process)} new pull requests: {new_ids_to_process}")
+    logging.info(
+        f"processing {len(new_ids_to_process)} new pull requests: {new_ids_to_process}"
+    )
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {

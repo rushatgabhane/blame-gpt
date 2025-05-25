@@ -8,17 +8,35 @@ from models.models import PullRequest
 from models.models import Issue
 from libs import constants
 from typing import List
+from functools import wraps
 
 os.makedirs(os.path.dirname(constants.DB_PATH), exist_ok=True)
 
 
+def require_connection(method):
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if self.connection is None:
+            raise ValueError("database connection is not initialized.")
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class Database:
     def __init__(self, db_path: str = constants.DB_PATH):
-        self.connection = sqlite3.connect(db_path, check_same_thread=False)
+        self.connection = sqlite3.connect(
+            db_path, check_same_thread=False, timeout=10.0
+        )
         self.connection.row_factory = sqlite3.Row
+        self.connection.execute("PRAGMA journal_mode=WAL;")
+        self.connection.execute("PRAGMA synchronous=NORMAL;")
         self._init_db()
 
     def _init_db(self):
+        if self.connection is None:
+            raise ValueError("database connection is not initialized.")
+
         self.connection.executescript(queries.CREATE_TABLES)
         self.connection.commit()
 
@@ -27,11 +45,15 @@ class Database:
             self.connection.close()
             self.connection = None
 
+    @require_connection
     def get_existing_pr_ids(self) -> set[int]:
+        assert self.connection is not None
         rows = self.connection.execute("SELECT id FROM pull_requests").fetchall()
         return set(row[0] for row in rows)
 
+    @require_connection
     def get_pr_by_id(self, pr_id: int) -> Optional[PullRequest]:
+        assert self.connection is not None
         row = self.connection.execute(queries.SELECT_PR_BY_ID, (pr_id,)).fetchone()
         if not row:
             return None
@@ -43,14 +65,18 @@ class Database:
             files=json.loads(row[4]),
         )
 
+    @require_connection
     def add_pull_request(self, pr: PullRequest):
+        assert self.connection is not None
         self.connection.execute(
             queries.INSERT_PULL_REQUEST,
             (pr.id, pr.title, pr.test, pr.explaination, json.dumps(pr.files)),
         )
         self.connection.commit()
 
+    @require_connection
     def get_all_issues(self) -> List[Issue]:
+        assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUES).fetchall()
         return [
             Issue(
@@ -59,11 +85,14 @@ class Database:
                 steps=row[2],
                 raw_body=row[3],
                 labels=json.loads(row[4]),
+                is_processed=row[5],
             )
             for row in rows
         ]
 
+    @require_connection
     def add_issue(self, issue: Issue):
+        assert self.connection is not None
         self.connection.execute(
             queries.INSERT_ISSUE,
             (
@@ -76,13 +105,40 @@ class Database:
         )
         self.connection.commit()
 
+    @require_connection
+    def update_issue_processed(self, issue_id: int, is_processed: bool):
+        assert self.connection is not None
+        self.connection.execute(
+            queries.UPDATE_ISSUE_PROCESSED, (is_processed, issue_id)
+        )
+        self.connection.commit()
+
+    @require_connection
+    def get_issue_by_id(self, issue_id: int) -> Optional[Issue]:
+        assert self.connection is not None
+        row = self.connection.execute(queries.GET_ISSUE_BY_ID, (issue_id,)).fetchone()
+        if not row:
+            return None
+        return Issue(
+            id=row[0],
+            title=row[1],
+            steps=row[2],
+            raw_body=row[3],
+            labels=json.loads(row[4]),
+            is_processed=row[5],
+        )
+
+    @require_connection
     def add_issue_pull_request(self, issue_id: int, pull_request_id: int):
+        assert self.connection is not None
         self.connection.execute(
             queries.INSERT_ISSUE_PULL_REQUEST, (issue_id, pull_request_id)
         )
         self.connection.commit()
 
+    @require_connection
     def get_pull_requests_for_issue(self, issue_id: int) -> List[PullRequest]:
+        assert self.connection is not None
         rows = self.connection.execute(
             queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id,)
         ).fetchall()
@@ -97,6 +153,8 @@ class Database:
             for row in rows
         ]
 
+    @require_connection
     def get_all_issue_pull_requests(self) -> List[tuple[int, int]]:
+        assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
         return [(row[0], row[1]) for row in rows]
