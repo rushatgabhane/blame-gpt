@@ -2,15 +2,6 @@ from pydantic import BaseModel
 from typing import List
 
 
-class Issue(BaseModel):
-    id: int
-    title: str
-    steps: str
-    raw_body: str
-    labels: list[str]
-    is_processed: bool
-
-
 class PullRequest(BaseModel):
     id: int
     title: str
@@ -28,3 +19,13 @@ class CulpritPullRequest(BaseModel):
 class CulpritPullRequests(BaseModel):
     issue_id: int
     pull_requests: List[CulpritPullRequest]
+
+
+class Issue(BaseModel):
+    id: int
+    title: str
+    steps: str
+    raw_body: str
+    labels: List[str]
+    is_processed: bool = False
+    culprit_pull_requests: List[CulpritPullRequest] | None = None

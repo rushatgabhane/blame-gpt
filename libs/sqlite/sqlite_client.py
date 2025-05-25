@@ -4,8 +4,7 @@ from . import queries
 import os
 import json
 from typing import Optional
-from models.models import PullRequest
-from models.models import Issue
+from models.models import PullRequest, CulpritPullRequest, Issue
 from libs import constants
 from typing import List
 from functools import wraps
@@ -78,6 +77,9 @@ class Database:
     def get_all_issues(self) -> List[Issue]:
         assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUES).fetchall()
+        if not rows:
+            return []
+
         return [
             Issue(
                 id=row[0],
@@ -86,6 +88,11 @@ class Database:
                 raw_body=row[3],
                 labels=json.loads(row[4]),
                 is_processed=row[5],
+                culprit_pull_requests=(
+                    [CulpritPullRequest(**c) for c in json.loads(row[6])]
+                    if row[6]
+                    else None
+                ),
             )
             for row in rows
         ]
@@ -106,10 +113,14 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def update_issue_processed(self, issue_id: int, is_processed: bool):
+    def update_issue_processed_and_result(
+        self, issue_id: int, is_processed: bool, culprits: List[CulpritPullRequest]
+    ):
         assert self.connection is not None
+        print("json dump {%s}", json.dumps([c.model_dump() for c in culprits]))
         self.connection.execute(
-            queries.UPDATE_ISSUE_PROCESSED, (is_processed, issue_id)
+            queries.UPDATE_ISSUE_PROCESSED_AND_CULPRITS,
+            (is_processed, json.dumps([c.model_dump() for c in culprits]), issue_id),
         )
         self.connection.commit()
 
@@ -119,6 +130,14 @@ class Database:
         row = self.connection.execute(queries.GET_ISSUE_BY_ID, (issue_id,)).fetchone()
         if not row:
             return None
+
+        culprit_data = row[6]
+        cullprit_pull_requests = (
+            [CulpritPullRequest(**c) for c in json.loads(culprit_data)]
+            if culprit_data
+            else None
+        )
+
         return Issue(
             id=row[0],
             title=row[1],
@@ -126,6 +145,7 @@ class Database:
             raw_body=row[3],
             labels=json.loads(row[4]),
             is_processed=row[5],
+            culprit_pull_requests=cullprit_pull_requests,
         )
 
     @require_connection

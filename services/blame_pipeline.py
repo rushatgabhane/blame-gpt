@@ -54,7 +54,9 @@ async def run_blame_pipeline(issue: Issue, db: Database):
         )
         yield f"comment added {comment}"
 
-        db.update_issue_processed(issue.id, True)
+        db.update_issue_processed_and_result(
+            issue.id, True, culprit_pull_requests.pull_requests
+        )
         yield f"blame pipeline completed"
     except Exception as e:
         logger.error(f"error in blame pipeline for issue {issue.id}: {e}")

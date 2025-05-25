@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS issues (
     steps TEXT,
     raw_body TEXT,
     labels TEXT,                       -- Stored as a JSON array
-    is_processed BOOLEAN DEFAULT FALSE
+    is_processed BOOLEAN DEFAULT FALSE,
+    culprit_pull_requests TEXT              -- JSON array of CulpritPullRequest objects
 );
 
 CREATE TABLE IF NOT EXISTS issue_pull_request (
@@ -63,9 +64,9 @@ JOIN issue_pull_request ipr ON ipr.pull_request_id = pr.id
 WHERE ipr.issue_id = ?;
 """
 
-UPDATE_ISSUE_PROCESSED = """
+UPDATE_ISSUE_PROCESSED_AND_CULPRITS = """
 UPDATE issues
-SET is_processed = ?
+SET is_processed = ?, culprit_pull_requests = ?
 WHERE id = ?;
 """
 

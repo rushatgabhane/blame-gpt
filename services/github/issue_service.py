@@ -29,7 +29,6 @@ async def add_issue(issue_number: int, db: Database) -> Issue | None:
             steps=steps,
             raw_body=gh_issue.body or "",
             labels=labels,
-            is_processed=False,
         )
         db.add_issue(issue)
         return issue
