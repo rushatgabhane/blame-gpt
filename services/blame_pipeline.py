@@ -43,8 +43,9 @@ async def run_blame_pipeline(issue: Issue, db: Database):
 
         yield f"ranking pull requests"
         culprit_pull_requests = await asyncio.to_thread(
-            rank_pull_requests, issue, pull_requests
+            rank_pull_requests, issue, pull_requests_without_cp
         )
+        yield f"culprit pull requests ranked: {culprit_pull_requests}"
         if not culprit_pull_requests:
             yield f"no culprits found"
             return
@@ -52,7 +53,7 @@ async def run_blame_pipeline(issue: Issue, db: Database):
         comment = await comment_service.add_comment(
             issue_number=issue.id, culprit_pull_requests=culprit_pull_requests
         )
-        yield f"comment added {comment}"
+        yield f"comment {comment}"
 
         db.update_issue_processed_and_result(
             issue.id, True, culprit_pull_requests.pull_requests

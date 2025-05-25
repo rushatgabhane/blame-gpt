@@ -11,7 +11,6 @@ async def add_comment(
     try:
         comment = format_comment(culprit_pull_requests)
         repo_secondary.get_issue(number=issue_number).create_comment(comment)
-        logger.info(f"comment added to issue #{issue_number}: {comment}")
         return comment
     except Exception as e:
         logger.error(f"error adding comment to issue #{issue_number}: {e}")
@@ -25,4 +24,4 @@ def format_comment(culprit_pull_requests: CulpritPullRequests) -> str:
     comment = "### Possible culprit PRs for this issue\n"
     for pr in culprit_pull_requests.pull_requests:
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
-    return comment
+    return comment + "\n\nPlease 👍 or 👎"

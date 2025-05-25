@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from libs.sqlite.sqlite_client import Database
 from controllers.blame_controller import blame_router
 from controllers.issue_controller import issue_router
+from controllers.index_repo_controller import index_repo_router
 
 
 @asynccontextmanager
@@ -25,3 +26,4 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(blame_router)
 app.include_router(issue_router)
+app.include_router(index_repo_router)

@@ -117,7 +117,6 @@ class Database:
         self, issue_id: int, is_processed: bool, culprits: List[CulpritPullRequest]
     ):
         assert self.connection is not None
-        print("json dump {%s}", json.dumps([c.model_dump() for c in culprits]))
         self.connection.execute(
             queries.UPDATE_ISSUE_PROCESSED_AND_CULPRITS,
             (is_processed, json.dumps([c.model_dump() for c in culprits]), issue_id),
