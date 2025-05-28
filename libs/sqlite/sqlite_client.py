@@ -62,6 +62,7 @@ class Database:
             test=row[2],
             explaination=row[3],
             files=json.loads(row[4]),
+            embedding=json.loads(row[5]) if row[5] else None,
         )
 
     @require_connection
@@ -69,7 +70,14 @@ class Database:
         assert self.connection is not None
         self.connection.execute(
             queries.INSERT_PULL_REQUEST,
-            (pr.id, pr.title, pr.test, pr.explaination, json.dumps(pr.files)),
+            (
+                pr.id,
+                pr.title,
+                pr.test,
+                pr.explaination,
+                json.dumps(pr.files),
+                json.dumps(pr.embedding),
+            ),
         )
         self.connection.commit()
 
@@ -168,6 +176,7 @@ class Database:
                 test=row[2],
                 explaination=row[3],
                 files=json.loads(row[4]),
+                embedding=json.loads(row[5]) if row[5] else None,
             )
             for row in rows
         ]
@@ -177,3 +186,27 @@ class Database:
         assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
         return [(row[0], row[1]) for row in rows]
+
+    @require_connection
+    def add_installation(
+        self, installation_id: int, account_login: str, account_type: str
+    ):
+        assert self.connection is not None
+        self.connection.execute(
+            queries.INSERT_INSTALLATION,
+            (installation_id, account_login, account_type),
+        )
+        self.connection.commit()
+
+    @require_connection
+    def get_all_installations(self) -> List[dict]:
+        assert self.connection is not None
+        rows = self.connection.execute(queries.GET_ALL_INSTALLATIONS).fetchall()
+        return [
+            {
+                "id": row[0],
+                "account_login": row[1],
+                "account_type": row[2],
+            }
+            for row in rows
+        ]

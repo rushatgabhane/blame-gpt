@@ -176,3 +176,4 @@ cython_debug/
 data/
 repos/
 .DS_Store
+blamegpt.private-key.pem

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Header, Response
 from libs import helpers
 from services.github import issue_service
 from models.models import Issue
@@ -8,6 +8,9 @@ from pydantic import BaseModel
 import logging
 from typing import cast
 import asyncio
+import os
+import json
+from libs import constants
 
 blame_router = APIRouter()
 
@@ -19,7 +22,26 @@ class BlameRequest(BaseModel):
 
 
 @blame_router.post("/blame")
-async def blame(request: Request, data: BlameRequest):
+async def blame(request: Request, x_hub_signature_256: str = Header(None)):
+    body = await request.body()
+    if not helpers.is_valid_signature(
+        os.getenv("GITHUB_WEBHOOK_SECRET") or "", x_hub_signature_256, body
+    ):
+        return Response(status_code=403)
+
+    payload = json.loads(body)
+    if payload.get("action") != "labeled":
+        return Response(status_code=200)
+
+    if payload.get("label").get("name") != constants.LABELS["DeployBlockerCash"]:
+        return Response(status_code=200)
+
+    issue = payload.get("issue")
+    logger.info(f"blame triggered for issue: {issue.get('id')}")
+
+
+@blame_router.post("/blame-manual")
+async def blame_manual(request: Request, data: BlameRequest):
     db = cast(Database, request.app.state.db)
     result = helpers.parse_issue_url(data.issue_url)
     if result is None:

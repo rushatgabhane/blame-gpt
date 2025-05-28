@@ -8,6 +8,7 @@ class PullRequest(BaseModel):
     test: str
     explaination: str
     files: List[str]
+    embedding: list[float] | None = None
 
 
 class CulpritPullRequest(BaseModel):

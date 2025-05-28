@@ -1,5 +1,7 @@
 import re
 import numpy as np
+import hmac
+import hashlib
 
 
 def parse_issue_url(issue_url: str) -> tuple[str, str, int] | None:
@@ -21,3 +23,10 @@ def cosine_similarity(vec1, vec2):
     norm_vec1 = np.linalg.norm(vec1)
     norm_vec2 = np.linalg.norm(vec2)
     return dot_product / (norm_vec1 * norm_vec2)
+
+
+def is_valid_signature(signature: str, secret: str, body: bytes) -> bool:
+    expected_signature = (
+        "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    )
+    return hmac.compare_digest(expected_signature, signature)

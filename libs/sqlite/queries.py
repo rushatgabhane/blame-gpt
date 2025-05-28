@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     title TEXT NOT NULL,
     test TEXT, -- This is the test case for the PR
     explaination TEXT,
-    files TEXT
+    files TEXT,
+    embedding TEXT
 );
 
 CREATE TABLE IF NOT EXISTS issues (
@@ -24,11 +25,18 @@ CREATE TABLE IF NOT EXISTS issue_pull_request (
     FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE,
     FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS installations (
+    id INTEGER PRIMARY KEY,
+    account_login TEXT NOT NULL,
+    account_type TEXT,
+    installed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, embedding)
+VALUES (?, ?, ?, ?, ?, ?);
 """
 
 GET_ALL_PULL_REQUESTS = """
@@ -72,4 +80,13 @@ WHERE id = ?;
 
 GET_ISSUE_BY_ID = """
 SELECT * FROM issues WHERE id = ?;
+"""
+
+INSERT_INSTALLATION = """
+INSERT OR REPLACE INTO installations (id, account_login, account_type)
+VALUES (?, ?, ?);
+"""
+
+GET_ALL_INSTALLATIONS = """
+SELECT * FROM installations;
 """

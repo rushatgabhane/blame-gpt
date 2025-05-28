@@ -11,7 +11,7 @@ from libs.prompt_templates.culprit_pull_request_with_score import (
     blame_prompt,
     culprit_parser,
 )
-from typing import List, Tuple
+from typing import List
 from libs.llm import llm
 import logging
 from services.github import comment_service
@@ -47,22 +47,26 @@ async def run_blame_pipeline(issue: Issue, db: Database):
         pull_requests_without_cp = [
             pr for pr in pull_requests if "cp staging" not in pr.title.lower()
         ]
-        yield f"found {len(pull_requests_without_cp)} pull requests after filtering 'cp staging'."
+        yield f"found {len(pull_requests_without_cp)} pull requests without 'cp staging'."
 
         prs_with_scores = get_top_pull_requests_by_semantic_score(
             issue, pull_requests_without_cp, top_n=15
         )
-        yield f"found {prs_with_scores} pull requests with semantic scores."
-        yield f"ranked {len(prs_with_scores)} pull requests. with the highest score as {prs_with_scores[0].score if prs_with_scores else 0:.2f}"
+        if not prs_with_scores or len(prs_with_scores) == 0:
+            yield f"no pull requests with semantic scores found"
+            return
+
+        yield f"found {len(prs_with_scores)} pull requests with semantic scores."
 
         yield f"ranking pull requests"
         culprit_pull_requests = await asyncio.to_thread(
             find_culprit_pull_requests, issue, prs_with_scores
         )
-        yield f"culprit pull requests ranked: {culprit_pull_requests}"
-        if not culprit_pull_requests:
+        if not culprit_pull_requests or not culprit_pull_requests.pull_requests:
             yield f"no culprits found"
             return
+
+        yield f"culprit pull requests ranked: {len(culprit_pull_requests.pull_requests)}"
 
         yield f"found {len(culprit_pull_requests.pull_requests)} culprit pull requests."
         comment = await comment_service.add_comment(
@@ -84,17 +88,11 @@ def get_top_pull_requests_by_semantic_score(
 ) -> List[PullRequestWithScore]:
     issue_embedding = embedding_model.embed_query(f"{issue.title}\n {issue.steps}")
 
-    pull_requests_embeddings: List[Tuple[PullRequest, float, List[float]]] = []
-    for pr in pull_requests:
-        pr_text = f"Title: {pr.title}\n Tests: {pr.test}\n Explaination: {pr.explaination}\n Files changed: {pr.files}"
-        pr_embedding = embedding_model.embed_query(pr_text)
-        pull_requests_embeddings.append((pr, 0, pr_embedding))
-
     scored_prs: List[PullRequestWithScore] = [
         PullRequestWithScore(
-            pull_request=pr, score=cosine_similarity(issue_embedding, pr_embedding)
+            pull_request=pr, score=cosine_similarity(issue_embedding, pr.embedding)
         )
-        for pr, _, pr_embedding in pull_requests_embeddings
+        for pr in pull_requests
     ]
 
     scored_prs.sort(key=lambda x: x.score, reverse=True)

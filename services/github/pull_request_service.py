@@ -4,6 +4,7 @@ from libs.github import gh, repo
 from models.models import PullRequest
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
+from libs.llm import embedding_model
 from libs.sqlite.sqlite_client import Database
 
 logger = logging.getLogger(__name__)
@@ -61,15 +62,23 @@ def fetch_pr(pr_id: int) -> PullRequest | None:
     try:
         pr = repo.get_pull(pr_id)
         files = [f.filename for f in pr.get_files()]
+
+        pr_test = parse_test_steps(pr.body or "")
+        pr_explaination = parse_explaination(pr.body or "")
+
+        pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}"
+        pr_embedding = embedding_model.embed_query(pr_text)
+
         return PullRequest(
             id=pr.number,
             title=pr.title,
-            test=parse_test_steps(pr.body or ""),
+            test=pr_test,
             explaination=parse_explaination(pr.body or ""),
             files=files,
+            embedding=pr_embedding,
         )
     except Exception as e:
-        logging.error(f"Failed to fetch PR {pr_id}: {e}")
+        logging.error(f"failed to fetch PR {pr_id}: {e}")
         return None
 
 
