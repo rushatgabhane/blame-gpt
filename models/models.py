@@ -13,7 +13,6 @@ class PullRequest(BaseModel):
 class CulpritPullRequest(BaseModel):
     pull_request_id: int
     reason: str
-    score: int
 
 
 class CulpritPullRequests(BaseModel):
@@ -29,3 +28,8 @@ class Issue(BaseModel):
     labels: List[str]
     is_processed: bool = False
     culprit_pull_requests: List[CulpritPullRequest] | None = None
+
+
+class PullRequestWithScore(BaseModel):
+    pull_request: PullRequest
+    score: float

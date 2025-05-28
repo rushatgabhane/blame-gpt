@@ -11,7 +11,7 @@ function App() {
         BlameGPT finds the PR causing a deploy blocker so you can go back to
         shipping. (Blame the PR, not your coworker. Probably.)
       </p>
-      <p>BlameGPT requires zero config.</p>
+      <p>BlameGPT requires zero config. Built for teams that move fast.</p>
       <p>
         For a <span style={{ fontWeight: 'bold' }}>demo</span>, reach out on{' '}
         <a href="mailto:rushatgabhane@gmail.com">[rushatgabhane@gmail.com]</a>

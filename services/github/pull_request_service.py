@@ -21,7 +21,7 @@ def get_pull_requests_between(base: str, head: str) -> List[int] | None:
     return sorted(list(pr_numbers)) if pr_numbers else None
 
 
-def add_new_pull_requests(
+def add_new_pull_requests_between(
     base: str, head: str, issue_number: int, db: Database
 ) -> List[PullRequest] | None:
     new_ids = get_pull_requests_between(base, head)

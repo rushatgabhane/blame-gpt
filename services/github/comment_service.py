@@ -24,4 +24,4 @@ def format_comment(culprit_pull_requests: CulpritPullRequests) -> str:
     comment = "### Possible culprit PRs for this issue\n"
     for pr in culprit_pull_requests.pull_requests:
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
-    return comment + "\n\nPlease 👍 or 👎"
+    return comment
