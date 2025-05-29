@@ -17,7 +17,7 @@ async def get_issues(request: Request):
 
 
 @issue_router.get(
-    "/api/issues/{issue_number}/pull_requests",
+    "/api/issues/{issue_number}/pull-requests",
     dependencies=[Depends(auth_middleware.verify_auth_token)],
 )
 async def get_pull_requests_for_issue(request: Request, issue_number: int):
@@ -27,7 +27,7 @@ async def get_pull_requests_for_issue(request: Request, issue_number: int):
 
 
 @issue_router.get(
-    "/api/issues/pull_requests",
+    "/api/issues/pull-requests",
     dependencies=[Depends(auth_middleware.verify_auth_token)],
 )
 async def get_all_pull_requests(request: Request):
@@ -37,7 +37,7 @@ async def get_all_pull_requests(request: Request):
 
 
 @issue_router.get(
-    "/api/pull_request/{pull_request_id}",
+    "/api/pull-request/{pull_request_id}",
     dependencies=[Depends(auth_middleware.verify_auth_token)],
 )
 async def get_pull_request_by_id_with_embedding(request: Request, pull_request_id: int):

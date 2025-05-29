@@ -9,7 +9,7 @@ deploy_blocker_router = APIRouter()
 
 
 @deploy_blocker_router.get(
-    "/api/deploy_blockers", dependencies=[Depends(auth_middleware.verify_auth_token)]
+    "/api/deploy-blockers", dependencies=[Depends(auth_middleware.verify_auth_token)]
 )
 async def get_deploy_blockers():
     await run_historical_deploy_blocker_pipeline()
