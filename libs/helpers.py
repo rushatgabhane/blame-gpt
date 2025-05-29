@@ -35,4 +35,5 @@ def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
     if signature is None:
         return False
     logger.info(f"expected signature: {expected_signature}")
+    logger.info(f"received signature: {signature}")
     return hmac.compare_digest(expected_signature, signature)

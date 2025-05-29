@@ -24,8 +24,6 @@ class BlameRequest(BaseModel):
 @blame_router.post("/api/blame")
 async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     body = await request.body()
-    logger.info(f"Received body: {body}")
-    logger.info(f"Received x-hub-signature-256: {x_hub_signature_256}")
     if not helpers.is_valid_signature(
         x_hub_signature_256, os.getenv("GITHUB_WEBHOOK_SECRET") or "", body
     ):
