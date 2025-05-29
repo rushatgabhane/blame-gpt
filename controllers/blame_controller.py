@@ -25,7 +25,7 @@ class BlameRequest(BaseModel):
 async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     body = await request.body()
     if not helpers.is_valid_signature(
-        x_hub_signature_256, os.getenv("GITHUB_WEBHOOK_SECRET") or "", body
+        x_hub_signature_256, os.getenv("GITHUB_APP_SECRET") or "", body
     ):
         logger.warning("invalid signature for webhook request")
         return Response(status_code=403)
