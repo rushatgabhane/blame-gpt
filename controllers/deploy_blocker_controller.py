@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 deploy_blocker_router = APIRouter()
 
 
-@deploy_blocker_router.get("/deploy_blockers")
+@deploy_blocker_router.get("/api/deploy_blockers")
 async def get_deploy_blockers():
     await run_historical_deploy_blocker_pipeline()
     return "", 200

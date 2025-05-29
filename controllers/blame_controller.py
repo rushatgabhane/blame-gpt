@@ -21,7 +21,7 @@ class BlameRequest(BaseModel):
     issue_url: str
 
 
-@blame_router.post("/blame")
+@blame_router.post("/api/blame")
 async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     body = await request.body()
     if not helpers.is_valid_signature(
@@ -40,7 +40,7 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     logger.info(f"blame triggered for issue: {issue.get('id')}")
 
 
-@blame_router.post("/blame-manual")
+@blame_router.post("/api/blame-manual")
 async def blame_manual(request: Request, data: BlameRequest):
     db = cast(Database, request.app.state.db)
     result = helpers.parse_issue_url(data.issue_url)
