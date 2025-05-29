@@ -2,6 +2,9 @@ import re
 import numpy as np
 import hmac
 import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def parse_issue_url(issue_url: str) -> tuple[str, str, int] | None:
@@ -31,4 +34,5 @@ def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
     )
     if signature is None:
         return False
+    logger.info(f"expected signature: {expected_signature}")
     return hmac.compare_digest(expected_signature, signature)
