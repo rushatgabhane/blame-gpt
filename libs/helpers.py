@@ -25,8 +25,10 @@ def cosine_similarity(vec1, vec2):
     return dot_product / (norm_vec1 * norm_vec2)
 
 
-def is_valid_signature(signature: str, secret: str, body: bytes) -> bool:
+def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
     expected_signature = (
         "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     )
+    if signature is None:
+        return False
     return hmac.compare_digest(expected_signature, signature)
