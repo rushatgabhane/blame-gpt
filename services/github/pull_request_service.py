@@ -47,7 +47,7 @@ def add_new_pull_requests_between(
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(fetch_pr, pr_id): pr_id for pr_id in new_ids_to_process
+            executor.submit(get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process
         }
         for future in as_completed(futures):
             pull_request = future.result()
@@ -58,9 +58,9 @@ def add_new_pull_requests_between(
     return result
 
 
-def fetch_pr(pr_id: int) -> PullRequest | None:
+def get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
     try:
-        pr = repo.get_pull(pr_id)
+        pr = repo.get_pull(pull_request_id)
         files = [f.filename for f in pr.get_files()]
 
         pr_test = parse_test_steps(pr.body or "")
@@ -78,7 +78,7 @@ def fetch_pr(pr_id: int) -> PullRequest | None:
             embedding=pr_embedding,
         )
     except Exception as e:
-        logging.error(f"failed to fetch PR {pr_id}: {e}")
+        logging.error(f"failed to fetch PR {pull_request_id}: {e}")
         return None
 
 

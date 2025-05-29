@@ -4,8 +4,14 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     title TEXT NOT NULL,
     test TEXT, -- This is the test case for the PR
     explaination TEXT,
-    files TEXT,
-    embedding TEXT
+    files TEXT
+);
+
+CREATE TABLE IF NOT EXISTS pull_request_embeddings (
+    pull_request_id INTEGER PRIMARY KEY,
+    embedding TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS issues (
@@ -26,26 +32,12 @@ CREATE TABLE IF NOT EXISTS issue_pull_request (
     FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS installations (
-    id INTEGER PRIMARY KEY,
-    account_login TEXT NOT NULL,
-    account_type TEXT,
-    installed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 """
 
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, embedding)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files)
+VALUES (?, ?, ?, ?, ?);
 """
-
-GET_ALL_PULL_REQUESTS = """
-SELECT * FROM pull_requests;
-"""
-
-SELECT_PR_BY_ID = "SELECT * FROM pull_requests WHERE id = ?;"
-
-SELECT_ALL_PR_IDS = "SELECT id FROM pull_requests;"
 
 INSERT_ISSUE = """
 INSERT OR REPLACE INTO issues (id, title, steps, raw_body, labels)
@@ -66,9 +58,10 @@ SELECT issue_id, pull_request_id from issue_pull_request;
 """
 
 GET_PULL_REQUESTS_BY_ISSUE_ID = """
-SELECT pr.*
+SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pe.embedding
 FROM pull_requests pr
 JOIN issue_pull_request ipr ON ipr.pull_request_id = pr.id
+LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
 WHERE ipr.issue_id = ?;
 """
 
@@ -82,15 +75,15 @@ GET_ISSUE_BY_ID = """
 SELECT * FROM issues WHERE id = ?;
 """
 
-INSERT_INSTALLATION = """
-INSERT OR REPLACE INTO installations (id, account_login, account_type)
-VALUES (?, ?, ?);
-"""
-
-GET_ALL_INSTALLATIONS = """
-SELECT * FROM installations;
-"""
-
 GET_ISSUE_IS_PROCESSED = """
 SELECT is_processed FROM issues WHERE id = ?
+"""
+
+GET_PULL_REQUEST_EMBEDDING = """
+SELECT embedding FROM pull_request_embeddings WHERE pull_request_id = ?;
+"""
+
+INSERT_PULL_REQUEST_EMBEDDING = """
+INSERT OR REPLACE INTO pull_request_embeddings (pull_request_id, embedding)
+VALUES (?, ?);
 """

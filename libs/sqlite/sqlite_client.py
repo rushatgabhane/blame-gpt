@@ -51,35 +51,28 @@ class Database:
         return set(row[0] for row in rows)
 
     @require_connection
-    def get_pr_by_id(self, pr_id: int) -> Optional[PullRequest]:
-        assert self.connection is not None
-        row = self.connection.execute(queries.SELECT_PR_BY_ID, (pr_id,)).fetchone()
-        if not row:
-            return None
-        return PullRequest(
-            id=row[0],
-            title=row[1],
-            test=row[2],
-            explaination=row[3],
-            files=json.loads(row[4]),
-            embedding=json.loads(row[5]) if row[5] else None,
-        )
-
-    @require_connection
     def add_pull_request(self, pr: PullRequest):
         assert self.connection is not None
-        self.connection.execute(
-            queries.INSERT_PULL_REQUEST,
-            (
-                pr.id,
-                pr.title,
-                pr.test,
-                pr.explaination,
-                json.dumps(pr.files),
-                json.dumps(pr.embedding),
-            ),
-        )
-        self.connection.commit()
+        try:
+            self.connection.execute("BEGIN;")
+            self.connection.execute(
+                queries.INSERT_PULL_REQUEST,
+                (
+                    pr.id,
+                    pr.title,
+                    pr.test,
+                    pr.explaination,
+                    json.dumps(pr.files),
+                ),
+            )
+            self.connection.execute(
+                queries.INSERT_PULL_REQUEST_EMBEDDING,
+                (pr.id, json.dumps(pr.embedding)),
+            )
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise e
 
     @require_connection
     def get_all_issues(self) -> List[Issue]:
@@ -196,27 +189,3 @@ class Database:
         assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
         return [(row[0], row[1]) for row in rows]
-
-    @require_connection
-    def add_installation(
-        self, installation_id: int, account_login: str, account_type: str
-    ):
-        assert self.connection is not None
-        self.connection.execute(
-            queries.INSERT_INSTALLATION,
-            (installation_id, account_login, account_type),
-        )
-        self.connection.commit()
-
-    @require_connection
-    def get_all_installations(self) -> List[dict]:
-        assert self.connection is not None
-        rows = self.connection.execute(queries.GET_ALL_INSTALLATIONS).fetchall()
-        return [
-            {
-                "id": row[0],
-                "account_login": row[1],
-                "account_type": row[2],
-            }
-            for row in rows
-        ]
