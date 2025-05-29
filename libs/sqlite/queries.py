@@ -39,6 +39,13 @@ INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files)
 VALUES (?, ?, ?, ?, ?);
 """
 
+GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING = """
+SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pe.embedding
+FROM pull_requests pr
+LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
+WHERE pr.id = ?;
+"""
+
 INSERT_ISSUE = """
 INSERT OR REPLACE INTO issues (id, title, steps, raw_body, labels)
 VALUES (?, ?, ?, ?, ?);

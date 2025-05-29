@@ -34,3 +34,13 @@ async def get_all_pull_requests(request: Request):
     db = cast(Database, request.app.state.db)
     issue_pull_requests = db.get_all_issue_pull_requests()
     return {"issue_pull_requests": issue_pull_requests}
+
+
+@issue_router.get(
+    "/api/pull_request/{pull_request_id}",
+    dependencies=[Depends(auth_middleware.verify_auth_token)],
+)
+async def get_pull_request_by_id_with_embedding(request: Request, pull_request_id: int):
+    db = cast(Database, request.app.state.db)
+    pull_request = db.get_pull_request_by_id_with_embedding(pull_request_id)
+    return {"pull_request": pull_request}

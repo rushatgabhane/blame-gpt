@@ -189,3 +189,23 @@ class Database:
         assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
         return [(row[0], row[1]) for row in rows]
+
+    @require_connection
+    def get_pull_request_by_id_with_embedding(
+        self, pull_request_id: int
+    ) -> Optional[PullRequest]:
+        assert self.connection is not None
+        row = self.connection.execute(
+            queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id,)
+        ).fetchone()
+        if not row:
+            return None
+
+        return PullRequest(
+            id=row[0],
+            title=row[1],
+            test=row[2],
+            explaination=row[3],
+            files=json.loads(row[4]),
+            embedding=json.loads(row[5]) if row[5] else None,
+        )
