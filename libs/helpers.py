@@ -30,13 +30,11 @@ def cosine_similarity(vec1, vec2):
 
 def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
     if not secret:
-        logger.error("no secret provided for signature validation")
         return False
+    if signature is None:
+        return False
+
     expected_signature = (
         "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     )
-    if signature is None:
-        return False
-    logger.info(f"expected signature: {expected_signature}")
-    logger.info(f"received signature: {signature}")
     return hmac.compare_digest(expected_signature, signature)
