@@ -9,18 +9,10 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
-async def add_issue(issue_number: int, db: Database) -> Issue | None:
+async def add_issue(issue_id: int, db: Database) -> Issue:
     try:
-        if db.get_issue_by_id(issue_number):
-            return db.get_issue_by_id(issue_number)
-
-        gh_issue = repo.get_issue(number=issue_number)
-
-        labels = [label.name for label in gh_issue.labels]
-        if constants.LABELS["DeployBlockerCash"] not in labels:
-            logger.info(f"DeployBlockerCash label not found in issue: {issue_number}")
-            return None
-
+        gh_issue = repo.get_issue(number=issue_id)
+        labels = [label.name for label in gh_issue.labels] or []
         steps = extract_steps_from_description(gh_issue.body or "")
 
         issue = Issue(
@@ -33,7 +25,7 @@ async def add_issue(issue_number: int, db: Database) -> Issue | None:
         db.add_issue(issue)
         return issue
     except Exception as e:
-        logger.error(f"Error fetching issue #{issue_number}: {e}")
+        logger.error(f"error fetching issue #{issue_id}: {e}")
         raise
 
 

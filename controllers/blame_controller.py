@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request, Header, Response
+from fastapi import APIRouter, Request, Header, Response, Depends
 from libs import helpers
-from services.github import issue_service
-from models.models import Issue
+from middlewares import auth_middleware
 from services import blame_pipeline
 from libs.sqlite.sqlite_client import Database
 from pydantic import BaseModel
@@ -17,10 +16,11 @@ blame_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class BlameRequest(BaseModel):
-    issue_url: str
+class ManualBlameRequest(BaseModel):
+    issue_id: int
 
 
+# This is a webhook endpoint that listens for GitHub events.
 @blame_router.post("/api/blame")
 async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     body = await request.body()
@@ -36,38 +36,41 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     if payload.get("label").get("name") != constants.LABELS["DeployBlockerCash"]:
         return Response(status_code=200, content="label is not 'DeployBlockerCash'")
 
+    repository_name = payload.get("repository").get("name")
+    repository_owner = payload.get("repository").get("owner").get("login")
+
+    if (
+        repository_name != constants.REPO_NAME
+        or repository_owner != constants.REPO_OWNER
+    ):
+        return Response(
+            status_code=200,
+            content=f"this repository is not supported",
+        )
+
     issue = payload.get("issue")
-    logger.info(f"blame triggered for issue: {issue.get('id')}")
-
-
-@blame_router.post("/api/blame-manual")
-async def blame_manual(request: Request, data: BlameRequest):
+    issue_number = issue.get("number")
     db = cast(Database, request.app.state.db)
-    result = helpers.parse_issue_url(data.issue_url)
-    if result is None:
-        raise HTTPException(
-            status_code=400,
-            detail="URL must be in the format: https://github.com/OWNER/REPO/issues/NUMBER",
-        )
 
-    owner, repo, issue_number = result
-    if not owner or not repo or not issue_number:
-        raise HTTPException(
-            status_code=400,
-            detail="URL must be in the format: https://github.com/OWNER/REPO/issues/NUMBER",
-        )
-
-    issue = await issue_service.add_issue(issue_number, db)
-    if not issue:
-        raise HTTPException(
-            status_code=200, detail="issue not found or not a deploy blocker"
-        )
-
-    asyncio.create_task(run_and_log_blame_pipeline(issue, db))
-
-    return {"message": "blame process started successfully"}
+    asyncio.create_task(run_and_log_blame_pipeline(issue_number, db))
+    return Response(
+        status_code=200, content=f"blame process started for #{issue_number}"
+    )
 
 
-async def run_and_log_blame_pipeline(issue: Issue, db: Database):
-    async for step in blame_pipeline.run_blame_pipeline(issue, db):
-        logger.info(f"issue {issue.id}: {step}")
+@blame_router.post(
+    "/api/blame-manual", dependencies=[Depends(auth_middleware.verify_auth_token)]
+)
+async def blame_manual(request: Request, data: ManualBlameRequest):
+    db = cast(Database, request.app.state.db)
+
+    asyncio.create_task(run_and_log_blame_pipeline(data.issue_id, db))
+    return Response(
+        status_code=200,
+        content=f"blame process started for #{data.issue_id}",
+    )
+
+
+async def run_and_log_blame_pipeline(issue_id: int, db: Database):
+    async for step in blame_pipeline.run(issue_id, db):
+        logger.info(f"{issue_id}: {step}")

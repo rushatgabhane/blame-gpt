@@ -23,14 +23,14 @@ def get_pull_requests_between(base: str, head: str) -> List[int] | None:
 
 
 def add_new_pull_requests_between(
-    base: str, head: str, issue_number: int, db: Database
+    base: str, head: str, issue_id: int, db: Database
 ) -> List[PullRequest] | None:
     new_ids = get_pull_requests_between(base, head)
     if not new_ids:
         return
 
     for pr_id in new_ids:
-        db.add_issue_pull_request(issue_number, pr_id)
+        db.add_issue_pull_request(issue_id, pr_id)
 
     logging.info(f"found {len(new_ids)} new pull requests {new_ids}")
     existing_ids = db.get_existing_pr_ids()

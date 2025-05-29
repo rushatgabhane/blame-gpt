@@ -1,5 +1,5 @@
 import asyncio
-from services.github import pull_request_service
+from services.github import pull_request_service, issue_service
 from models.models import Issue
 from libs.sqlite.sqlite_client import Database
 from models.models import (
@@ -21,23 +21,26 @@ from libs.helpers import cosine_similarity
 logger = logging.getLogger(__name__)
 
 
-async def run_blame_pipeline(issue: Issue, db: Database):
+async def run(issue_id: int, db: Database):
     try:
-        db_issue = db.get_issue_by_id(issue.id)
-        if db_issue is not None and db_issue.is_processed:
+        is_processed = db.get_issue_processed_status(issue_id)
+        if is_processed:
             yield f"issue already processed"
             return
+
+        issue = await issue_service.add_issue(issue_id, db)
+        yield f"issue added to database"
 
         yield "fetching new pull requests"
         await asyncio.to_thread(
             pull_request_service.add_new_pull_requests_between,
             base="production",
             head="staging",
-            issue_number=issue.id,
+            issue_id=issue_id,
             db=db,
         )
 
-        pull_requests = db.get_pull_requests_for_issue(issue.id)
+        pull_requests = db.get_pull_requests_for_issue(issue_id)
         if not pull_requests or len(pull_requests) == 0:
             yield f"no pull requests found"
             return
@@ -79,7 +82,7 @@ async def run_blame_pipeline(issue: Issue, db: Database):
         )
         yield f"blame pipeline completed"
     except Exception as e:
-        logger.error(f"error in blame pipeline for issue {issue.id}: {e}")
+        logger.error(f"error in blame pipeline for issue {issue_id}: {e}")
         yield f"error in blame pipeline: {e}"
 
 

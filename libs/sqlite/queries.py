@@ -90,3 +90,7 @@ VALUES (?, ?, ?);
 GET_ALL_INSTALLATIONS = """
 SELECT * FROM installations;
 """
+
+GET_ISSUE_IS_PROCESSED = """
+SELECT is_processed FROM issues WHERE id = ?
+"""

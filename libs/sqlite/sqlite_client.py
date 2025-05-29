@@ -156,6 +156,16 @@ class Database:
         )
 
     @require_connection
+    def get_issue_processed_status(self, issue_id: int) -> bool:
+        assert self.connection is not None
+        row = self.connection.execute(
+            queries.GET_ISSUE_IS_PROCESSED, (issue_id,)
+        ).fetchone()
+        if row:
+            return row[0]
+        return False
+
+    @require_connection
     def add_issue_pull_request(self, issue_id: int, pull_request_id: int):
         assert self.connection is not None
         self.connection.execute(
