@@ -27,16 +27,14 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     if not helpers.is_valid_signature(
         x_hub_signature_256, os.getenv("GITHUB_WEBHOOK_SECRET") or "", body
     ):
-        logger.warning("invalid signature for webhook request")
-        return Response(status_code=403)
+        return Response(status_code=403, content="Invalid signature")
 
-    logger.info("valid signature for webhook request")
     payload = json.loads(body)
     if payload.get("action") != "labeled":
-        return Response(status_code=200)
+        return Response(status_code=200, content="action is not 'labeled'")
 
     if payload.get("label").get("name") != constants.LABELS["DeployBlockerCash"]:
-        return Response(status_code=200)
+        return Response(status_code=200, content="label is not 'DeployBlockerCash'")
 
     issue = payload.get("issue")
     logger.info(f"blame triggered for issue: {issue.get('id')}")
