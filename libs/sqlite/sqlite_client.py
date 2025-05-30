@@ -30,6 +30,8 @@ class Database:
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
         self.connection.execute("PRAGMA synchronous=NORMAL;")
+        self.connection.execute("PRAGMA strict=ON;")
+        self.connection.execute("PRAGMA foreign_keys=ON;")
         self._init_db()
 
     def _init_db(self):
