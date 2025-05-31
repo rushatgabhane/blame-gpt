@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     title TEXT NOT NULL,
     test TEXT, -- This is the test case for the PR
     explaination TEXT,
-    files TEXT
+    files TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS pull_request_embeddings (
@@ -21,7 +22,8 @@ CREATE TABLE IF NOT EXISTS issues (
     raw_body TEXT,
     labels TEXT,                       -- Stored as a JSON array
     is_processed BOOLEAN DEFAULT FALSE,
-    culprit_pull_requests TEXT              -- JSON array of CulpritPullRequest objects
+    culprit_pull_requests TEXT,              -- JSON array of CulpritPullRequest objects
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS issue_pull_request (
