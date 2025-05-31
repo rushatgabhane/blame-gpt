@@ -29,31 +29,30 @@ def add_new_pull_requests_between(
     if not new_ids:
         return
 
-    for pr_id in new_ids:
-        db.add_issue_pull_request(issue_id, pr_id)
-
     logging.info(f"found {len(new_ids)} new pull requests {new_ids}")
     existing_ids = db.get_existing_pr_ids()
     new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
-    if not new_ids_to_process:
-        logging.info("no new pull requests to process")
-        return
 
     result: List[PullRequest] = []
 
-    logging.info(
-        f"processing {len(new_ids_to_process)} new pull requests: {new_ids_to_process}"
-    )
+    if not new_ids_to_process:
+        logging.info("no new pull requests to process")
+    else:
+        logging.info(f"processing {len(new_ids_to_process)} new pull requests")
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
-            executor.submit(get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process
+            executor.submit(get_pr_with_embeddings, pr_id): pr_id
+            for pr_id in new_ids_to_process
         }
         for future in as_completed(futures):
             pull_request = future.result()
             if pull_request:
                 db.add_pull_request(pull_request)
                 result.append(pull_request)
+
+    for pr_id in new_ids:
+        db.add_issue_pull_request(issue_id, pr_id)
 
     return result
 

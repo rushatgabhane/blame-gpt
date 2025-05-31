@@ -89,11 +89,9 @@ async def run(issue_id: int, db: Database):
 def get_top_pull_requests_by_semantic_score(
     issue: Issue, pull_requests: List[PullRequest], top_n: int
 ) -> List[PullRequestWithScore]:
-    issue_embedding = embedding_model.embed_query(f"{issue.title}\n {issue.steps}")
-
     scored_prs: List[PullRequestWithScore] = [
         PullRequestWithScore(
-            pull_request=pr, score=cosine_similarity(issue_embedding, pr.embedding)
+            pull_request=pr, score=cosine_similarity(issue.embedding, pr.embedding)
         )
         for pr in pull_requests
     ]

@@ -29,6 +29,7 @@ class Issue(BaseModel):
     labels: List[str]
     is_processed: bool = False
     culprit_pull_requests: List[CulpritPullRequest] | None = None
+    embedding: list[float] | None = None
 
 
 class PullRequestWithScore(BaseModel):

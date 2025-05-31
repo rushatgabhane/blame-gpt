@@ -5,6 +5,7 @@ from models.models import Issue
 from libs.github import repo
 from libs.sqlite.sqlite_client import Database
 from typing import List
+from libs.llm import embedding_model
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +15,16 @@ async def add_issue(issue_id: int, db: Database) -> Issue:
         gh_issue = repo.get_issue(number=issue_id)
         labels = [label.name for label in gh_issue.labels] or []
         steps = extract_steps_from_description(gh_issue.body or "")
+        title = gh_issue.title or ""
+        issue_embedding = embedding_model.embed_query(f"{title}\n {steps}")
 
         issue = Issue(
             id=gh_issue.number,
-            title=gh_issue.title,
+            title=title,
             steps=steps,
             raw_body=gh_issue.body or "",
             labels=labels,
+            embedding=issue_embedding,
         )
         db.add_issue(issue)
         return issue

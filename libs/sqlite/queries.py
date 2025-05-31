@@ -15,6 +15,13 @@ CREATE TABLE IF NOT EXISTS pull_request_embeddings (
     FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS issue_embeddings (
+    issue_id INTEGER PRIMARY KEY,
+    embedding TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS issues (
     id INTEGER PRIMARY KEY,           -- GitHub issue number
     title TEXT NOT NULL,
@@ -94,5 +101,10 @@ SELECT embedding FROM pull_request_embeddings WHERE pull_request_id = ?;
 
 INSERT_PULL_REQUEST_EMBEDDING = """
 INSERT OR REPLACE INTO pull_request_embeddings (pull_request_id, embedding)
+VALUES (?, ?);
+"""
+
+INSERT_ISSUE_EMBEDDING = """
+INSERT OR REPLACE INTO issue_embeddings (issue_id, embedding)
 VALUES (?, ?);
 """

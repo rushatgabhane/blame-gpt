@@ -103,17 +103,26 @@ class Database:
     @require_connection
     def add_issue(self, issue: Issue):
         assert self.connection is not None
-        self.connection.execute(
-            queries.INSERT_ISSUE,
-            (
-                issue.id,
-                issue.title,
-                issue.steps,
-                issue.raw_body,
-                json.dumps(issue.labels),
-            ),
-        )
-        self.connection.commit()
+        try:
+            self.connection.execute("BEGIN;")
+            self.connection.execute(
+                queries.INSERT_ISSUE,
+                (
+                    issue.id,
+                    issue.title,
+                    issue.steps,
+                    issue.raw_body,
+                    json.dumps(issue.labels),
+                ),
+            )
+            self.connection.execute(
+                queries.INSERT_ISSUE_EMBEDDING,
+                (issue.id, json.dumps(issue.embedding)),
+            )
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise e
 
     @require_connection
     def update_issue_processed_and_result(
