@@ -1,0 +1,1205 @@
+id,title,url,date
+1290,Revert some ReportListUtils things. Replace LHN with OptionsList.,https://github.com/Expensify/App/pull/1290,2021-01-22
+1221,Revert new GH actions and dependencies,https://github.com/Expensify/App/pull/1221,2021-01-12
+1213,Revert dummy PR 1,https://github.com/Expensify/App/pull/1213,2021-01-12
+1582,Revert manually to known working version,https://github.com/Expensify/App/pull/1582,2021-02-27
+1462,Revert https://github.com/Expensify/Expensify.cash/pull/1425 and echo actor,https://github.com/Expensify/App/pull/1462,2021-02-11
+1411,"Revert ""Add Expensify.cash to iOS and Android native share menus""",https://github.com/Expensify/App/pull/1411,2021-02-04
+1840,Undo revert of clean staging PR check,https://github.com/Expensify/App/pull/1840,2021-03-17
+2581,"Revert ""fix: splash screen slightly jumps""",https://github.com/Expensify/App/pull/2581,2021-04-27
+2579,"Revert ""Apply localization to all hard coded text""",https://github.com/Expensify/App/pull/2579,2021-04-26
+2550,"Revert ""fix inline code blocks for native platforms""",https://github.com/Expensify/App/pull/2550,2021-04-23
+2267,Revert changes introduced by PR 2183,https://github.com/Expensify/App/pull/2267,2021-04-07
+3224,"Revert ""Temporarily replace blue with magenta""",https://github.com/Expensify/App/pull/3224,2021-05-28
+3223,"Revert ""Temporarily replace green with cyan""",https://github.com/Expensify/App/pull/3223,2021-05-28
+3222,"Revert ""Fix - LoginScreen use email keyboard type and disable auto complete""",https://github.com/Expensify/App/pull/3222,2021-05-28
+3221,"Revert ""[Snyk] Upgrade react-native-web from 0.14.10 to 0.16.2""",https://github.com/Expensify/App/pull/3221,2021-05-28
+3191,"Revert ""[No QA] Move GitHub README from .github/workflows/ to .github/""",https://github.com/Expensify/App/pull/3191,2021-05-27
+3183,"Revert ""Add iOS exception handling for beta review""",https://github.com/Expensify/App/pull/3183,2021-05-27
+3153,"Revert ""Make easily noticeable temporary change""",https://github.com/Expensify/App/pull/3153,2021-05-26
+3152,"Revert ""[CP Testing] Change blue to a vibrant magenta""",https://github.com/Expensify/App/pull/3152,2021-05-26
+2907,Revert for deploy testing,https://github.com/Expensify/App/pull/2907,2021-05-13
+2899,"Revert ""Revert ""Readme change for testing deploy""""",https://github.com/Expensify/App/pull/2899,2021-05-13
+2893,"Revert ""Readme change for testing deploy""",https://github.com/Expensify/App/pull/2893,2021-05-13
+2885,"Revert ""Revert ""Revert dummy markdown change""""",https://github.com/Expensify/App/pull/2885,2021-05-13
+2880,"Revert ""Revert dummy markdown change""",https://github.com/Expensify/App/pull/2880,2021-05-13
+2875,Revert dummy markdown change,https://github.com/Expensify/App/pull/2875,2021-05-13
+2872,"Revert ""Revert ""Dummy Markdown change""""",https://github.com/Expensify/App/pull/2872,2021-05-13
+2869,"Revert ""Dummy Markdown change""",https://github.com/Expensify/App/pull/2869,2021-05-13
+2834,"Revert ""Exclude concierge from iou""",https://github.com/Expensify/App/pull/2834,2021-05-12
+2833,"Revert ""fixed modal animations""",https://github.com/Expensify/App/pull/2833,2021-05-12
+2663,"Revert ""fix Modal animations""",https://github.com/Expensify/App/pull/2663,2021-05-03
+3824,"[CP Staging] Revert ""Fix Desktop - CMD + K is slow and laggy #3601""",https://github.com/Expensify/App/pull/3824,2021-06-30
+3816,Revert suppression of touchstart to fix regressions,https://github.com/Expensify/App/pull/3816,2021-06-30
+3338,Revert test changes,https://github.com/Expensify/App/pull/3338,2021-06-03
+3257,"Revert ""[IOU] Pay with Expensify option""",https://github.com/Expensify/App/pull/3257,2021-06-01
+4242,Revert add payment button changes,https://github.com/Expensify/App/pull/4242,2021-07-29
+4085,Reverting 3979,https://github.com/Expensify/App/pull/4085,2021-07-15
+3969,"Revert ""[Hold] fixed spaces collapsing in Messages""",https://github.com/Expensify/App/pull/3969,2021-07-10
+4917,Revert regex changes for :shipit: comment,https://github.com/Expensify/App/pull/4917,2021-08-30
+4815,"Revert ""Update StagingDeployCash for manual cherry-picks""",https://github.com/Expensify/App/pull/4815,2021-08-25
+5540,"Revert ""[No QA] Update StagingDeployCash for manual cherry-picks""",https://github.com/Expensify/App/pull/5540,2021-09-27
+5495,"Revert ""Moves all free plan beta checks to use free plan soft launch beta""",https://github.com/Expensify/App/pull/5495,2021-09-24
+5442,"Revert ""Capitalize Save & Continue""",https://github.com/Expensify/App/pull/5442,2021-09-23
+5360,"Revert ""Skip showing create for new users if user already has a workspace""",https://github.com/Expensify/App/pull/5360,2021-09-20
+5288,Revert PR #5037,https://github.com/Expensify/App/pull/5288,2021-09-16
+5160,"Revert ""Fix: Reduced Emojipicker landscape modal height""",https://github.com/Expensify/App/pull/5160,2021-09-09
+6548,"Revert ""Remove div usage in Onfido Web""",https://github.com/Expensify/App/pull/6548,2021-11-30
+6523,"Revert ""Supports big screens mobile devices for popover menu""",https://github.com/Expensify/App/pull/6523,2021-11-30
+6441,"Revert ""Merge pull request #6268 from azimgd/fix-inverted-list""",https://github.com/Expensify/App/pull/6441,2021-11-23
+6434,"[NO QA] Revert ""Revert ""Ensures mini actions menu will disappear when attachment modal opens up""""",https://github.com/Expensify/App/pull/6434,2021-11-23
+6431,"[NO QA] Revert ""Fix : Pressing Tab button in AddressSearch inputs""",https://github.com/Expensify/App/pull/6431,2021-11-23
+6429,"[NO QA] Revert ""Ensures mini actions menu will disappear when attachment modal opens up""",https://github.com/Expensify/App/pull/6429,2021-11-23
+6395,Revert signing of commits of OSBotify,https://github.com/Expensify/App/pull/6395,2021-11-22
+6352,"Revert ""[No QA] Run CP workflow on macOS""",https://github.com/Expensify/App/pull/6352,2021-11-17
+6350,"Revert ""[No QA] Ensure bundle version strings are compatible before auto-merging CP PR""",https://github.com/Expensify/App/pull/6350,2021-11-17
+6313,"Revert ""Deep link to add secondary login in OldDot""",https://github.com/Expensify/App/pull/6313,2021-11-16
+6161,"Revert ""Fix: back handler for Drawer""",https://github.com/Expensify/App/pull/6161,2021-11-01
+4133,"Revert ""Merge pull request #4085 from Expensify/chirag-revert-3979""",https://github.com/Expensify/App/pull/4133,2021-11-16
+6842,"Revert ""Remove create new workspace button from workspace settings""",https://github.com/Expensify/App/pull/6842,2021-12-20
+6630,[CP STG] Revert WorkspaceBankAccount page changes,https://github.com/Expensify/App/pull/6630,2021-12-07
+6615,"Revert ""unknown report check"" due to regression - unable to create group chats",https://github.com/Expensify/App/pull/6615,2021-12-07
+7426,"Revert ""Separate report name and icon configuration from personal details""",https://github.com/Expensify/App/pull/7426,2022-01-26
+7186,"Revert ""Options default style fix""",https://github.com/Expensify/App/pull/7186,2022-01-13
+7939,"Revert ""Make push notifications navigate to the correct chat - iOS""",https://github.com/Expensify/App/pull/7939,2022-02-28
+7933,"Revert ""feat: add image loading placeholder""",https://github.com/Expensify/App/pull/7933,2022-02-28
+7631,"Revert ""Separate report name and icon configuration from personal details""",https://github.com/Expensify/App/pull/7631,2022-02-08
+8412,Revert changes related to #7623,https://github.com/Expensify/App/pull/8412,2022-03-31
+8242,"Revert ""[Feat] Add Image loading indicator""",https://github.com/Expensify/App/pull/8242,2022-03-20
+8232,Revert remove hint,https://github.com/Expensify/App/pull/8232,2022-03-28
+8191,"Revert ""[NoQA] Fix the new contributor PR comment""",https://github.com/Expensify/App/pull/8191,2022-03-16
+8054,"Revert PR 8013, which introduced a bug",https://github.com/Expensify/App/pull/8054,2022-03-09
+8448,Reg: Reverted Secure Input border style,https://github.com/Expensify/App/pull/8448,2022-04-01
+8953,"Revert ""Keep focus on textinput field after pressing enter when button is disabled""",https://github.com/Expensify/App/pull/8953,2022-05-11
+8952,"Revert ""Open old dot links with openOldDotLink() function""",https://github.com/Expensify/App/pull/8952,2022-05-12
+8916,"Revert ""Updating navigation packages""",https://github.com/Expensify/App/pull/8916,2022-05-10
+8912,"Revert ""trying different styles"" and updating react-navigation",https://github.com/Expensify/App/pull/8912,2022-05-10
+8909,Revert 3 dots and change flex styles,https://github.com/Expensify/App/pull/8909,2022-05-10
+8892,"Revert ""Commenting out the confimation modal to test something in staging.""",https://github.com/Expensify/App/pull/8892,2022-05-06
+8571,Revert iOS Safari auto scrollback,https://github.com/Expensify/App/pull/8571,2022-05-06
+9574,Revert to version 1.6.13 to fix actionlint regression,https://github.com/Expensify/App/pull/9574,2022-06-27
+9378,"Revert ""[NO QA] Display report archived text in welcome message as well as footer""",https://github.com/Expensify/App/pull/9378,2022-06-10
+9351,Revert a forgotten blurOnsubmit prop,https://github.com/Expensify/App/pull/9351,2022-06-08
+9343,"Revert ""Fix resizes on image upload""",https://github.com/Expensify/App/pull/9343,2022-06-07
+9284,"Revert ""Fix status bar color when a modal is open""",https://github.com/Expensify/App/pull/9284,2022-06-01
+10129,"Revert ""Localize decimal separator""",https://github.com/Expensify/App/pull/10129,2022-07-27
+10113,Revert Update Global Offline Indicator,https://github.com/Expensify/App/pull/10113,2022-07-26
+10101,[No QA] Revert #9706. Rename file to `DeprecatedCustomActions.js` to prevent further editing,https://github.com/Expensify/App/pull/10101,2022-07-26
+10096,"Revert ""7470 - added onLayout to textinput perent component & used dynamic he…""",https://github.com/Expensify/App/pull/10096,2022-07-26
+9793,"Revert ""[No QA] Make temporary copies of moved javascript actions""",https://github.com/Expensify/App/pull/9793,2022-07-11
+9785,"Revert ""[Prod QA] Fix CSP for statement frames on Desktop""",https://github.com/Expensify/App/pull/9785,2022-07-08
+9690,"Revert ""Fix off-by-one error in scrollToIndex""",https://github.com/Expensify/App/pull/9690,2022-07-04
+10588,"Revert ""Refactor ValidateLogin""",https://github.com/Expensify/App/pull/10588,2022-08-26
+10479,Manually revert 10069,https://github.com/Expensify/App/pull/10479,2022-08-23
+10389,"Revert ""[No QA] Use force-push to update staging and production""",https://github.com/Expensify/App/pull/10389,2022-08-15
+10299,"Revert ""Smart banner issue""",https://github.com/Expensify/App/pull/10299,2022-08-08
+10266,"Revert ""Start Using BeginSignIn command and remove obsolete API command calls""",https://github.com/Expensify/App/pull/10266,2022-08-05
+10180,"Revert ""Revert ""Add in bad diff from staging""""",https://github.com/Expensify/App/pull/10180,2022-08-02
+10177,"Revert ""Add in bad diff from staging""",https://github.com/Expensify/App/pull/10177,2022-08-02
+11240,"Revert ""OptionsSelector - Migrate setNativeProps to state""",https://github.com/Expensify/App/pull/11240,2022-09-23
+10979,"Revert ""Refactor withFullPolicy""",https://github.com/Expensify/App/pull/10979,2022-09-13
+10920,"[No QA] Revert ""Toggle staging and production server api""",https://github.com/Expensify/App/pull/10920,2022-09-09
+10908,"Partial revert of ""Use `window.location.href` for current URL""",https://github.com/Expensify/App/pull/10908,2022-09-08
+10775,"Revert ""update react-native-svg version""",https://github.com/Expensify/App/pull/10775,2022-09-02
+12176,"Revert ""Upgrade react-native-svg to 13.4.0""",https://github.com/Expensify/App/pull/12176,2022-10-27
+12099,Onyx package revert,https://github.com/Expensify/App/pull/12099,2022-10-24
+11909,"Revert ""Update handling so that Concierge link redirects to chat""",https://github.com/Expensify/App/pull/11909,2022-10-17
+11702,"[No QA] Revert ""[Refactor] Use new API Command: VerifyIdentityForBankAccount""",https://github.com/Expensify/App/pull/11702,2022-10-10
+11566,Revert changes implemented by issue 10973,https://github.com/Expensify/App/pull/11566,2022-10-06
+13201,Revert filtering out workspaces with pending delete action,https://github.com/Expensify/App/pull/13201,2022-11-30
+13184,"Revert ""Fix CSP console error when staging website is loaded""",https://github.com/Expensify/App/pull/13184,2022-11-30
+13014,"Revert ""refactor navigation modal card styles""",https://github.com/Expensify/App/pull/13014,2022-11-24
+13013,"[No QA] Revert ""Look at the platform to decide how to choose API""",https://github.com/Expensify/App/pull/13013,2022-11-24
+13010,"Revert ""Merge pull request #12648 from margelo/@thomas/fast-image-cac…",https://github.com/Expensify/App/pull/13010,2022-11-24
+12897,"Revert ""removed resetting the report fields to allow user to operate multiple actions on same popover""",https://github.com/Expensify/App/pull/12897,2022-11-21
+12882,[NoQA] dummy change to be reverted so workflows run without approval,https://github.com/Expensify/App/pull/12882,2022-11-21
+12722,Reverts elements from #12169,https://github.com/Expensify/App/pull/12722,2022-11-15
+12718,"Revert ""workaround to hide blue border box on ReportActionItem""",https://github.com/Expensify/App/pull/12718,2022-11-15
+12468,Revert PR11313,https://github.com/Expensify/App/pull/12468,2022-11-04
+12398,"Revert ""[NO-QA] Temporarily remove turnstyle action to test workflow""",https://github.com/Expensify/App/pull/12398,2022-11-02
+12336,[CP Staging] Revert PR 11907 which introduced missing FAB bug,https://github.com/Expensify/App/pull/12336,2022-11-01
+13758,"Revert ""Use Onyx.clear to preserve state when logging out""",https://github.com/Expensify/App/pull/13758,2022-12-21
+13707,"Revert ""Load pdfjs webworker script from source""",https://github.com/Expensify/App/pull/13707,2022-12-19
+13482,"Revert ""fix composer hidden while loading messages""",https://github.com/Expensify/App/pull/13482,2022-12-09
+13407,"Revert ""Display banner to enable 2FA when setting up VBBA""",https://github.com/Expensify/App/pull/13407,2022-12-07
+13271,Revert PR 13187 to resolve checkbox bug,https://github.com/Expensify/App/pull/13271,2022-12-02
+13230,"Revert ""fix: 11584 web jump to unread message""",https://github.com/Expensify/App/pull/13230,2022-12-08
+14484,"Revert ""[No QA] Filter out reportActionID-keyed Onyx updates""",https://github.com/Expensify/App/pull/14484,2023-01-23
+13970,"[No QA] Revert ""Update CODEOWNERS so that we don't accidentally deploy a new version of react-native-onyx""",https://github.com/Expensify/App/pull/13970,2023-01-04
+13625,"Revert ""Check hasOutstandingIOU in money requests""",https://github.com/Expensify/App/pull/13625,2023-01-03
+13304,[Image][Performance] Fast Image with Auth Token Header Caching (revert follow-up),https://github.com/Expensify/App/pull/13304,2023-01-17
+15563,"Revert ""replace onModalHide with onDismiss for the web""",https://github.com/Expensify/App/pull/15563,2023-02-28
+15498,"Revert ""Revert ""replace onModalHide with onDismiss for the web""""",https://github.com/Expensify/App/pull/15498,2023-02-25
+15495,"Revert ""replace onModalHide with onDismiss for the web""",https://github.com/Expensify/App/pull/15495,2023-02-24
+15417,"Revert ""Open a test tools modal with 5 taps on dev""",https://github.com/Expensify/App/pull/15417,2023-02-23
+15334,"Revert ""Don't show empty chat""",https://github.com/Expensify/App/pull/15334,2023-02-22
+15217,"Revert ""Conditionally require password for adding a debit card""",https://github.com/Expensify/App/pull/15217,2023-02-16
+14826,Revert 'fix: Timezone changes to some 1st option in the list while pressing the enter key',https://github.com/Expensify/App/pull/14826,2023-02-03
+14777,[No QA] Revert linking to workflow run using upstream feature,https://github.com/Expensify/App/pull/14777,2023-02-03
+14029,"Fix and Revert ""Revert ""Display banner to enable 2FA when setting up VBBA""""",https://github.com/Expensify/App/pull/14029,2023-02-02
+16659,"Revert ""Emoji search on mobile""",https://github.com/Expensify/App/pull/16659,2023-03-29
+16559,"Revert ""Make optimistic reportActions appear last""",https://github.com/Expensify/App/pull/16559,2023-03-27
+15823,[NO QA] Revert https://github.com/Expensify/App/pull/15589/files,https://github.com/Expensify/App/pull/15823,2023-03-10
+15771,"Revert ""Make status bar transparent on android""",https://github.com/Expensify/App/pull/15771,2023-03-09
+15761,"Revert ""Show all Expensify logins in Contact Methods page & view each in new Contact Method Details page""",https://github.com/Expensify/App/pull/15761,2023-03-09
+15727,"[No QA] Revert ""Fix the content-type for AASA""",https://github.com/Expensify/App/pull/15727,2023-03-07
+15678,"Revert ""[Staging API] To Use Staging Server or not to use staging server""",https://github.com/Expensify/App/pull/15678,2023-03-06
+15606,"[No QA] Revert ""Revert ""Fix miss-matched SMS email suffix on sign in page""""",https://github.com/Expensify/App/pull/15606,2023-03-02
+15604,"Revert ""Fix miss-matched SMS email suffix on sign in page""",https://github.com/Expensify/App/pull/15604,2023-03-02
+18100,"Revert ""[PhoneNumber Verification] Display only valid numbers in user search.""",https://github.com/Expensify/App/pull/18100,2023-04-27
+17970,"Revert ""Fix: No notification on web if window is not active""",https://github.com/Expensify/App/pull/17970,2023-04-25
+17739,"Revert ""Merge pull request #17321 from allroundexperts/fix-16521""",https://github.com/Expensify/App/pull/17739,2023-04-20
+17697,"Revert ""Use local SVG for concierge icon""",https://github.com/Expensify/App/pull/17697,2023-04-20
+17618,"Revert ""Merge pull request #17310 from akinwale/task-16946""",https://github.com/Expensify/App/pull/17618,2023-04-18
+17592,"Revert ""Allow keyboard shortcuts to work on native devices""",https://github.com/Expensify/App/pull/17592,2023-04-18
+17475,Revert: 17138 17360 listen keydown from user,https://github.com/Expensify/App/pull/17475,2023-04-17
+19680,Reverting EmojiPicker Animation,https://github.com/Expensify/App/pull/19680,2023-05-29
+19574,"Revert ""[No QA] Fix pod cache logic""",https://github.com/Expensify/App/pull/19574,2023-05-25
+19402,"Revert ""fix: double click compose box and select placeholder""",https://github.com/Expensify/App/pull/19402,2023-05-22
+19021,"Revert ""Fix/large images android""",https://github.com/Expensify/App/pull/19021,2023-05-18
+18948,"Revert ""[No QA] Use Ping endpoint for internet reachability instead of API root""",https://github.com/Expensify/App/pull/18948,2023-05-15
+18705,"Revert ""Fix: Red dot persists after removing phone number contact method""",https://github.com/Expensify/App/pull/18705,2023-05-10
+18490,"Revert ""[No QA] 17885 custom user mentions renderer""",https://github.com/Expensify/App/pull/18490,2023-05-05
+18430,"Revert ""fix add reaction icon position changed when user add emoji""",https://github.com/Expensify/App/pull/18430,2023-05-04
+18380,"Revert ""Fix:  Copying the messages and marking a message in between as unread generates 'new' in the text""",https://github.com/Expensify/App/pull/18380,2023-05-03
+18360,"Revert ""Fix for: Web - Triple clicking an edited message select’s the (edited) label along with the actual message""",https://github.com/Expensify/App/pull/18360,2023-05-03
+21240,"[NoQA] Revert ""Show the Copilot details if a delegate is set in a report action""",https://github.com/Expensify/App/pull/21240,2023-06-21
+20938,"Revert ""fix: add background to share code avatar""",https://github.com/Expensify/App/pull/20938,2023-06-16
+20784,[No QA] Revert pod cache,https://github.com/Expensify/App/pull/20784,2023-06-14
+20753,Personal details list migration: revert fallback for getDisplayNameForParticipant,https://github.com/Expensify/App/pull/20753,2023-06-14
+20695,"Revert ""fix: offline deleted heading styles and link padding""",https://github.com/Expensify/App/pull/20695,2023-06-13
+20677,"Revert ""Migrate SignInPage to functional component""",https://github.com/Expensify/App/pull/20677,2023-06-13
+20331,"Revert ""[No QA] Use macos-13 runners for desktop builds""",https://github.com/Expensify/App/pull/20331,2023-06-06
+20220,Revert PERSONAL_DETAILS_LIST Onyx changes,https://github.com/Expensify/App/pull/20220,2023-06-05
+20104,[No QA]Revert Ubuntu large runner testing,https://github.com/Expensify/App/pull/20104,2023-06-02
+20029,"Revert ""[No QA]Speed up deploys by turning on large runners""",https://github.com/Expensify/App/pull/20029,2023-06-02
+19948,[NoQA] refactor: revert danger,https://github.com/Expensify/App/pull/19948,2023-06-01
+23759,"Revert ""Bump Reanimated to 3.4.0""",https://github.com/Expensify/App/pull/23759,2023-07-27
+23588,"Revert ""Convert Date Picker to Functional Component""",https://github.com/Expensify/App/pull/23588,2023-07-25
+23551,"[CP Staging] Revert ""fix remove only first request""",https://github.com/Expensify/App/pull/23551,2023-07-25
+23518,"Revert ""fix <21137>: fixed cursor reset to beginning""",https://github.com/Expensify/App/pull/23518,2023-07-25
+23313,Fix: Report Action revert on flag `approved` decision,https://github.com/Expensify/App/pull/23313,2023-07-26
+23295,"Revert ""Apple sign-in""",https://github.com/Expensify/App/pull/23295,2023-07-20
+23243,"Revert ""fix: The title field is cleared when the Confirm task button is pressed""",https://github.com/Expensify/App/pull/23243,2023-07-20
+23155,Revert Android app name to 'New Expensify',https://github.com/Expensify/App/pull/23155,2023-07-19
+23085,Revert PR 22752 to fix text selection regression,https://github.com/Expensify/App/pull/23085,2023-07-18
+23037,"Revert ""Hide muted chats from LHN""",https://github.com/Expensify/App/pull/23037,2023-07-18
+22845,"Revert ""22803 - Pasting text or link in edit message pastes the text or link in main compose box""",https://github.com/Expensify/App/pull/22845,2023-07-13
+22779,"Revert ""Update version to 1.3.40-0""",https://github.com/Expensify/App/pull/22779,2023-07-13
+22541,"[NO QA] Revert ""Release pending versions before submitting a new version for review""",https://github.com/Expensify/App/pull/22541,2023-07-10
+22407,Revert the ability to search a report by participant accountID,https://github.com/Expensify/App/pull/22407,2023-07-10
+22303,"Revert ""Remove all uses of  `actorEmail` as part of personalDetails migration""",https://github.com/Expensify/App/pull/22303,2023-07-05
+22124,"Revert ""fix: add outline to checkbox when focused via button""",https://github.com/Expensify/App/pull/22124,2023-07-03
+21865,revert usage of InteractionManager in Modal,https://github.com/Expensify/App/pull/21865,2023-07-06
+26211,"Revert ""Fix different grayness levels on parent and child messages.""",https://github.com/Expensify/App/pull/26211,2023-08-29
+25963,"[NoQA] Revert ""Fixing the race condition on `history.go` due to buggy queue async callbacks""",https://github.com/Expensify/App/pull/25963,2023-08-25
+25781,"Revert ""fix: revalidate upon input and refocus if error occurs""",https://github.com/Expensify/App/pull/25781,2023-08-23
+25724,"Revert ""Merge pull request #24544 from eh2077/21527-fix-sync-draft-and-edit-status-of-thread-first-chat""",https://github.com/Expensify/App/pull/25724,2023-08-22
+25506,"Revert ""Revert ""Integrate Mapbox in App"""" (i.e. bring the original PR back)",https://github.com/Expensify/App/pull/25506,2023-08-18
+25492,"Revert ""Integrate Mapbox in App""",https://github.com/Expensify/App/pull/25492,2023-08-18
+25424,Revert hotfix: Move again to avoid listener still active,https://github.com/Expensify/App/pull/25424,2023-08-17
+24551,fix workspace avatar shows U before reverting to actual avatar in IOU view,https://github.com/Expensify/App/pull/24551,2023-08-16
+24467,Revert back to using policyIDList instead of the last modified map when reconnecting the App,https://github.com/Expensify/App/pull/24467,2023-08-14
+24373,"Revert ""fix: 23369 back button navigation fixed for ondify steps""",https://github.com/Expensify/App/pull/24373,2023-08-10
+24347,[NO QA] revert changes from PRs 23306/23780,https://github.com/Expensify/App/pull/24347,2023-08-10
+24333,"Revert ""hide mark ask unread with read message""",https://github.com/Expensify/App/pull/24333,2023-08-09
+24240,"Revert ""Remove shouldRetry and canCancel now that deprecatedAPI is gone""",https://github.com/Expensify/App/pull/24240,2023-08-08
+24213,Fix red dot is not cleared after close add message error and revert last message when the add message fails,https://github.com/Expensify/App/pull/24213,2023-08-09
+24060,"Revert ""Use installation token for OS Botify""",https://github.com/Expensify/App/pull/24060,2023-08-02
+24025,"Revert ""fix: show main composer when there is no focused draft""",https://github.com/Expensify/App/pull/24025,2023-08-01
+24003,[CP Staging] [Revert] Perf/onyx upgrade use cache directly,https://github.com/Expensify/App/pull/24003,2023-08-01
+28307,"[No QA] Revert ""Prevent nested timezone setting""",https://github.com/Expensify/App/pull/28307,2023-09-27
+28229,Revert PR 27340,https://github.com/Expensify/App/pull/28229,2023-09-28
+28208,"Revert ""Fix/27383: Prevent request money if empty waypoint""",https://github.com/Expensify/App/pull/28208,2023-09-26
+28117,chore: revert pull 27369 changes,https://github.com/Expensify/App/pull/28117,2023-09-26
+27798,"[CP Staging] revert: ""fix: 26178 Context menu does not close after user goes to the previous page""",https://github.com/Expensify/App/pull/27798,2023-09-20
+27793,"[CP Staging] Revert ""Link Request Money not work""",https://github.com/Expensify/App/pull/27793,2023-09-19
+27559,"Revert ""Add focus trap to the RHP""",https://github.com/Expensify/App/pull/27559,2023-09-18
+27504,[NO QA] Revert PR 24588,https://github.com/Expensify/App/pull/27504,2023-09-15
+27476,"Revert ""Convert SearchPage to functional component""",https://github.com/Expensify/App/pull/27476,2023-09-18
+27301,"Revert ""Fix: Keyboard shouldn't be active/enabled automatically for request details""",https://github.com/Expensify/App/pull/27301,2023-09-12
+27300,"Revert ""26121-remove-domain-name""",https://github.com/Expensify/App/pull/27300,2023-09-12
+27177,"Revert ""Android App Notification Logo Update""",https://github.com/Expensify/App/pull/27177,2023-09-11
+26493,"[CP Staging] Revert ""Allow user to get current location""",https://github.com/Expensify/App/pull/26493,2023-09-01
+30532,"Revert ""[Form Provider Refactor] RoomNameInput""",https://github.com/Expensify/App/pull/30532,2023-10-27
+30512,"[CP Staging] Revert optimization on image, ignore in the future",https://github.com/Expensify/App/pull/30512,2023-10-27
+30403,"Revert ""Amount changing to zero when editing it by going back in spli…",https://github.com/Expensify/App/pull/30403,2023-10-26
+30113,"Revert ""[Internal QA] Skip rendering content for pay action on non-send money flow""",https://github.com/Expensify/App/pull/30113,2023-10-20
+30110,"Revert ""feat: migrate KYCWall class component to functional""",https://github.com/Expensify/App/pull/30110,2023-10-20
+30040,"Revert ""Update LHN/chat header to handle displayName not being set""",https://github.com/Expensify/App/pull/30040,2023-10-20
+29893,revert: from empty string to null,https://github.com/Expensify/App/pull/29893,2023-10-19
+29889,"Revert ""Feat: Remove moment from datepicker""",https://github.com/Expensify/App/pull/29889,2023-10-18
+29844,"[CP Staging] Revert ""Remove `withNavigationFallback.js` HOC""",https://github.com/Expensify/App/pull/29844,2023-10-18
+29833,"Revert ""webfix/27090 In Header Workspace, members are not shown.""",https://github.com/Expensify/App/pull/29833,2023-10-17
+29784,"Revert ""Fix navigation breaks on opening search page after reloading the attachment""",https://github.com/Expensify/App/pull/29784,2023-10-18
+29728,"Revert ""[NoQA] Temporarily update the getPreviousVeriosn to skip over missing tag""",https://github.com/Expensify/App/pull/29728,2023-10-17
+29706,[CP Staging] Revert PR 28278,https://github.com/Expensify/App/pull/29706,2023-10-16
+29663,"Revert ""fix: remove unnecessary dependency""",https://github.com/Expensify/App/pull/29663,2023-10-17
+29576,"[CP Staging] [No QA] Revert ""Add `DateTimeFormat` polyfill""",https://github.com/Expensify/App/pull/29576,2023-10-14
+29413,Revert to previous token for issues temporarily,https://github.com/Expensify/App/pull/29413,2023-10-12
+29355,"[NoQA] Revert ""Testing deploy changes""",https://github.com/Expensify/App/pull/29355,2023-10-12
+29233,"Revert ""[NoQA] Reattempt using OSBotify installation token in actions""",https://github.com/Expensify/App/pull/29233,2023-10-10
+29189,"Revert ""Fix unread marker showing double lines on task comment""",https://github.com/Expensify/App/pull/29189,2023-10-10
+29126,"Revert ""Initial fix""",https://github.com/Expensify/App/pull/29126,2023-10-09
+29106,"[CP Staging] Revert ""fix: 26657 Another error message for a short time when opening archived chat from search bar""",https://github.com/Expensify/App/pull/29106,2023-10-09
+28955,"[CP Staging] Revert ""Merge pull request #27836 from Expensify/dangrous-roomwelcomemessages""",https://github.com/Expensify/App/pull/28955,2023-10-05
+28929,"[CP Staging] Revert ""fix: use the same sort order for header display names and avatars in a group chat view""",https://github.com/Expensify/App/pull/28929,2023-10-05
+28794,"[CP Staging] Revert ""Handle suggestions only on selection change""",https://github.com/Expensify/App/pull/28794,2023-10-04
+28677,"Revert ""fix: Refocus issue on address field on delete and cancel""",https://github.com/Expensify/App/pull/28677,2023-10-04
+28673,"[CP Staging] Revert ""Fix: User experienced big delay when posting the messages""",https://github.com/Expensify/App/pull/28673,2023-10-03
+28642,"[CP Staging] Revert ""Hoverable component refactored from class into functional approach""",https://github.com/Expensify/App/pull/28642,2023-10-02
+28612,"Revert ""Reattempt using OSBotify installation token in actions""",https://github.com/Expensify/App/pull/28612,2023-10-02
+28611,"[CP Staging] Revert ""Blur Magic Code input when click outside""",https://github.com/Expensify/App/pull/28611,2023-10-02
+32191,"Revert ""Show merchant for split bill""",https://github.com/Expensify/App/pull/32191,2023-11-29
+32138,"Revert ""[Form Provider Refactor] IdologyQuestions""",https://github.com/Expensify/App/pull/32138,2023-11-28
+31911,[CP Staging] revert optimistic receipt errors,https://github.com/Expensify/App/pull/31911,2023-11-27
+31860,"Revert ""fix: fix lhn previews""",https://github.com/Expensify/App/pull/31860,2023-11-24
+31852,"[CP Stag] Revert ""Fix 29806: code paste bug on private note""",https://github.com/Expensify/App/pull/31852,2023-11-24
+31851,revert ref forwarding logic in CheckboxWithLabel,https://github.com/Expensify/App/pull/31851,2023-11-28
+31825,"Revert ""[NoQA] change ressure perf test workflow""",https://github.com/Expensify/App/pull/31825,2023-11-24
+31743,"Revert ""Refactor save method in PersistedRequests""",https://github.com/Expensify/App/pull/31743,2023-11-22
+31738,"Revert ""Add focus trap to the RHP (v2)""",https://github.com/Expensify/App/pull/31738,2023-11-22
+31701,Revert 25521,https://github.com/Expensify/App/pull/31701,2023-11-29
+31642,"[NO QA] Revert ""Migrate LHNOptionsList to Flashlist""",https://github.com/Expensify/App/pull/31642,2023-11-21
+31601,Revert https://github.com/Expensify/App/pull/21298,https://github.com/Expensify/App/pull/31601,2023-11-21
+31547,[NO QA] Revert PR 30679,https://github.com/Expensify/App/pull/31547,2023-11-20
+31262,Revert 30972 fix/29780/change implementation of initial focused item,https://github.com/Expensify/App/pull/31262,2023-11-13
+31231,"[CP Staging] Revert ""Remove duplicate withOnyx calls""",https://github.com/Expensify/App/pull/31231,2023-11-11
+31219,"[CP-staging] Revert ""Handle invisible characters in forms""",https://github.com/Expensify/App/pull/31219,2023-11-11
+31214,[CP Staging] Revert https://github.com/Expensify/App/pull/31201 and https://github.com/Expensify/App/pull/29166,https://github.com/Expensify/App/pull/31214,2023-11-10
+31158,"Revert ""##23220 WEB  maintainVisibleContentPosition""",https://github.com/Expensify/App/pull/31158,2023-11-09
+31153,"Revert ""Fix: Wallet page does not update instantly when bank account is added or deleted""",https://github.com/Expensify/App/pull/31153,2023-11-09
+31011,"Revert ""feat: add whitespace after inserting emoji via native keyboard""",https://github.com/Expensify/App/pull/31011,2023-11-07
+30978,"[CP Staging] Revert ""Left line/border of quoted text is not visible when hovering over it in Notes""",https://github.com/Expensify/App/pull/30978,2023-11-07
+30852,"[NoQA] Revert ""perf: refactor heavy operations when user starts to type""",https://github.com/Expensify/App/pull/30852,2023-11-03
+30712,"[CP Staging] Revert ""27456 Chat - The green line is displayed chaotically at the recipient""",https://github.com/Expensify/App/pull/30712,2023-11-01
+30708,"Revert ""[Form Provider Refactor] AddDebitCardPage""",https://github.com/Expensify/App/pull/30708,2023-11-01
+33761,"[CP Staging] Revert ""Fix RequestMoney tabs animations""",https://github.com/Expensify/App/pull/33761,2023-12-29
+33677,"[CP staging] Revert ""Fixed Android - Chat - Message gets displayed from right to left""",https://github.com/Expensify/App/pull/33677,2023-12-27
+33569,"[CP Staging] Revert ""Create Cancel Payment command""",https://github.com/Expensify/App/pull/33569,2023-12-25
+33496,"[CP Staging] Revert ""fix: treat certain US numbers as invalid""",https://github.com/Expensify/App/pull/33496,2023-12-22
+33406,"Revert ""Merge pull request #32473 from software-mansion-labs/ideal-na…",https://github.com/Expensify/App/pull/33406,2023-12-21
+33325,[NoQA] Revert: Migrate Icon/index.js and FloatingActionButton to function component,https://github.com/Expensify/App/pull/33325,2023-12-20
+33297,"[CP Staging] Revert ""(perf) Debounce search in OptionList""",https://github.com/Expensify/App/pull/33297,2023-12-19
+33261,"Revert ""[TS migration] Migrate 'UserDetailsTooltip' component to TypeScript""",https://github.com/Expensify/App/pull/33261,2023-12-19
+33174,fix: Revert the use of SET operation when updating Money Requests,https://github.com/Expensify/App/pull/33174,2023-12-15
+33012,"Revert ""Show child tags indented on the Tag list""",https://github.com/Expensify/App/pull/33012,2023-12-15
+32898,Fix money request amount doesn't get reverted when failing to edit,https://github.com/Expensify/App/pull/32898,2023-12-29
+32700," [CP Staging + Prod] Revert ""Image Web/Desktop: Add support for http headers""",https://github.com/Expensify/App/pull/32700,2023-12-07
+32609,"[CP Staging] Revert ""Only allow alphabetic and latin characters for some fields in `CompanyStep`""",https://github.com/Expensify/App/pull/32609,2023-12-07
+32601,"Revert ""translate invite member to room""",https://github.com/Expensify/App/pull/32601,2023-12-06
+32516,"[CP Staging] Manually revert ""Merge pull request #31467 from dukenv0307/fix/31105""",https://github.com/Expensify/App/pull/32516,2023-12-05
+32450,"Revert ""Hoverable Component refactor""",https://github.com/Expensify/App/pull/32450,2023-12-04
+32440,"Revert ""[Form Provider Refactor] RoomNameInput fixes""",https://github.com/Expensify/App/pull/32440,2023-12-04
+35511,"[CP Staging] Revert ""fix: changed color on splash screen""",https://github.com/Expensify/App/pull/35511,2024-01-31
+35447,"Revert ""fix: add actor display name in lhn""",https://github.com/Expensify/App/pull/35447,2024-01-31
+35386,[CP Staging] Revert #34485,https://github.com/Expensify/App/pull/35386,2024-01-30
+35348,"[CP Staging] Revert ""Remove MoneyRequestConfirmPage""",https://github.com/Expensify/App/pull/35348,2024-01-30
+35335,"[CP Staging] Revert ""Fix: Duplicate phone number can be invited""",https://github.com/Expensify/App/pull/35335,2024-01-29
+35308,"[CP Staging] Revert ""Merge pull request #34537 from FitseTLT/fix-mark-as-read-on-v…",https://github.com/Expensify/App/pull/35308,2024-01-29
+35273,"Revert ""Fix money request amount input is partially visible after going back from currency selection page""",https://github.com/Expensify/App/pull/35273,2024-01-27
+35099,"[CP Staging] Revert ""Merge pull request #34237 from FitseTLT/fix-include-current-u…",https://github.com/Expensify/App/pull/35099,2024-01-25
+35046,"[CP Staging] Revert ""Handle API errors to trigger force upgrades of the app """,https://github.com/Expensify/App/pull/35046,2024-01-24
+34801,Bump onyx to fix replay effect (after revert),https://github.com/Expensify/App/pull/34801,2024-01-29
+34733,"[CP Staging] Revert ""[TS migration] Migrate 'SelectionList' component to TypeScript""",https://github.com/Expensify/App/pull/34733,2024-01-18
+34697,"[CP Staging] Revert ""Merge pull request #33836 from Expensify/alberto-unpay2""",https://github.com/Expensify/App/pull/34697,2024-01-18
+34596,"[CP Staging] Revert ""Bump Onyx (Fix Replay effect)""",https://github.com/Expensify/App/pull/34596,2024-01-16
+34552,"[CP Staging] Revert ""Add layout=narrow initial param to the ModalStackNavigator""",https://github.com/Expensify/App/pull/34552,2024-01-16
+34482,"Fix custom name for tag in tag edit message reverts to ""tag"" after relogin",https://github.com/Expensify/App/pull/34482,2024-01-29
+34396,"[CP Staging] Revert ""Merge pull request #32422 from tienifr/fix/31503""",https://github.com/Expensify/App/pull/34396,2024-01-11
+34311,"[CP Staging] Revert ""[NO QA] Remove areChatRoomsEnabled checks""",https://github.com/Expensify/App/pull/34311,2024-01-11
+34267,"[CP Staging] Revert ""Merge pull request #31354 from hurali97/perf/search-transitio…",https://github.com/Expensify/App/pull/34267,2024-01-10
+34089,"Revert ""Fix composer is focused after opening another popover""",https://github.com/Expensify/App/pull/34089,2024-01-08
+34078,"Revert ""Android-Attachments-App crashes on uploading specific PDF""",https://github.com/Expensify/App/pull/34078,2024-01-09
+33896,"Revert ""Fix/26946: Reset amount when edit waypoint""",https://github.com/Expensify/App/pull/33896,2024-01-03
+33275,[TS migration] Migrate 'UserDetailsTooltip' component to TypeScript (after revert),https://github.com/Expensify/App/pull/33275,2024-01-03
+37572,"Revert ""[TS migration] Migrate withFullTransactionOrNotFound HOC""",https://github.com/Expensify/App/pull/37572,2024-02-29
+37570,Revert to correct expensify-common version,https://github.com/Expensify/App/pull/37570,2024-02-29
+37529,"Revert ""[TS migration] Migrate 'MoneyRequestConfirmationList.js' component to TypeScript""",https://github.com/Expensify/App/pull/37529,2024-02-29
+37500,revert #36819,https://github.com/Expensify/App/pull/37500,2024-02-29
+37454,Revert 31606,https://github.com/Expensify/App/pull/37454,2024-02-28
+37330,"Revert ""fix/35934  | Workspaces - Сustom avatar is applied to all workspace rooms""",https://github.com/Expensify/App/pull/37330,2024-02-27
+37305,revert: native stack,https://github.com/Expensify/App/pull/37305,2024-02-27
+37222,"Revert ""[New architecture] Upgrade `react-native-camera-roll`""",https://github.com/Expensify/App/pull/37222,2024-02-26
+37218,"Revert ""[TS migration] Migrate 'SettingsProfileDetails' page to TypeScript""",https://github.com/Expensify/App/pull/37218,2024-02-26
+37161,"[CP Staging] Revert ""Fix app returns to previous thread when scrubbing video in thread""",https://github.com/Expensify/App/pull/37161,2024-02-23
+36936,"Revert ""Conversation scrolling to the beginning of the chat.""",https://github.com/Expensify/App/pull/36936,2024-02-20
+36932,"Revert ""Consistent system paid message""",https://github.com/Expensify/App/pull/36932,2024-02-21
+36524,"Revert ""Simplify native attachment gallery paging context and improve code""",https://github.com/Expensify/App/pull/36524,2024-02-14
+36424,"[CP Staging] Revert ""Update logic to display pay button in paid policies""",https://github.com/Expensify/App/pull/36424,2024-02-13
+36405,"[CP Staging] Revert ""Fix: Duplicated waypoints after dragging""",https://github.com/Expensify/App/pull/36405,2024-02-13
+36360,[CP Staging] Revert typescript migration change,https://github.com/Expensify/App/pull/36360,2024-02-12
+36327,"[NO QA] Revert a fix for IOU Description Edits - will readd this after, so we can CP just this to staging",https://github.com/Expensify/App/pull/36327,2024-02-12
+36282,"Revert ""Fix doing text selection on money request amount input swipes the tab""",https://github.com/Expensify/App/pull/36282,2024-02-09
+36197,"Revert ""Live Markdown Preview for web""",https://github.com/Expensify/App/pull/36197,2024-02-09
+36115,[CP Staging] Fix bug with Payment option reverts back to 'Pay with Expensify',https://github.com/Expensify/App/pull/36115,2024-02-08
+35659,"Revert ""20354 task assignees list refactor""",https://github.com/Expensify/App/pull/35659,2024-02-02
+35636,"[CP Staging] Revert ""Image Web/Desktop: Add support for http headers""",https://github.com/Expensify/App/pull/35636,2024-02-02
+35576,"Revert ""[CP Staging] Revert ""[NO QA] Remove areChatRoomsEnabled checks""""",https://github.com/Expensify/App/pull/35576,2024-02-05
+35545,"[NoQA] Revert ""[NoQA] Enable and refactor ReportScreen perf tests""",https://github.com/Expensify/App/pull/35545,2024-02-01
+39302,Revert using comment linking in threads,https://github.com/Expensify/App/pull/39302,2024-03-29
+39140,"Revert ""[No QA] Migrate 'OptionsListUtilsTest.js', 'DateUtilsTest.js', 'SidebarLinks.perf-test.js', 'markdown.js' and 'ReportUtilsTest.js' to Typescript""",https://github.com/Expensify/App/pull/39140,2024-03-28
+38857,"Revert ""[No QA][TS migration] Migrate workflow_tests, adjust utils migration""",https://github.com/Expensify/App/pull/38857,2024-03-23
+38508,"[CP Staging] Revert ""[NoQA][Audit][Implementation] - Remove Intl Polyfills which are supported by Hermes on native platforms""",https://github.com/Expensify/App/pull/38508,2024-03-18
+38422,"Revert ""get rid of PR check that always fails for help dot""",https://github.com/Expensify/App/pull/38422,2024-03-15
+38408,"Revert ""Merge pull request #35790 from dragnoir/33653-fix""",https://github.com/Expensify/App/pull/38408,2024-03-15
+38340,"[CP Staging] Revert ""[TS migration] Migrate 'Sidebar' page to TypeScript""",https://github.com/Expensify/App/pull/38340,2024-03-15
+38182,"Revert ""New Chat page list refactor""",https://github.com/Expensify/App/pull/38182,2024-03-12
+38175,[CP Staging] Revert expensify-common #649 from version used on App,https://github.com/Expensify/App/pull/38175,2024-03-12
+38081,[NoQA] Revert lhn order,https://github.com/Expensify/App/pull/38081,2024-03-12
+38071,"[CP Staging] Revert ""Merge pull request #32336 from callstack-internal/hur/perf/ch…",https://github.com/Expensify/App/pull/38071,2024-03-11
+38034,"Revert ""[No QA] Fix: Expensify engineer is not tagged and assigned in Deploy Checklist to complete the QA for PRs with Internal QA.""",https://github.com/Expensify/App/pull/38034,2024-03-11
+38024,"[CP Staging] Revert ""[New architecture] Replace `@oguzhnatly/react-native-image-manipulator` with `expo-image-manipulator`""",https://github.com/Expensify/App/pull/38024,2024-03-10
+37997,"Revert "" Revert ""fix: Approving a report causes the workspace chat to “flash” in the LHN before disappearing""""",https://github.com/Expensify/App/pull/37997,2024-03-08
+37996,"[HOLD] Revert ""fix: Approving a report causes the workspace chat to “flash” in the LHN before disappearing""",https://github.com/Expensify/App/pull/37996,2024-03-08
+37778,"Revert ""Handle emoji tooltip""",https://github.com/Expensify/App/pull/37778,2024-03-05
+37592,fix/revert back correct DateOfBirth page,https://github.com/Expensify/App/pull/37592,2024-03-01
+41352,"[CP Staging] Revert PR #40624, fix flickering when switching from task to parent",https://github.com/Expensify/App/pull/41352,2024-04-30
+41302,"Revert ""[CP Staging] Chat is not scrolled to the new message on a newly created WS chat after whisper message""",https://github.com/Expensify/App/pull/41302,2024-04-30
+41222,"Revert ""Add error for failure invited member""",https://github.com/Expensify/App/pull/41222,2024-04-29
+41176,"Revert ""fix-39841: Finetune animation durations""",https://github.com/Expensify/App/pull/41176,2024-04-29
+41099,"[CP Staging] Revert ""Fix unread issue in combine report""",https://github.com/Expensify/App/pull/41099,2024-04-26
+41087,"[CP Staging] Revert ""Use fallback user avatar in cases where the user is unknown to us""",https://github.com/Expensify/App/pull/41087,2024-04-26
+40894,[CP Staging] Revert Fullstory lib changes,https://github.com/Expensify/App/pull/40894,2024-04-24
+40865,"[CP Staging] Revert ""Implement suggestion for edit composer""",https://github.com/Expensify/App/pull/40865,2024-04-24
+40760,"[CP Staging] Revert ""Fix here is your magic code shows briefly when login with magic link""",https://github.com/Expensify/App/pull/40760,2024-04-23
+40729,"[CP Staging] Revert ""Block edit assignee and mark as complete simultaneously""",https://github.com/Expensify/App/pull/40729,2024-04-22
+40690,"[CP Staging] Revert ""Fixed getting two magic codes upon signing in once""",https://github.com/Expensify/App/pull/40690,2024-04-22
+40526,"Revert - #36409 ""Fix: three not found view""",https://github.com/Expensify/App/pull/40526,2024-04-19
+40525,"Revert ""Fix task description update message doesn't parse the markdown""",https://github.com/Expensify/App/pull/40525,2024-04-19
+40510,"[CP Staging]Revert ""Immediately show file size message for large attachments""",https://github.com/Expensify/App/pull/40510,2024-04-18
+40383,"Revert ""[CP Staging] feat: change new arch flash list to interop""",https://github.com/Expensify/App/pull/40383,2024-04-18
+40183,"Revert ""Unpausing the queue when we receive Pusher updates while we're still loading the App""",https://github.com/Expensify/App/pull/40183,2024-04-12
+40019,"[CP Staging] Revert ""Enable searching for workspaces/rooms by their participants""",https://github.com/Expensify/App/pull/40019,2024-04-10
+39968,"[CP staging] Revert ""Align offline receipt view for one-transaction and multi-transaction views""",https://github.com/Expensify/App/pull/39968,2024-04-09
+39869,"[CP Staging] Revert ""Bump react-fast-pdf""",https://github.com/Expensify/App/pull/39869,2024-04-09
+39702,"Revert ""Replace OptionsSelector with SelectionList - part 1""",https://github.com/Expensify/App/pull/39702,2024-04-05
+39683,After revert: Defer local updates if there are missing updates and only call `GetMissingOnyxMessages` once,https://github.com/Expensify/App/pull/39683,2024-04-30
+39668,"[CP Staging] Revert ""Defer local updates if there are missing updates and only call `GetMissingOnyxMessages` once""",https://github.com/Expensify/App/pull/39668,2024-04-05
+39610,"Revert ""35797-preserving-the-transactions-amounts-the-same-as-entered""",https://github.com/Expensify/App/pull/39610,2024-04-04
+39539,"Revert ""[TS migration] Migrate withFullTransactionOrNotFound HOC to TypeScript""",https://github.com/Expensify/App/pull/39539,2024-04-03
+39396,"Revert ""Revert ""feat: Upgrade VisionCamera to V4""""",https://github.com/Expensify/App/pull/39396,2024-04-02
+39377,"[CP Staging] Revert ""fixes ""Skeleton is displayed when navigating to a transaction thread created offline""""",https://github.com/Expensify/App/pull/39377,2024-04-02
+39367,"Revert ""feat: Upgrade VisionCamera to V4""",https://github.com/Expensify/App/pull/39367,2024-04-01
+42914,"[CP Staging] Revert ""Bump expensify-common version""",https://github.com/Expensify/App/pull/42914,2024-05-31
+42847,"Revert ""Merge pull request #41764 from software-mansion-labs:fix-init-url-hybrid",https://github.com/Expensify/App/pull/42847,2024-05-30
+42846,"Revert ""[Snyk] Security upgrade react-native from 0.73.4 to 0.73.5""",https://github.com/Expensify/App/pull/42846,2024-05-30
+42843,"Revert ""upgrade react-native-live-markdown to 0.1.76""",https://github.com/Expensify/App/pull/42843,2024-05-30
+42828,"[CP Staging] Revert ""Fix: add darker color for markdown""",https://github.com/Expensify/App/pull/42828,2024-05-30
+42783,"[CP Staging] Revert ""Merge pull request #42426 from bernhardoj/fix/42084-limi-amount-to-8-digit""",https://github.com/Expensify/App/pull/42783,2024-05-29
+42777,"[No QA] Revert ""Merge pull request #35045 from callstack-internal/issues/30123""",https://github.com/Expensify/App/pull/42777,2024-05-29
+42725,"[CP Staging] Revert ""Merge pull request #42057 from margelo/@chrispader/bump-onyx-…",https://github.com/Expensify/App/pull/42725,2024-05-29
+42697,"[CP Staging] Revert ""[Travel] [Refactor] Create a new shared component for AddressPage""",https://github.com/Expensify/App/pull/42697,2024-05-28
+42670,"Revert ""Handle tax for split requests""",https://github.com/Expensify/App/pull/42670,2024-05-27
+42612,"Revert ""Fix linked message visibility in offline mode""",https://github.com/Expensify/App/pull/42612,2024-05-24
+42599,"[CP staging] Revert ""add possibility of excluding styles in useMarkdownStyles""",https://github.com/Expensify/App/pull/42599,2024-05-24
+42167,[CP Staging] Revert: [NewFeature] Automatic scrolling to the top of report's new unread message marker,https://github.com/Expensify/App/pull/42167,2024-05-14
+41820,[CP Staging] Reverts #41187,https://github.com/Expensify/App/pull/41820,2024-05-08
+41818,"[CP Staging] Revert ""Move Leave button into a row of the Report Details page""",https://github.com/Expensify/App/pull/41818,2024-05-07
+41695,"Revert ""[CP Staging] fix: remove sensor animation for now""",https://github.com/Expensify/App/pull/41695,2024-05-07
+41671,"Revert ""fix: show category picker when creating invoices""",https://github.com/Expensify/App/pull/41671,2024-05-06
+41372,Fix edited message reverted to previous message,https://github.com/Expensify/App/pull/41372,2024-05-01
+44646,"[NoQA] Revert ""Update en.ts""",https://github.com/Expensify/App/pull/44646,2024-06-28
+44335,"Revert ""Fix loading skeleton displays behaviors when opening report""",https://github.com/Expensify/App/pull/44335,2024-06-24
+44251,"[CP Staging] Revert ""[Composer] Add logs in Composer-related logic to track bug with disappearing text""",https://github.com/Expensify/App/pull/44251,2024-06-24
+44247,"[CP Staging] Revert ""fix: re-calc the marker when msgs are deleted""",https://github.com/Expensify/App/pull/44247,2024-06-24
+44006,"Revert ""Revert ""Fullstory plugin update. Annotation plugin fix.""""",https://github.com/Expensify/App/pull/44006,2024-06-19
+43971,"Revert ""Fullstory plugin update. Annotation plugin fix.""",https://github.com/Expensify/App/pull/43971,2024-06-19
+43957,"Revert ""[NoQA] Tests for group chat name""",https://github.com/Expensify/App/pull/43957,2024-06-18
+43938,reverted the ClientSideLoggingToolMenu Android iOS files,https://github.com/Expensify/App/pull/43938,2024-06-18
+43935,"[CP Staging] Revert ""fix: CI upload source maps when deploying a new app version""",https://github.com/Expensify/App/pull/43935,2024-06-18
+43888,Revert: Backend unreachability message,https://github.com/Expensify/App/pull/43888,2024-06-19
+43745,[No QA] Revert back to Device import,https://github.com/Expensify/App/pull/43745,2024-06-14
+43447,"Revert ""Immediately show file size message for large attachments""",https://github.com/Expensify/App/pull/43447,2024-06-11
+43431,"Revert ""chore: remove all selection ranges during navigation""",https://github.com/Expensify/App/pull/43431,2024-06-10
+43319,Revert using timestamps for created when submitting money requests,https://github.com/Expensify/App/pull/43319,2024-06-12
+43304,"Revert ""RBR transaction thread is disappearing from the LHN when navigating to another chat""",https://github.com/Expensify/App/pull/43304,2024-06-07
+43237,"Revert ""feat: hold expense in one transaction view""",https://github.com/Expensify/App/pull/43237,2024-06-07
+43234,"[No QA] Revert ""[No QA] Temporarily disable queries that are not implemented yet""",https://github.com/Expensify/App/pull/43234,2024-06-07
+43223,"[CP Staging] Revert ""fix: Error message only changes after clicking Split expense button for the second time""",https://github.com/Expensify/App/pull/43223,2024-06-06
+43201,"[CP Staging] Revert ""Fix get all ancestors in a thread""",https://github.com/Expensify/App/pull/43201,2024-06-06
+43189,"[CP Staging] Revert ""Display send money action as paid system message in combine report""",https://github.com/Expensify/App/pull/43189,2024-06-06
+43078,"Revert ""Add HybridApp deploy to platform deploy""",https://github.com/Expensify/App/pull/43078,2024-06-04
+43035,"[CP Staging] Revert ""Add HybridApp deploy when we deploy staging""",https://github.com/Expensify/App/pull/43035,2024-06-04
+42772,Bump onyx to 2.0.48 (after revert),https://github.com/Expensify/App/pull/42772,2024-06-12
+42737,"Revert ""Revert ""Handle tax for split requests"""" and fix reported bugs",https://github.com/Expensify/App/pull/42737,2024-06-06
+46526,"Revert ""fix: archived reports are unable to mark as read""",https://github.com/Expensify/App/pull/46526,2024-07-30
+46463,"Revert ""Emojis larger in other contexts than just single character messages""",https://github.com/Expensify/App/pull/46463,2024-07-30
+46460,"[CP Staging] Revert ""fix: redirect to proper place after upgrade""",https://github.com/Expensify/App/pull/46460,2024-07-29
+46327,"Revert ""memoize formatPhoneNumber method""",https://github.com/Expensify/App/pull/46327,2024-07-26
+46070,"[CP Staging] Revert ""Merge pull request #44432 from margelo/feat/release-profiler-on-web""",https://github.com/Expensify/App/pull/46070,2024-07-23
+46056,"[CP Staging] Revert ""Composer: add clear command that bypasses the event count""",https://github.com/Expensify/App/pull/46056,2024-07-23
+45964,"Revert ""fix: Web - Split - Enter and CMD+Enter open user profile instead of splitting expense.""",https://github.com/Expensify/App/pull/45964,2024-07-22
+45921,"[CP Staging] Revert ""fix: allow user to stay in room report screen""",https://github.com/Expensify/App/pull/45921,2024-07-22
+45863,"[CP Staging] Revert ""Add support for viewing full screen Group Chat custom avatars""",https://github.com/Expensify/App/pull/45863,2024-07-22
+45782,"[CP Staging] Revert ""[RN 0.74 Upgrade] Upgrade react-native-pager-view to 6.3.3""",https://github.com/Expensify/App/pull/45782,2024-07-19
+45674,"[CP Staging] Revert ""Merge pull request #44724 from bernhardoj/fix/43486-new-messge-shows-every-time-add-new-message",https://github.com/Expensify/App/pull/45674,2024-07-18
+45649,"[CP Staging] Revert ""[Wave Collect][Xero] Enforce 2FA for xero""",https://github.com/Expensify/App/pull/45649,2024-07-18
+45627,"Revert ""Full screen for composer""",https://github.com/Expensify/App/pull/45627,2024-07-17
+45394,fix(AddressPage): country reverts to previous one after selecting state,https://github.com/Expensify/App/pull/45394,2024-07-19
+45328,"Revert ""Reset amount on reset button click""",https://github.com/Expensify/App/pull/45328,2024-07-12
+45302,"Revert ""[NoQA] E2E test. Linking, same page """,https://github.com/Expensify/App/pull/45302,2024-07-11
+45299,"[CP Staging] Revert ""Fix show onboarding modal functions""",https://github.com/Expensify/App/pull/45299,2024-07-11
+45121,"[CP Staging] Revert ""fix: Country field reverts to the previous selection""",https://github.com/Expensify/App/pull/45121,2024-07-09
+45081,"[CP Staging] Revert ""fix: No option to add receipt when submitting to someone""",https://github.com/Expensify/App/pull/45081,2024-07-09
+44981,[CP Staging] fix: Country field reverts to the previous selection,https://github.com/Expensify/App/pull/44981,2024-07-08
+44891,"[CP Staging] Revert ""Add Pay as Business option for invoices sent to an individual who is admin of their primary workspace""",https://github.com/Expensify/App/pull/44891,2024-07-05
+44708,"[CP Staging] Revert ""Create usePaginatedReportActions hook""",https://github.com/Expensify/App/pull/44708,2024-07-01
+44704,"Revert ""[No QA] Fail patch-package on errors or warnings""",https://github.com/Expensify/App/pull/44704,2024-07-01
+44700,"Revert ""Add new read commands for the workspace profile and initial settings pages""",https://github.com/Expensify/App/pull/44700,2024-07-01
+48355,"Revert ""IOU - Distance tab flickering to manual & back to distance every time when add destination""",https://github.com/Expensify/App/pull/48355,2024-08-30
+48351,"[NO QA] Revert ""Merge pull request #48126 from Expensify/snyk-fix-97709a8dfac021137254aedcff269951""",https://github.com/Expensify/App/pull/48351,2024-08-30
+48332,[CP Staging] fix app freeze,https://github.com/Expensify/App/pull/48332,2024-08-30
+48307,"Revert ""fix: remove Expensify employee from list participants""",https://github.com/Expensify/App/pull/48307,2024-08-30
+48286,Profile image upload option doesn't show,https://github.com/Expensify/App/pull/48286,2024-08-29
+48283,"[CP Staging] Revert ""Prevent Lottie from running in the background after navigating to other pages""",https://github.com/Expensify/App/pull/48283,2024-08-29
+48216,[CP Staging] Use optional chaining fo backTo on NewContactMethodPage,https://github.com/Expensify/App/pull/48216,2024-08-29
+48209,[No QA] Update all certificates and provisioning profiles,https://github.com/Expensify/App/pull/48209,2024-08-28
+48203,[No QA] Update all provisioning profiles,https://github.com/Expensify/App/pull/48203,2024-08-28
+48198,[No QA] Update provisioning profile,https://github.com/Expensify/App/pull/48198,2024-08-28
+48135,"Revert ""Make onboarding continue from last visited onboarding page""",https://github.com/Expensify/App/pull/48135,2024-08-27
+48117,"Revert ""Consolidate options on settlement ""Pay"" button""",https://github.com/Expensify/App/pull/48117,2024-08-27
+48110,"Revert ""Don't render report mention markdown if it's not a policy report""",https://github.com/Expensify/App/pull/48110,2024-08-27
+48109,[CP Staging] Update submit function in initial report field value,https://github.com/Expensify/App/pull/48109,2024-08-28
+48105,"fix: ""Default"" label changes to ""Workspace currency default"" after changing tax code",https://github.com/Expensify/App/pull/48105,2024-08-28
+48099,fix empty description is displayed,https://github.com/Expensify/App/pull/48099,2024-08-27
+48096,Fix crash after leaving group as the last member,https://github.com/Expensify/App/pull/48096,2024-08-27
+48087,[CP Staging] bump react-native-onyx to v2.0.66,https://github.com/Expensify/App/pull/48087,2024-08-27
+48077,[CP Staging] fix filters screen and button bugs,https://github.com/Expensify/App/pull/48077,2024-08-27
+48068,[CP Staging] [NoQA] fix: bump AirshipServiceExtension and xcode,https://github.com/Expensify/App/pull/48068,2024-08-27
+48064,[CP Staging] Remove redundant button from the onboarding modal,https://github.com/Expensify/App/pull/48064,2024-08-27
+48042,[No QA] Fix Podfile.lock,https://github.com/Expensify/App/pull/48042,2024-08-27
+48028,"Revert ""fix: [patch react-native-modal] update backdrop animation in strict mode""",https://github.com/Expensify/App/pull/48028,2024-08-26
+48016,fix crash app bug,https://github.com/Expensify/App/pull/48016,2024-08-26
+48009,🍒 Cherry pick PR #47998 to staging 🍒,https://github.com/Expensify/App/pull/48009,2024-08-26
+47998,Revert PR 47418,https://github.com/Expensify/App/pull/47998,2024-08-26
+47941,[CP Staging] Fix hasOnlyPendingTransactions,https://github.com/Expensify/App/pull/47941,2024-08-27
+47882,"[CP Staging] Revert ""Merge pull request #47341 from software-mansion-labs/@zfurtak…",https://github.com/Expensify/App/pull/47882,2024-08-23
+47748,"Revert ""Create status bar""",https://github.com/Expensify/App/pull/47748,2024-08-20
+47718,"[CP Staging] Revert ""Fix message highlight stuck when open the 2nd context menu""",https://github.com/Expensify/App/pull/47718,2024-08-20
+47692,[CP staging] fix: Error while task creation via QAB when assigning task to yourself,https://github.com/Expensify/App/pull/47692,2024-08-20
+47669,"[CP Staging] Revert ""fix: use `KeyboardAvoidingView` from `react-native-keyboard-controller`""",https://github.com/Expensify/App/pull/47669,2024-08-20
+47641,[No QA] Add sleep before triggering web deploy verification,https://github.com/Expensify/App/pull/47641,2024-08-19
+47634,[CP Staging] Fix headerMessage wrapper render logic,https://github.com/Expensify/App/pull/47634,2024-08-19
+47595,"Revert ""[QA failed: do not check this off] fix: Submit expense option is not disabled for users who are invited to expense report""",https://github.com/Expensify/App/pull/47595,2024-08-19
+47555,[CP Staging] Prevent overflow empty UI and space above skeleton,https://github.com/Expensify/App/pull/47555,2024-08-17
+47530,[No QA] Fix prod deploy GitHub comments,https://github.com/Expensify/App/pull/47530,2024-08-16
+47527,[CP Staging] fix: Workspace switcher - Empty workspace switcher does not have 'Create a workspace' modal.,https://github.com/Expensify/App/pull/47527,2024-08-15
+47451,[CP Staging] Clean tag name,https://github.com/Expensify/App/pull/47451,2024-08-14
+47442,[No QA] Fix deploy concurrency,https://github.com/Expensify/App/pull/47442,2024-08-14
+47420,[CP Staging] Adds backTo when navigating to WORKSPACE_UPGRADE from taxcode settings,https://github.com/Expensify/App/pull/47420,2024-08-14
+47393,[CP STAGING] fix: unread marker for current user action,https://github.com/Expensify/App/pull/47393,2024-08-14
+47391,[CP Staging] fix: Offline indicator is not at the page bottom in Settings page,https://github.com/Expensify/App/pull/47391,2024-08-14
+47368,"Revert ""Update held transactions styles""",https://github.com/Expensify/App/pull/47368,2024-08-13
+47345,"[CP Staging] Temporarily returns ""https://"" as the default website",https://github.com/Expensify/App/pull/47345,2024-08-13
+47275,[No QA] Add better logs for verifying web deploys,https://github.com/Expensify/App/pull/47275,2024-08-13
+47269,[CP Staging] Remove policyIDs route param when workspace is deleted,https://github.com/Expensify/App/pull/47269,2024-08-12
+47267,[No QA]Add a `\` to fix iOS release upload,https://github.com/Expensify/App/pull/47267,2024-08-12
+47266,[No QA]Add github token to each `gh release upload`,https://github.com/Expensify/App/pull/47266,2024-08-12
+47253,[No QA]Tag the `staging` branch instead of `main` for pre-release,https://github.com/Expensify/App/pull/47253,2024-08-12
+47250,[No QA]Use `github.event.release.tag_name` instead of `github.ref_name` for releases,https://github.com/Expensify/App/pull/47250,2024-08-12
+47249,[CP Staging][CRITICAL] Implement <WorkspaceWorkflowsApprovalsEditPage /> for Editing Workflow,https://github.com/Expensify/App/pull/47249,2024-08-14
+47244,[CP Staging] fix: Report fields - App crashes when disabling/enabling list values via checkbox & dropdown button.,https://github.com/Expensify/App/pull/47244,2024-08-13
+47234,[CP Staging] Fix reply in thread missing after rejoined system message thread,https://github.com/Expensify/App/pull/47234,2024-08-13
+47220,[NoQA] Add token to the gh release call,https://github.com/Expensify/App/pull/47220,2024-08-12
+47139,[CP Staging] Fix receipt conversion,https://github.com/Expensify/App/pull/47139,2024-08-09
+47110,Revert PR #45722,https://github.com/Expensify/App/pull/47110,2024-08-08
+47099,"Revert ""Fix - no abracadabra page shown""",https://github.com/Expensify/App/pull/47099,2024-08-08
+47097,fix onboarding promise,https://github.com/Expensify/App/pull/47097,2024-08-09
+46846,"Revert ""Fix send validate code in Validation Form""",https://github.com/Expensify/App/pull/46846,2024-08-06
+46751,"[CP Staging] Revert ""fix: add receipt name when track expense""",https://github.com/Expensify/App/pull/46751,2024-08-02
+46749,"[CP Staging] Revert ""fix: use `KeyboardAvoidingView` from keyboard controller""",https://github.com/Expensify/App/pull/46749,2024-08-02
+46630,"[CP Staging] Revert ""Merge pull request #46359 from nyomanjyotisa/issue-46231""",https://github.com/Expensify/App/pull/46630,2024-08-01
+46626,"Revert ""Composer: add clear command that bypasses the event count""",https://github.com/Expensify/App/pull/46626,2024-08-01
+49955,fix for empty welcome note,https://github.com/Expensify/App/pull/49955,2024-09-30
+49953,"Revert ""fix: Use new ResolveDuplicates when approver is resolving duplicates""",https://github.com/Expensify/App/pull/49953,2024-09-30
+49945,"Revert ""Merge pull request #49172 from Expensify/georgia-fixIOUpreview""",https://github.com/Expensify/App/pull/49945,2024-09-30
+49922,"[CP] Revert ""chore: migrate AuthScreens from withOnyx to useOnyx""",https://github.com/Expensify/App/pull/49922,2024-09-30
+49916,[CP Staging] Fix missing header in scan page,https://github.com/Expensify/App/pull/49916,2024-09-30
+49907,"[CP Staging] Revert ""Add back qr code download feature""",https://github.com/Expensify/App/pull/49907,2024-09-30
+49897,[CP Staging] Android & iOS - Categories - Import spreadsheet icon is missing,https://github.com/Expensify/App/pull/49897,2024-09-30
+49877,[CP Staging] fix: trip booking not navigate to T&C Page,https://github.com/Expensify/App/pull/49877,2024-09-30
+49839,[CP Stag] Fix User not redirected to IOU report when logging in after deeplink,https://github.com/Expensify/App/pull/49839,2024-09-27
+49818,[CP Staging] Fix exporter payload,https://github.com/Expensify/App/pull/49818,2024-09-27
+49770,"Revert ""Merge pull request #48445""",https://github.com/Expensify/App/pull/49770,2024-09-26
+49760,[CP Staging] Fix style change,https://github.com/Expensify/App/pull/49760,2024-09-26
+49757,use title instead of item.name,https://github.com/Expensify/App/pull/49757,2024-09-26
+49620,[CP Staging] Update Fullstory version,https://github.com/Expensify/App/pull/49620,2024-09-24
+49617,Updating Fullstory to 1.7.1,https://github.com/Expensify/App/pull/49617,2024-09-23
+49604,fix app crashes when opening task assignee page,https://github.com/Expensify/App/pull/49604,2024-09-23
+49563,Callable deploy comments workflow,https://github.com/Expensify/App/pull/49563,2024-09-24
+49542,fix: report header not shown,https://github.com/Expensify/App/pull/49542,2024-09-24
+49531,Fix android insets,https://github.com/Expensify/App/pull/49531,2024-09-23
+49482,[CP Staging] fixes optimistc case and delay submission current user bad grammar,https://github.com/Expensify/App/pull/49482,2024-09-19
+49475,[CP Staging] fix: Distance rates - Change Rate to default leads to app crash.,https://github.com/Expensify/App/pull/49475,2024-09-19
+49471,[CP Staging] deploy blocker fix: private personal details infinite loading,https://github.com/Expensify/App/pull/49471,2024-09-19
+49432,[No QA] Fix checkDeploymentSuccess job in deploy workflow,https://github.com/Expensify/App/pull/49432,2024-09-19
+49384,[CP Staging] fix: misspell Expensify text,https://github.com/Expensify/App/pull/49384,2024-09-18
+49370,[CP Staging] fix cannot go to the next page by enter key in amount page,https://github.com/Expensify/App/pull/49370,2024-09-18
+49351,"[CP Staging] Revert ""[NoQA] feat: bump react-native-pdf to newest version, remove unnecessary pat…""",https://github.com/Expensify/App/pull/49351,2024-09-17
+49258,[CP Staging] fix: app crash when we save the user search value and reset the app,https://github.com/Expensify/App/pull/49258,2024-09-16
+49244,[CP Staging] fix: preserve scroll position and fixed the Saved title,https://github.com/Expensify/App/pull/49244,2024-09-16
+49237,[CP Staging] Fix `Continue setup` button size,https://github.com/Expensify/App/pull/49237,2024-09-16
+49235,[CP Staging] Fix saved search names,https://github.com/Expensify/App/pull/49235,2024-09-16
+49233,[CP Staging] Fix overlapping scrollview,https://github.com/Expensify/App/pull/49233,2024-09-16
+49231,[CP Staging] Fix tooltip text color,https://github.com/Expensify/App/pull/49231,2024-09-16
+49221,[CP Staging] Optimistically set `account.validated` on validation,https://github.com/Expensify/App/pull/49221,2024-09-16
+49178,"Revert ""fix: admin can delete expenses""",https://github.com/Expensify/App/pull/49178,2024-09-13
+49143,[No QA] Fix post slack message workflow is being skipped,https://github.com/Expensify/App/pull/49143,2024-09-12
+49141,[No QA] Make action dependencies consistent,https://github.com/Expensify/App/pull/49141,2024-09-12
+49099,[HybridApp] Send `completeOnboarding` to OD only on finished request,https://github.com/Expensify/App/pull/49099,2024-09-18
+49096,"Revert ""fix: remove transaction after navigate""",https://github.com/Expensify/App/pull/49096,2024-09-12
+49076,[CP Staging] Fix dismiss upgrade RHP navigation,https://github.com/Expensify/App/pull/49076,2024-09-12
+49028,Fix getPreviousRelease and artifacts,https://github.com/Expensify/App/pull/49028,2024-09-11
+49013,Fix GitHub Release Bugs,https://github.com/Expensify/App/pull/49013,2024-09-11
+48975,[CP Staging] Move `flex: 1` directly to advanced filters,https://github.com/Expensify/App/pull/48975,2024-09-11
+48963,[CP Staging] fix: gbr tooltip regression,https://github.com/Expensify/App/pull/48963,2024-09-11
+48959,[CP Staging] [Workspace Feeds] Fix double header on the Expensify Card,https://github.com/Expensify/App/pull/48959,2024-09-11
+48935,[CP Staging+Prod] Fix creating invoice by enabling hasInvoicingDetails,https://github.com/Expensify/App/pull/48935,2024-09-10
+48929,[No QA] fix typo in ruby syntax,https://github.com/Expensify/App/pull/48929,2024-09-10
+48923,fix: Web - Scan - 'Description' and 'Category' fields are disabled after dismissing 'Allow location' modal.,https://github.com/Expensify/App/pull/48923,2024-09-10
+48919,[No QA] Correctly bundle aab and set path,https://github.com/Expensify/App/pull/48919,2024-09-10
+48907,[CP Staging] fix rule page loading,https://github.com/Expensify/App/pull/48907,2024-09-10
+48901,[CP Staging] Fix showcontext menu on search page,https://github.com/Expensify/App/pull/48901,2024-09-10
+48890,[CP Staging] Fix showing error when setting tax reclaimable on,https://github.com/Expensify/App/pull/48890,2024-09-10
+48887,Fix notification preference by defaulting to hidden,https://github.com/Expensify/App/pull/48887,2024-09-12
+48878,fix: Expense - Unable to dismiss the delete modal by clicking outside the modal.,https://github.com/Expensify/App/pull/48878,2024-09-10
+48874,[CP Staging] fix: Expensify card page loading infinitely,https://github.com/Expensify/App/pull/48874,2024-09-10
+48872,[CP Staging] Fix app crash when viewing member profile after Expensify Card feature is enabled,https://github.com/Expensify/App/pull/48872,2024-09-10
+48857,[No QA] Supply repo param for gh cli in any job w/o checkout,https://github.com/Expensify/App/pull/48857,2024-09-10
+48854,[No QA] Fix typo in deploy.yml,https://github.com/Expensify/App/pull/48854,2024-09-10
+48848,[CP Staging] Revert some changes and fix UI bug,https://github.com/Expensify/App/pull/48848,2024-09-09
+48846,[CP Staging] Sort chats by descending date,https://github.com/Expensify/App/pull/48846,2024-09-09
+48842,[CP Staging] Fix deleted message on search,https://github.com/Expensify/App/pull/48842,2024-09-09
+48830,[CP Staging] Fix timing crash,https://github.com/Expensify/App/pull/48830,2024-09-09
+48815,[CP Staging] Fix crash on timing,https://github.com/Expensify/App/pull/48815,2024-09-09
+48806,[CP Staging] Fix/48801,https://github.com/Expensify/App/pull/48806,2024-09-09
+48798,"Revert ""Fix crash when switching accounts""",https://github.com/Expensify/App/pull/48798,2024-09-09
+48792,[No QA] Fix finalizeRelease job,https://github.com/Expensify/App/pull/48792,2024-09-09
+48781,[HybridApp] Fix attachment visibility,https://github.com/Expensify/App/pull/48781,2024-09-09
+48754,[No QA] Separate build and upload Fastlane lanes,https://github.com/Expensify/App/pull/48754,2024-09-09
+48747,[CP Staging] Category - Default spend categories not displayed when creating workspace offline,https://github.com/Expensify/App/pull/48747,2024-09-06
+48739,[CP Staging] Put Default categories behind beta,https://github.com/Expensify/App/pull/48739,2024-09-06
+48737,"[CP Staging] [No QA] Update artifacts names and add ""Rename sourcemaps artifacts"" step",https://github.com/Expensify/App/pull/48737,2024-09-06
+48731,[CP Staging] Fix company website field is blank on confirmation page if it is not modified,https://github.com/Expensify/App/pull/48731,2024-09-09
+48723,[CP Staging] Fix useResponsiveLayout bugs,https://github.com/Expensify/App/pull/48723,2024-09-07
+48708,[CP Staging] Select subcategory as the default spend category,https://github.com/Expensify/App/pull/48708,2024-09-06
+48698,Fix : Accounting-App proceeds to Netsuite Setup when trying to connect to Sage Intacct,https://github.com/Expensify/App/pull/48698,2024-09-06
+48689,[CP Staging] Add fallback value to configure bank account,https://github.com/Expensify/App/pull/48689,2024-09-06
+48688,[CP Staging] Fix Netsuite incorrect credentials crash,https://github.com/Expensify/App/pull/48688,2024-09-06
+48672,[No QA] Poll release until it exists or 10 seconds go by,https://github.com/Expensify/App/pull/48672,2024-09-06
+48671,[No QA] Create and push tag before updating checklist,https://github.com/Expensify/App/pull/48671,2024-09-06
+48665,[No QA] Fix edited release body,https://github.com/Expensify/App/pull/48665,2024-09-05
+48639,"[CP Staging] Revert ""Consolidate options on settlement ""Pay"" button""",https://github.com/Expensify/App/pull/48639,2024-09-05
+48635,[No QA] Combine deploy.yml and platformDeploy.yml,https://github.com/Expensify/App/pull/48635,2024-09-06
+48629,[CP Staging] [FIX] Categories - GL code data disappears after importing same file that does not have GL code,https://github.com/Expensify/App/pull/48629,2024-09-05
+48628,[CP Staging] add validate code modal,https://github.com/Expensify/App/pull/48628,2024-09-08
+48609,[CP Staging] Fix app crash when clicking on got it button,https://github.com/Expensify/App/pull/48609,2024-09-05
+48585,[Fix] Edit messages by pressing ArrowUp,https://github.com/Expensify/App/pull/48585,2024-09-04
+48574,[CP Staging] fix: create object uri for import spreadsheets,https://github.com/Expensify/App/pull/48574,2024-09-05
+48556,[CP Staging] Handle empty file issue,https://github.com/Expensify/App/pull/48556,2024-09-04
+48553,[CP Staging] Make readme notes consistent,https://github.com/Expensify/App/pull/48553,2024-09-04
+48546,[CP stag] Fix category header text overlaps with button,https://github.com/Expensify/App/pull/48546,2024-09-04
+48539,[CP Staging] fix undefined is displayed for GL code,https://github.com/Expensify/App/pull/48539,2024-09-05
+48537,[CP Staging] Fix column header going out of screen,https://github.com/Expensify/App/pull/48537,2024-09-04
+48510,"[FIX] ""iOS - Composer - Add attachment modal is hidden behind the keyboard""",https://github.com/Expensify/App/pull/48510,2024-09-03
+48466,[CP Staging] Fix: navigate after clearing contact method,https://github.com/Expensify/App/pull/48466,2024-09-03
+48441,"Revert ""Disable attachment preview until it's uploaded""",https://github.com/Expensify/App/pull/48441,2024-09-03
+48428,Fix: iOS chat view to be hidden if the user clicks away/navigate to two screens or more.,https://github.com/Expensify/App/pull/48428,2024-09-02
+48421,"Revert ""Revert ""Consolidate options on settlement ""Pay"" button""""",https://github.com/Expensify/App/pull/48421,2024-09-03
+48233,[No QA] Bump ruby version,https://github.com/Expensify/App/pull/48233,2024-09-04
+48007,[HybridApp] Share auth token in HybridApp,https://github.com/Expensify/App/pull/48007,2024-09-04
+51829,"Revert ""fix ensure category is grayed out and name is updated when modified o…""",https://github.com/Expensify/App/pull/51829,2024-10-31
+51777,[CP Staging] Correct validation message for legal name ,https://github.com/Expensify/App/pull/51777,2024-10-31
+51746,Run an extra `grunt:build:shared` in the build process to fix Android crash,https://github.com/Expensify/App/pull/51746,2024-10-30
+51702,[CP stg] Report Participant Page - remove debounce to allow member search,https://github.com/Expensify/App/pull/51702,2024-10-30
+51701,Add fetch depth in order to make sure we can checkout the staging branch on hybrid deploy,https://github.com/Expensify/App/pull/51701,2024-10-29
+51693,Fetch latest code and release the iOS HybridApp staging/TestFlight to the correct group of users,https://github.com/Expensify/App/pull/51693,2024-10-29
+51684,[CP Staging] Allow input on members page,https://github.com/Expensify/App/pull/51684,2024-10-29
+51662,[CP Staging] [#51654] - second address line required issue,https://github.com/Expensify/App/pull/51662,2024-10-29
+51659,[CP Staging] Fix pressing debug shortcut again won't close the debug modal,https://github.com/Expensify/App/pull/51659,2024-10-30
+51621,[No QA]Update android pattern for artifacts as we've changed them,https://github.com/Expensify/App/pull/51621,2024-10-28
+51614,[No QA]Fixes from first run of staging HybridApp deploy,https://github.com/Expensify/App/pull/51614,2024-10-28
+51602,[No QA]Remove extra back slash in git add command,https://github.com/Expensify/App/pull/51602,2024-10-28
+51590,"Revert ""Revert ""Revert ""Search suffix tree implementation""""""",https://github.com/Expensify/App/pull/51590,2024-10-28
+51489,[CP Staging] fix: revert bridgeless on Android,https://github.com/Expensify/App/pull/51489,2024-10-25
+51455,[NO QA] Minor formatting alignment,https://github.com/Expensify/App/pull/51455,2024-10-25
+51384,[CP Staging] [NO QA]: Add bank urls to Company Card flow,https://github.com/Expensify/App/pull/51384,2024-10-24
+51332,"Revert ""Revert ""Search suffix tree implementation""""",https://github.com/Expensify/App/pull/51332,2024-10-23
+51289,"[CP Staging] Revert ""[Feat] Make it possible to submit expenses to any workspace, whether or not there is a workspace chat""",https://github.com/Expensify/App/pull/51289,2024-10-22
+51283,"Revert ""fix: migrate withFullTransactionOrNotFound""",https://github.com/Expensify/App/pull/51283,2024-10-22
+51267,fix: reuse ValidateCodeActionModal in wallet settings page,https://github.com/Expensify/App/pull/51267,2024-10-22
+51245,"[CP Staging] Revert ""[A/B Testing][ESLint Clean Up] Use useOnyx cases for files in combinedTrackSubmit""",https://github.com/Expensify/App/pull/51245,2024-10-22
+51226,[CP Staging] [Firebase] replace empty string with `'N/A'`,https://github.com/Expensify/App/pull/51226,2024-10-22
+51207,[CP Staging] Update `useOnyx()` calls to have` initWithStoredValues: false`,https://github.com/Expensify/App/pull/51207,2024-10-21
+51177,"[CP Staging] Revert ""Search suffix tree implementation""",https://github.com/Expensify/App/pull/51177,2024-10-21
+51156,[CP Staging] Bring back fix: [P2P Distance] Split - Participants amount displayed 0.00 briefly on confirmation screen.,https://github.com/Expensify/App/pull/51156,2024-10-21
+51155,"Revert ""[HybridApp] Allow classic experience users to use NewDot travel page""",https://github.com/Expensify/App/pull/51155,2024-10-21
+51083,[CP Staging] Fix missing merchant and date field in invoice confirm page,https://github.com/Expensify/App/pull/51083,2024-10-18
+51064,Fix android input focus in the search router component,https://github.com/Expensify/App/pull/51064,2024-10-18
+51040,Fix money request is initialized with the wrong information,https://github.com/Expensify/App/pull/51040,2024-10-17
+51036,[CP Staging] Fix search router text style,https://github.com/Expensify/App/pull/51036,2024-10-17
+51032,[CP Staging] Fix Search back button on mWeb and report opening in Search,https://github.com/Expensify/App/pull/51032,2024-10-17
+51015,"[CP Staging] Revert ""Support empty value for categories and tags""",https://github.com/Expensify/App/pull/51015,2024-10-17
+51014,"[CP Staging] Revert ""fix: [P2P Distance] Split - Participants amount displayed 0.00 briefly on confirmation screen.""",https://github.com/Expensify/App/pull/51014,2024-10-17
+50987,[CP Staging] fix: cannot edit receipt,https://github.com/Expensify/App/pull/50987,2024-10-17
+50870,[CP Staging] fix: workspace member is removable when he is the report owner,https://github.com/Expensify/App/pull/50870,2024-10-16
+50795,[CP Staging] Fix some text inputs are unaligned if there are prefix characters,https://github.com/Expensify/App/pull/50795,2024-10-15
+50759,"[CP Staging] Create workspace when new user signs up, selects the ""Manage my team's expenses"" option and completes the ""employee"" step",https://github.com/Expensify/App/pull/50759,2024-10-15
+50746,Revert #52079,https://github.com/Expensify/App/pull/50746,2024-10-14
+50617,Revert QAB when the action fails,https://github.com/Expensify/App/pull/50617,2024-10-14
+50596,"Revert ""Fix long loading from public and redirect to last accessed report""",https://github.com/Expensify/App/pull/50596,2024-10-10
+50575,"[CP Staging] Revert ""fix: search header flickering on selection mode""",https://github.com/Expensify/App/pull/50575,2024-10-10
+50557,"[CP Staging] Revert ""[ReportPreview / Text] When showing two avatars, also show both display names with tooltip""",https://github.com/Expensify/App/pull/50557,2024-10-10
+50414,[CP Stag] Fix when balance text is cut off when device font size is changed ,https://github.com/Expensify/App/pull/50414,2024-10-08
+50386,[CP Staging] Fix connectionsMenuItems with undefined items,https://github.com/Expensify/App/pull/50386,2024-10-08
+50384,[Cp Stag] fix Spanish translation,https://github.com/Expensify/App/pull/50384,2024-10-09
+50380,"[CP Staging] Revert ""Fix padding for edit composer suggestions""",https://github.com/Expensify/App/pull/50380,2024-10-08
+50347,Updated selected transaction If getting new updates (also fixed for cases where the status is set to ALL),https://github.com/Expensify/App/pull/50347,2024-10-07
+50333,"[CP Staging] Revert ""Avoid suggestion box calculation on firs input focus""",https://github.com/Expensify/App/pull/50333,2024-10-07
+50275,[No QA] Decrypt json Google Play key,https://github.com/Expensify/App/pull/50275,2024-10-04
+50268,"[CP Staging] Revert ""[No QA] Callable buildIOS workflow""",https://github.com/Expensify/App/pull/50268,2024-10-04
+50266,"Revert ""fix: migrate withFullTransactionOrNotFound to useOnyx""",https://github.com/Expensify/App/pull/50266,2024-10-04
+50255,"Revert ""Fix task title is overflown and align the checkbox and arrow correctly""",https://github.com/Expensify/App/pull/50255,2024-10-04
+50230,"Revert ""Add the workspace name to the title of the workspace chats""",https://github.com/Expensify/App/pull/50230,2024-10-04
+50226,[CP Staging] Fix categories settings page always show loader when open the page,https://github.com/Expensify/App/pull/50226,2024-10-04
+50189,"[No QA] Use keystore in build job, json key in upload job",https://github.com/Expensify/App/pull/50189,2024-10-03
+50184,[CP Staging] prevent removing waypoint if it is unnecessary,https://github.com/Expensify/App/pull/50184,2024-10-03
+50171,"fix: error not shown, redirect incorrectly on add bank account",https://github.com/Expensify/App/pull/50171,2024-10-03
+50144,[HybridApp] Adjust NewDot to new boot behaviour on iOS,https://github.com/Expensify/App/pull/50144,2024-10-03
+50143,Fix performance of SearchRouter,https://github.com/Expensify/App/pull/50143,2024-10-03
+50124,"[CP Staging] Revert ""feat: upload native logs""",https://github.com/Expensify/App/pull/50124,2024-10-03
+50123,[No QA] Callable buildIOS workflow,https://github.com/Expensify/App/pull/50123,2024-10-04
+50119,Fix: Yellow color tones not applied for emoji,https://github.com/Expensify/App/pull/50119,2024-10-02
+50110,[CP Staging] fix wrong last message in LHN after message deletion,https://github.com/Expensify/App/pull/50110,2024-10-02
+50097,[CP Staging]: Fix:  Company website field appears empty on company info confirmation page,https://github.com/Expensify/App/pull/50097,2024-10-02
+50084,[CP Staging] Ensure that round trips do not display the duplicate waypoint error incorrectly,https://github.com/Expensify/App/pull/50084,2024-10-02
+50068,[CP] don't show just track it option unless coming from CREATE flow,https://github.com/Expensify/App/pull/50068,2024-10-03
+50038,[CP Staging] [NoQA] fix(android): fix build issues with react-native-app-logs,https://github.com/Expensify/App/pull/50038,2024-10-02
+50025,"Revert ""Add inline images preview to the Live Markdown Input on the web""",https://github.com/Expensify/App/pull/50025,2024-10-01
+50015,[CP Staging] Fix that user was able to dismiss the onboarding modal on android,https://github.com/Expensify/App/pull/50015,2024-10-01
+50014,[No QA]Build HybridApp in open source when we deploy to staging,https://github.com/Expensify/App/pull/50014,2024-10-28
+50003,"[CP] Revert ""fix: 10731 Focus composer without showing keyboard when users go to chats""",https://github.com/Expensify/App/pull/50003,2024-10-01
+49434,[No QA] Callable buildAndroid workflow,https://github.com/Expensify/App/pull/49434,2024-10-03
+53316,[CP Staging] Fix categorize flow,https://github.com/Expensify/App/pull/53316,2024-11-29
+53311,"[CP Staging] Revert ""Fix: Room name displayed truncated on header and details when using long name""",https://github.com/Expensify/App/pull/53311,2024-11-29
+53304,[CP Staging] [Search] Fix bulk pay action with no VBBA account,https://github.com/Expensify/App/pull/53304,2024-11-29
+53293,[CP Staging] Fix chat view in search router,https://github.com/Expensify/App/pull/53293,2024-11-29
+53280,[CP Staging] [NO QA] Fix failing lint,https://github.com/Expensify/App/pull/53280,2024-11-28
+53258,[No QA] Rever PR 52117,https://github.com/Expensify/App/pull/53258,2024-11-28
+53255,[CP Staging] fix learn more link if no workspace,https://github.com/Expensify/App/pull/53255,2024-11-28
+53230,[CP Staging] Revert not showing approve and pay buttons if report has violations,https://github.com/Expensify/App/pull/53230,2024-11-27
+53227,[CP Staging] fix: do not call submit function twice if user clicks fast,https://github.com/Expensify/App/pull/53227,2024-11-27
+53223,[CP Staging] Fix: Android edge-to-edge related inset/padding issues,https://github.com/Expensify/App/pull/53223,2024-11-28
+53216,[CP Staging] Fix Hybrid Android crash and bring the custom edge-to-edge module to hybridApp,https://github.com/Expensify/App/pull/53216,2024-11-27
+53211,[CP Staging] Fix suggestion list display with wrong position in Android,https://github.com/Expensify/App/pull/53211,2024-11-27
+53209,[CP Staging] fix: remove additional keyboard padding in tax screen,https://github.com/Expensify/App/pull/53209,2024-11-27
+53176,[CP Staging]: Avoid hiding pay/approve buttons in case of held violations,https://github.com/Expensify/App/pull/53176,2024-11-27
+53165,[CP Staging] Make sure to check the navBarManager is defined,https://github.com/Expensify/App/pull/53165,2024-11-26
+53093,"[CP Staging] Fix - `A Follow up on` [CRITICAL] Multiple workspaces get created when someone either refreshes the page, or drops off and returns later.",https://github.com/Expensify/App/pull/53093,2024-11-28
+53074,[CP Staging] [HybridApp] Fix deeplinks when clicking on app icon,https://github.com/Expensify/App/pull/53074,2024-11-25
+53069,[CP Staging] Do not make requests to backend when clicking on tour link for anonymous users visiting public rooms,https://github.com/Expensify/App/pull/53069,2024-11-25
+53064,[CP Staging] Fix not found view when linking to a message,https://github.com/Expensify/App/pull/53064,2024-11-25
+53050,[CP Staging] Fix optimistic report status is not set correctly,https://github.com/Expensify/App/pull/53050,2024-11-25
+53049,[CP Staging] Fix package react-native-quick-sqlite link,https://github.com/Expensify/App/pull/53049,2024-11-25
+52990,"[CP Staging] display ""Take a 2-minute tour"" task in Concierge chat for ""Track and Budge Expenses""",https://github.com/Expensify/App/pull/52990,2024-11-25
+52982,Update CONTRIBUTING.md,https://github.com/Expensify/App/pull/52982,2024-11-25
+52976,"Revert ""fix: Submit button hang in middle page""",https://github.com/Expensify/App/pull/52976,2024-11-22
+52962,[NO QA] [CP STAGING] Minor formatting change -- used to bump HybridApp build,https://github.com/Expensify/App/pull/52962,2024-11-22
+52919,[CP Staging] Fixes unread indicator,https://github.com/Expensify/App/pull/52919,2024-11-21
+52901,"[CP Staging] Revert ""Feat: Implement to use a 👍icon next to approved report preview""",https://github.com/Expensify/App/pull/52901,2024-11-21
+52888,[CP Staging] fix: Search - Website crashes after exploring expenses in search for some time.,https://github.com/Expensify/App/pull/52888,2024-11-21
+52814,"[CP Staging] Revert ""Fix distance amount changes after submitting track distance expense with description""",https://github.com/Expensify/App/pull/52814,2024-11-20
+52793,"[CP Staging] Revert ""Call reconnectApp instead of openApp when ND is reopened in hybrid""",https://github.com/Expensify/App/pull/52793,2024-11-20
+52757,Fix compare image function,https://github.com/Expensify/App/pull/52757,2024-11-19
+52752,[CP Staging] Fix: Context Menu Remains Open on Mweb,https://github.com/Expensify/App/pull/52752,2024-11-19
+52649,"[CP Stag] Revert ""Fix blank space is shown on iOS safari when magic code screen show""",https://github.com/Expensify/App/pull/52649,2024-11-15
+52627,[CP Staging][No QA] fix: reanimated missing headers,https://github.com/Expensify/App/pull/52627,2024-11-15
+52585,Fix that onboarding tasks are duplicated when switching chat,https://github.com/Expensify/App/pull/52585,2024-11-14
+52547,[CP Staging]: fix crash on staging due to null assertion of reports,https://github.com/Expensify/App/pull/52547,2024-11-14
+52525,[NoQA] Bump reanimated to v3.16.1 (after revert),https://github.com/Expensify/App/pull/52525,2024-11-14
+52518,"[CP Staging] Revert ""[NoQA] Bump reanimated to v3.16.1""",https://github.com/Expensify/App/pull/52518,2024-11-14
+52513,Re-add removed `route` param,https://github.com/Expensify/App/pull/52513,2024-11-14
+52505,[NoQA] Fix convert integration (one more time),https://github.com/Expensify/App/pull/52505,2024-11-13
+52504,"[CP Staging] Revert ""fix: prevent open search when onboarding is not completed""",https://github.com/Expensify/App/pull/52504,2024-11-13
+52489,[CP Stag] Fix forced log out in enable wallet flow,https://github.com/Expensify/App/pull/52489,2024-11-13
+52478,"Revert ""Revert ""Move RBR to workspace chats instead of transaction threads""""",https://github.com/Expensify/App/pull/52478,2024-11-13
+52439,[NoQA] Update the checklists and proposal template to include requirement of unit tests,https://github.com/Expensify/App/pull/52439,2024-11-26
+52434,"[CP Staging] Revert ""Show search action buttons""",https://github.com/Expensify/App/pull/52434,2024-11-12
+52431,"Revert ""Move RBR to workspace chats instead of transaction threads""",https://github.com/Expensify/App/pull/52431,2024-11-12
+52412,[CP Staging] Disable Search action button offline,https://github.com/Expensify/App/pull/52412,2024-11-12
+52406,"Revert ""fix: unify distance rates display""",https://github.com/Expensify/App/pull/52406,2024-11-12
+52278,[CP STAGING] Fix long press search page regression,https://github.com/Expensify/App/pull/52278,2024-11-11
+52274,[CP Staging] Prevent showing track expense option for submitted track expense,https://github.com/Expensify/App/pull/52274,2024-11-11
+52273,[CP Staging] Updated Background Color Condition,https://github.com/Expensify/App/pull/52273,2024-11-11
+52155,[CP STAGING] fix: Bank account - Website in upper-case letters is accepted despite validation error.,https://github.com/Expensify/App/pull/52155,2024-11-07
+52112,"[CP Staging] Revert ""Feature: add loading indicator when ReconnectApp is running""",https://github.com/Expensify/App/pull/52112,2024-11-06
+52078,[CP Staging] Fix credit card validation,https://github.com/Expensify/App/pull/52078,2024-11-05
+52056,[CP Staging] fix inverted values,https://github.com/Expensify/App/pull/52056,2024-11-05
+52001,[No QA]Improve file uploading to not exit on error and fix Android sourcemap path,https://github.com/Expensify/App/pull/52001,2024-11-04
+51993,[No QA]Attempt to resolve flaky iOS uploads,https://github.com/Expensify/App/pull/51993,2024-11-04
+51983,"[CP Staging] Revert ""fix completed task report action id for onboarding""",https://github.com/Expensify/App/pull/51983,2024-11-04
+51981,Fix crash on Connect bank account page,https://github.com/Expensify/App/pull/51981,2024-11-05
+51977,[No QA]Upload Android and iOS HybridApp source maps,https://github.com/Expensify/App/pull/51977,2024-11-04
+51973,[CP Staging] Fix App crashes after submitting expense to user or creating a new room,https://github.com/Expensify/App/pull/51973,2024-11-04
+51943,[CP Staging] fix: cannot display description which contains only number,https://github.com/Expensify/App/pull/51943,2024-11-04
+51889,[No QA] Remove `app_identifier` from `build_app`,https://github.com/Expensify/App/pull/51889,2024-11-01
+51879,[CP Stag] Add cycle detection to getRootParentReport,https://github.com/Expensify/App/pull/51879,2024-11-01
+51873,[No QA]Use explicit `app_identifier` to prevent build errors,https://github.com/Expensify/App/pull/51873,2024-11-01
+51857,"[CP Staging] Revert ""Fix some bugs on Bank account Flow""",https://github.com/Expensify/App/pull/51857,2024-11-01
+51849,"Revert ""Add regex to TextInput""",https://github.com/Expensify/App/pull/51849,2024-11-04
+51848,[CP Staging] fix: remove unnecessary condition,https://github.com/Expensify/App/pull/51848,2024-11-04
+51795,"[CP Staging] Revert ""Merge pull request #51158 from nkdengineer/fix/50779""",https://github.com/Expensify/App/pull/51795,2024-11-01
+54652,[CP Staging] fix: prevent app crash in group chat when going back online,https://github.com/Expensify/App/pull/54652,2024-12-30
+54651,[CP Staging] Composer is blocked by keyboard after changing payment method or backgrounding app,https://github.com/Expensify/App/pull/54651,2024-12-30
+54641,[CP Staging] update isActiveWorkspaceChat logic to include session account ID check,https://github.com/Expensify/App/pull/54641,2024-12-30
+54627,[fix] Web- Search- Two filter tooltips are shown when navigating to Reports page for the second time,https://github.com/Expensify/App/pull/54627,2024-12-27
+54622,fix app crashes when creating track expense,https://github.com/Expensify/App/pull/54622,2024-12-27
+54585,"Revert ""fix wallet phone validation page""",https://github.com/Expensify/App/pull/54585,2024-12-26
+54583,"Revert ""fix: when selecting categories, the selected categories get reset""",https://github.com/Expensify/App/pull/54583,2024-12-26
+54577,[CP Staging] Fix illustration styling for empty view,https://github.com/Expensify/App/pull/54577,2024-12-26
+54511,[CP staging] fix: go back to LHN page,https://github.com/Expensify/App/pull/54511,2024-12-24
+54494,[CP staging] Fix the HeaderWithBackButton compnent so that icons take their natural fill color,https://github.com/Expensify/App/pull/54494,2024-12-24
+54423,[CP Staging] fix: onboarding modal is not shown when redirecting from OD,https://github.com/Expensify/App/pull/54423,2024-12-20
+54421,"Revert ""Revert ""Revert ""Contacts import""""""",https://github.com/Expensify/App/pull/54421,2024-12-20
+54416,Useless commit to kick off HybridApp build,https://github.com/Expensify/App/pull/54416,2024-12-20
+54402,"[CP Staging][NO QA] Revert ""[No QA] Adhoc builds follow ups""",https://github.com/Expensify/App/pull/54402,2024-12-20
+54395,"Revert ""fix: clicking submit button makes flicking on a workspace with delay …""",https://github.com/Expensify/App/pull/54395,2024-12-19
+54386,"[NO QA] Revert ""Merge pull request #54150 from nyomanjyotisa/issue-53980""",https://github.com/Expensify/App/pull/54386,2024-12-19
+54364,[CP Staging] fix - use the session private domain,https://github.com/Expensify/App/pull/54364,2024-12-19
+54329,[CP Staging] fix: onboarding modal is not displayed in web,https://github.com/Expensify/App/pull/54329,2024-12-19
+54309,"[CP Staging] Revert ""Console error cleanup: patch react-native-render-html """,https://github.com/Expensify/App/pull/54309,2024-12-18
+54269,"[CP Staging] Revert ""Revert ""Replace navigation blur listeners with `useFocusEffect`""""",https://github.com/Expensify/App/pull/54269,2024-12-17
+54267,"[CP Staging] Revert ""Revert ""fix: display all LHN options in Import state mode""""",https://github.com/Expensify/App/pull/54267,2024-12-17
+54265,[NoQA] Bump react-native-live-markdown to 0.1.209,https://github.com/Expensify/App/pull/54265,2024-12-18
+54263,"Revert ""Revert 54064 and 53396""",https://github.com/Expensify/App/pull/54263,2024-12-24
+54260,Revert 54064 and 53396,https://github.com/Expensify/App/pull/54260,2024-12-17
+54249,"Revert ""fix: display all LHN options in Import state mode""",https://github.com/Expensify/App/pull/54249,2024-12-17
+54244,"Revert ""Replace navigation blur listeners with `useFocusEffect`""",https://github.com/Expensify/App/pull/54244,2024-12-17
+54209,"Revert ""Revert ""Contacts import""""",https://github.com/Expensify/App/pull/54209,2024-12-18
+54198,"Revert ""Fix: navigate to LHN after onboarding""",https://github.com/Expensify/App/pull/54198,2024-12-16
+54197,"Revert ""Merge pull request #53630 from FitseTLT/fix-showing-workspace…",https://github.com/Expensify/App/pull/54197,2024-12-16
+54137,"[CP Staging] Fix - Search (Chats) - Extra left and right padding, entire row is not highlighted when hovered",https://github.com/Expensify/App/pull/54137,2024-12-13
+54136,[CP Staging] Use the text `View` for child items on the search page,https://github.com/Expensify/App/pull/54136,2024-12-13
+54135,Update en.ts,https://github.com/Expensify/App/pull/54135,2024-12-16
+54132,[No QA] Rename tax-exempt.md to Tax-exempt.md,https://github.com/Expensify/App/pull/54132,2024-12-13
+54125,"[CP Staging] Revert ""fix: restore focus after Modal gets hidden""",https://github.com/Expensify/App/pull/54125,2024-12-13
+54120,"Revert ""[NoQA] chore(ci): remove `fetch-depth` param""",https://github.com/Expensify/App/pull/54120,2024-12-13
+54076,"[CP Staging] Revert ""fix: distance - share with accountant""",https://github.com/Expensify/App/pull/54076,2024-12-12
+54060,"Revert ""Fix IOU amount input flicking""",https://github.com/Expensify/App/pull/54060,2024-12-12
+54056,[CP Staging] Fix submit action,https://github.com/Expensify/App/pull/54056,2024-12-12
+54042,"[CP Staging] Revert ""Fix pay button after deleting expense""",https://github.com/Expensify/App/pull/54042,2024-12-12
+54039,fix: Fully clear the form error,https://github.com/Expensify/App/pull/54039,2024-12-12
+54028,[CP Staging] [No QA] Fix paths in deploy.yml,https://github.com/Expensify/App/pull/54028,2024-12-12
+53974,[No QA]Fix path for Android rollout step,https://github.com/Expensify/App/pull/53974,2024-12-12
+53968,[No QA]Update `createNewHybridVersion` job to update submodule correctly,https://github.com/Expensify/App/pull/53968,2024-12-11
+53964,[NO QA][CP STAGING] Fix Android build,https://github.com/Expensify/App/pull/53964,2024-12-11
+53961,"[NO QA] Revert ""Contacts import""",https://github.com/Expensify/App/pull/53961,2024-12-11
+53927,[NoQA] Fix createNewHybridVersion,https://github.com/Expensify/App/pull/53927,2024-12-11
+53921,[CP Staging] fix: grey pay button held expense for small screen ,https://github.com/Expensify/App/pull/53921,2024-12-11
+53920,Fix on hold expense action button on the search page becomes green when selected,https://github.com/Expensify/App/pull/53920,2024-12-11
+53873,[CP Staging] Add shouldCallDirectly for closeModal logic,https://github.com/Expensify/App/pull/53873,2024-12-10
+53864,Fix unverified contact method is displayed,https://github.com/Expensify/App/pull/53864,2024-12-10
+53787,"Revert ""add go to workspace shortcut to report details page""",https://github.com/Expensify/App/pull/53787,2024-12-09
+53786,"Revert ""feat: Provide education/confirmation before creating workspaces in New Workspace flows""",https://github.com/Expensify/App/pull/53786,2024-12-09
+53784,"Revert ""fix: ProfileAvatar (modal) page has no slide in animation""",https://github.com/Expensify/App/pull/53784,2024-12-09
+53774,Update Configure-travel-policy-and-preferences.md,https://github.com/Expensify/App/pull/53774,2024-12-09
+53721,Update es.ts,https://github.com/Expensify/App/pull/53721,2024-12-09
+53675,"Revert ""fix: enable paste html in compose box""",https://github.com/Expensify/App/pull/53675,2024-12-06
+53661,"Revert revert moving tasks to admins room for ""Manage my team expenses"" intent",https://github.com/Expensify/App/pull/53661,2024-12-10
+53628,Fix - Split distance-Distance amount reverts to original amount when saving distance without editing,https://github.com/Expensify/App/pull/53628,2024-12-09
+53598,"Revert ""Optimistic update for moving tasks for ""Manage Team's Expenses"" to #admins room""",https://github.com/Expensify/App/pull/53598,2024-12-04
+53570,fix: correct bottom padding on edit approval workflow,https://github.com/Expensify/App/pull/53570,2024-12-04
+53500,[CP Stag][No QA] Add NSE for HybridApp,https://github.com/Expensify/App/pull/53500,2024-12-03
+53498,"Revert ""[NO QA] Stop releasing standalone builds to prod""",https://github.com/Expensify/App/pull/53498,2024-12-03
+53452,[CP Staging] fix: consume insets not from ScreenWrapper,https://github.com/Expensify/App/pull/53452,2024-12-03
+53440,[CP Staging] fix: consume insets in Modals anyway because they are mounted in different native view hierarchy,https://github.com/Expensify/App/pull/53440,2024-12-03
+53432,[CP Staging]: Fix: Search dropdown button is green in wide layout and gray in narrow layout,https://github.com/Expensify/App/pull/53432,2024-12-03
+53409,[No QA] Update BUGZERO_CHECKLIST.md to be more clear about where bugs are found,https://github.com/Expensify/App/pull/53409,2024-12-03
+53384,[CP Staging] fix: no action after pressing save,https://github.com/Expensify/App/pull/53384,2024-12-02
+53381,[CP Staging] Fix transparency for basic modal navigators,https://github.com/Expensify/App/pull/53381,2024-12-02
+53379,[CP Staging] Fix problem with non-worklet tooltip and switch with update modal,https://github.com/Expensify/App/pull/53379,2024-12-03
+53376,[CP Staging] fix: incorrect nav bar color,https://github.com/Expensify/App/pull/53376,2024-12-02
+52629,[NoQA][CP STAGING][HybridApp] Add Mobile-Expensify submodule and build HybridApp on both platforms,https://github.com/Expensify/App/pull/52629,2024-12-11
+56183,[No QA] [CP Staging] Disable the network going offline for now when a PONG is not received,https://github.com/Expensify/App/pull/56183,2025-01-31
+56152,"[CP Staging] Revert ""Show 'Report physical card loss/damage' option for physical cards, regardless of activation status""",https://github.com/Expensify/App/pull/56152,2025-01-31
+56129,[CP Staging][No QA] fix: default chat report id (REDUX),https://github.com/Expensify/App/pull/56129,2025-01-31
+56094,Fixed submit button in empty expense report,https://github.com/Expensify/App/pull/56094,2025-01-30
+56088,[CP Staging] Fix navigation loop on the members csv import page,https://github.com/Expensify/App/pull/56088,2025-01-31
+56053,"[CP Staging] Revert ""Redesign search to always show search input(mobile + desktop).""",https://github.com/Expensify/App/pull/56053,2025-01-30
+56052,"[CP Staging] Revert ""Top bar for outstanding tab refuses to disappear when no transactions are found. """,https://github.com/Expensify/App/pull/56052,2025-01-30
+56012,"Revert ""Bump Onyx to 2.0.91 / Enable skippable collection member IDs in Onyx""",https://github.com/Expensify/App/pull/56012,2025-01-29
+56000,"Revert ""fix: On selecting a category/ tags by multiple tapping, user directed to conversation page.""",https://github.com/Expensify/App/pull/56000,2025-01-29
+55942,"[CP Staging] Revert ""Enabling Receipt drag and drop inside the confirmation step""",https://github.com/Expensify/App/pull/55942,2025-01-29
+55916,"Revert ""Update settlement button condition""",https://github.com/Expensify/App/pull/55916,2025-01-29
+55891,Hide discount banner if user has no workspaces or onboarding chat archived,https://github.com/Expensify/App/pull/55891,2025-01-29
+55853,[CP Staging] [No QA] Update Podfile after bumping the live-markdown to 0.1.221,https://github.com/Expensify/App/pull/55853,2025-01-28
+55843,[CP Staging] fix: missing React import,https://github.com/Expensify/App/pull/55843,2025-01-28
+55815,"Revert ""Merge pull request #55528 from software-mansion-labs/use-onyx/auth-screens",https://github.com/Expensify/App/pull/55815,2025-01-27
+55812,[CP Staging] Fix postcode validation for add payment card flow,https://github.com/Expensify/App/pull/55812,2025-01-28
+55790,[CP Staging] Revert PR #54071,https://github.com/Expensify/App/pull/55790,2025-01-27
+55716,[CP Staging] Fix - Self DM - User can submit track expense to self (You) again and send invoice to self AND fix smartscan share in oldDot,https://github.com/Expensify/App/pull/55716,2025-01-24
+55712,[CP Staging] fix: partial scroll when returning from expense thread,https://github.com/Expensify/App/pull/55712,2025-01-24
+55711,[CP Staging] Fix wrong align of TextInput when displaying currency/icon,https://github.com/Expensify/App/pull/55711,2025-01-24
+55620,[CP Staging] fix: Free trial 30 days left overlaps with the box,https://github.com/Expensify/App/pull/55620,2025-01-23
+55575,[CP Staging] fix: Unable to close currency list using device back button.,https://github.com/Expensify/App/pull/55575,2025-01-22
+55521,[CP Staging] remove toString method,https://github.com/Expensify/App/pull/55521,2025-01-21
+55513,[CP Staging] fix: add missing parameter when registering broadcast receiver,https://github.com/Expensify/App/pull/55513,2025-01-21
+55509,[CP Staging] Bump react-native-live-markdown version to 0.1.221,https://github.com/Expensify/App/pull/55509,2025-01-28
+55501,[CP Staging] Fix getting wrong onboarding policy,https://github.com/Expensify/App/pull/55501,2025-01-21
+55472,[CP Staging] Fix undefined inside backTo parameter for export accounts,https://github.com/Expensify/App/pull/55472,2025-01-20
+55451,[CP Staging] Revert 53938,https://github.com/Expensify/App/pull/55451,2025-01-18
+55432,"[CP Staging] Revert ""Use POST for SAML login""",https://github.com/Expensify/App/pull/55432,2025-01-20
+55374,"Revert ""Fix hidden shows when sending invoice to new user""",https://github.com/Expensify/App/pull/55374,2025-01-16
+55366,[CP Staging] Update messaging on Here's your magic code page,https://github.com/Expensify/App/pull/55366,2025-01-16
+55363,"Revert ""[HybridApp] Necessary copilot changes""",https://github.com/Expensify/App/pull/55363,2025-01-16
+55299,[CP Staging] Bump onyx version to 2.0.89,https://github.com/Expensify/App/pull/55299,2025-01-15
+55296,"[CP Staging] Revert ""fix confirmation button jump""",https://github.com/Expensify/App/pull/55296,2025-01-16
+55220,[CP Staging] fix: bump mapbox,https://github.com/Expensify/App/pull/55220,2025-01-14
+55175,Add image to pay-an-expense article,https://github.com/Expensify/App/pull/55175,2025-01-14
+55168,[CP Staging] Fix onboarding flow creating multiple workspaces,https://github.com/Expensify/App/pull/55168,2025-01-13
+55156,[NOQA] Add test receipt URL,https://github.com/Expensify/App/pull/55156,2025-01-13
+55144,"[CP Staging] Revert ""fix: dismiss keyboard once open modal""",https://github.com/Expensify/App/pull/55144,2025-01-12
+55127,"[CP Staging] Revert ""Handle context menu format command""",https://github.com/Expensify/App/pull/55127,2025-01-11
+55126,[CP Staging] Revert removal of the `receipt` param,https://github.com/Expensify/App/pull/55126,2025-01-13
+55117,[CP Staging] Subscription plan card UI changes,https://github.com/Expensify/App/pull/55117,2025-01-13
+55102,fix: reverting the amount and currency after error clearance.,https://github.com/Expensify/App/pull/55102,2025-01-22
+55101,"[CP Staging] Revert ""Add toggle for enable/disable instead of label"" + Remove usages of EMPTY_STRING",https://github.com/Expensify/App/pull/55101,2025-01-11
+55092,[No QA] Add `applause` group to Firebase app distribution,https://github.com/Expensify/App/pull/55092,2025-01-10
+55090,[No QA] Upload iOS and Android staging builds to Firebase distribution,https://github.com/Expensify/App/pull/55090,2025-01-10
+55087,[No QA] Update es.ts,https://github.com/Expensify/App/pull/55087,2025-01-13
+55082,[CP Staging] fix: remove using StatusBar height,https://github.com/Expensify/App/pull/55082,2025-01-10
+55061,[No QA] Hybrid App adhoc builds follow ups,https://github.com/Expensify/App/pull/55061,2025-01-21
+55060,Add fallback for route params to fix error when there are no params in the link,https://github.com/Expensify/App/pull/55060,2025-01-11
+55059,Update Node Version to 20.18.1 for QSP,https://github.com/Expensify/App/pull/55059,2025-01-14
+55046,"[No QA] Revert ""[No QA]Add Firebase distribution for iOS and Android staging builds""",https://github.com/Expensify/App/pull/55046,2025-01-10
+55043,[No QA]Fix an `op document get` issue with firebase distribution,https://github.com/Expensify/App/pull/55043,2025-01-10
+55039,"Fix: Hybrid - Android - Onboarding - ""Travel and expense, at the speed of chat"" modal appears after every login",https://github.com/Expensify/App/pull/55039,2025-01-10
+55037,[No QA]Add Firebase distribution for iOS and Android staging builds,https://github.com/Expensify/App/pull/55037,2025-01-09
+55020,Fix the start group button moves up,https://github.com/Expensify/App/pull/55020,2025-01-09
+55011,[CP Staging] fix: dispatch callback after dismissing modal,https://github.com/Expensify/App/pull/55011,2025-01-09
+55005,"Fix: ""Travel and expense"" modal not showing for migrated users",https://github.com/Expensify/App/pull/55005,2025-01-09
+54972,Get nudgeMigration timestamp from OldDot transition url,https://github.com/Expensify/App/pull/54972,2025-01-08
+54969,[CP Staging] Update validateCode regex to allow base26 codes,https://github.com/Expensify/App/pull/54969,2025-01-08
+54962,[CP Staging] fix: unable to change currency with arrow key,https://github.com/Expensify/App/pull/54962,2025-01-08
+54921,"Fix: We're playing and showing the ""Welcome to Expensify"" modal/video when newly migrated users come over",https://github.com/Expensify/App/pull/54921,2025-01-08
+54913,"[CP Staging] Revert ""fix: smooth keyboard handling in BaseModal""",https://github.com/Expensify/App/pull/54913,2025-01-07
+54897,"[CP Stag] Fix: Reports - ""Customize your search"" tooltip reappears while creating an expense",https://github.com/Expensify/App/pull/54897,2025-01-08
+54888,[CP staging] [No QA][HybridApp] Adjust Fastfile to HybridApp dotenv,https://github.com/Expensify/App/pull/54888,2025-01-08
+54878,"[CP Staging] Revert ""Merge pull request #53760 from callstack-internal/JKobrynski/…",https://github.com/Expensify/App/pull/54878,2025-01-07
+54865,[CP Staging] Add loading state to ProductTrainingContextProvider,https://github.com/Expensify/App/pull/54865,2025-01-07
+54832,[CP Staging] Fix crash when opening context menu,https://github.com/Expensify/App/pull/54832,2025-01-06
+54732,fix: revert approver button gray color for held expenses,https://github.com/Expensify/App/pull/54732,2025-01-28
+54730,"[CP Staging] Revert ""fix: messages content overlap when bottom sheet is shown""",https://github.com/Expensify/App/pull/54730,2025-01-02
+54729,"[CP Staging] Revert ""Implemented International Bank Account flow""",https://github.com/Expensify/App/pull/54729,2025-01-02
+54722,[CP Staging] Update updateGeneralSettings params,https://github.com/Expensify/App/pull/54722,2025-01-02
+54719,"[CP Staging] Revert ""Fix unable to upload a receipt size larger than 15mb""",https://github.com/Expensify/App/pull/54719,2025-01-01
+54705,[CP Staging] update preserved keys,https://github.com/Expensify/App/pull/54705,2025-01-02
+54631,Revert changes to retrieve policy outputCurrency,https://github.com/Expensify/App/pull/54631,2025-01-02
+57495,[CP Staging] Increase cached key size limit,https://github.com/Expensify/App/pull/57495,2025-02-26
+57433,"Revert ""Add manager mctest tooltips to create expense flow""",https://github.com/Expensify/App/pull/57433,2025-02-25
+57432,"Revert ""[NO QA] Update Create-a-company-workspace.md""",https://github.com/Expensify/App/pull/57432,2025-02-25
+57422,"Revert ""feat: Connect USD and nonUSD VBA flows""",https://github.com/Expensify/App/pull/57422,2025-02-25
+57421,"Revert ""Merge pull request #56926 from callstack-internal/feat/add-tr…",https://github.com/Expensify/App/pull/57421,2025-02-25
+57362,"[CP Staging] Revert #55966 / Fix ""just sign in here"" Magic Code page link",https://github.com/Expensify/App/pull/57362,2025-02-25
+57360,"Revert ""(2/2) Add support for all reportAction types in ChatListItem - use ReportActionItem in ChatListItem""",https://github.com/Expensify/App/pull/57360,2025-02-25
+57325,"[CP Staging] Revert ""[NoQA] Unsubscribe from Broadcast receiver task""",https://github.com/Expensify/App/pull/57325,2025-02-24
+57320,"[CP Staging] Revert ""Adjust adaptStateIfNecessary to push a split navigator without a sidebar screen""",https://github.com/Expensify/App/pull/57320,2025-02-24
+57252,[CP Staging] Fix that Swiping back on success page redirects back to verify,https://github.com/Expensify/App/pull/57252,2025-02-21
+57251,[CP Staging] Disallow proceeding without copying recovery codes,https://github.com/Expensify/App/pull/57251,2025-02-21
+57247,[CP Staging] Fix that input was hidden under the keyboard,https://github.com/Expensify/App/pull/57247,2025-02-21
+57246,[CP Staging] Fix goBack functionality on the 'Verify' step of two-factor verification.,https://github.com/Expensify/App/pull/57246,2025-02-21
+57186,[CP Staging] mWeb - Invoices - The back button doesn't correspond in the invoice tab on the search page,https://github.com/Expensify/App/pull/57186,2025-02-20
+57123,Disable new modal implementation for FAB,https://github.com/Expensify/App/pull/57123,2025-02-19
+57107,[CP Staging] Fix Android reanimated worklets crash.,https://github.com/Expensify/App/pull/57107,2025-02-19
+57089,[NoQA] Add missing checkout to prep step in the hybrid adhoc test workflow,https://github.com/Expensify/App/pull/57089,2025-02-19
+57077, [CP Staging] Importing workflow icon from Illustrations,https://github.com/Expensify/App/pull/57077,2025-02-19
+57060,Safely filter out categories without a name in `SearchMultipleSelectionPicker`,https://github.com/Expensify/App/pull/57060,2025-02-19
+56990,[CP Staging] Make Reports page Reports page again,https://github.com/Expensify/App/pull/56990,2025-02-18
+56955,[CP Staging] Fixed GL code not being displayed in tag settings menu,https://github.com/Expensify/App/pull/56955,2025-02-17
+56932,"Revert: ""Fix: Read API is not triggered consistently when switching between features of a Collect workspace""",https://github.com/Expensify/App/pull/56932,2025-02-21
+56917,[CP staging] fix: app crashes when submitting the track distance to the workspace,https://github.com/Expensify/App/pull/56917,2025-02-17
+56887,[CP Staging] [navigation] fix navigation bugs in bugs workspace card page,https://github.com/Expensify/App/pull/56887,2025-02-14
+56869,Revert syntax range color back to black,https://github.com/Expensify/App/pull/56869,2025-02-18
+56868,[Navigation] Track expense-RHP reopens after changing category on confirm page & clicking back button twice,https://github.com/Expensify/App/pull/56868,2025-02-14
+56865,[CP Staging] fix: FAB is not responsive after exiting create expense flow,https://github.com/Expensify/App/pull/56865,2025-02-14
+56833,"[CP Staging] [Navigation] Per Diem - After selecting Dates, the flow goes back to the country list page",https://github.com/Expensify/App/pull/56833,2025-02-14
+56827,[CP Staging] fix: Unable to invite member from Overview,https://github.com/Expensify/App/pull/56827,2025-02-14
+56822,[CP Staging] Fix Preferred export page settings routing,https://github.com/Expensify/App/pull/56822,2025-02-14
+56757,[CP Staging] Revert pull request 56316,https://github.com/Expensify/App/pull/56757,2025-02-13
+56744,"[NO QA] Revert ""Remove hybrid app check from getEnvironment""",https://github.com/Expensify/App/pull/56744,2025-02-12
+56638,fix create expense flow regression,https://github.com/Expensify/App/pull/56638,2025-02-11
+56608,Fix double back press on Android,https://github.com/Expensify/App/pull/56608,2025-02-10
+56600,Do not return empty card Objects for AdvancedFilters,https://github.com/Expensify/App/pull/56600,2025-02-11
+56597,fix: group chat avatar disappears after adding other members and creating the group,https://github.com/Expensify/App/pull/56597,2025-02-10
+56535,"[CP Staging] Revert ""Merge pull request #55932 from prakashbask/fix/53718""",https://github.com/Expensify/App/pull/56535,2025-02-07
+56476,"[CP Staging] Revert ""Merge pull request #54455 from Krishna2323/krishna2323/issue/…",https://github.com/Expensify/App/pull/56476,2025-02-06
+56448,Add owner and repo to composite action,https://github.com/Expensify/App/pull/56448,2025-02-06
+56430,[No QA]Move remaining encrypted secrets into 1Password,https://github.com/Expensify/App/pull/56430,2025-02-06
+56419,Add info about `submodule.recurse` option to `README.md`,https://github.com/Expensify/App/pull/56419,2025-02-05
+56408,[CP Staging] Introduce temporary focus fix for Android HybridApp,https://github.com/Expensify/App/pull/56408,2025-02-05
+56397,[CP Staging]fix: App is stuck on the confirmation page when submitting expense,https://github.com/Expensify/App/pull/56397,2025-02-05
+56394,[No QA]Add iOS Certificates.p12 from `op`,https://github.com/Expensify/App/pull/56394,2025-02-05
+56381,"Revert ""fix: navigate to parent report on delete track expense""",https://github.com/Expensify/App/pull/56381,2025-02-04
+56370,[CP Staging] [fix] Setup specialist appears in member list and throws error when invited,https://github.com/Expensify/App/pull/56370,2025-02-04
+56362,"Revert ""Add clickable custom emoji support for onboarding task""",https://github.com/Expensify/App/pull/56362,2025-02-04
+56340,[CP Staging] fix: use locale-specific separators,https://github.com/Expensify/App/pull/56340,2025-02-04
+56285,[No QA]Move all iOS/Android secrets to be fetched by `op` cli,https://github.com/Expensify/App/pull/56285,2025-02-05
+56271,"[NoQA] Revert ""[No QA] Install desktop node-modules only when building desktop app""",https://github.com/Expensify/App/pull/56271,2025-02-03
+56169,[NoQA] Unsubscribe from Broadcast receiver task,https://github.com/Expensify/App/pull/56169,2025-02-24
+59399,[CP Staging] fix: Use profiling option is missing,https://github.com/Expensify/App/pull/59399,2025-03-31
+59291,Revert immediately showing report actions,https://github.com/Expensify/App/pull/59291,2025-03-28
+59287,"[CP Staging] Revert ""fix: keyboard is not displayed on iOS for autofocused inputs""",https://github.com/Expensify/App/pull/59287,2025-03-28
+59286,"Revert ""[CP Staging] fix: auto focus input break navigator transition""",https://github.com/Expensify/App/pull/59286,2025-03-28
+59189,"[CP Staging] Revert ""Migrate AuthScreens to useOnyx v3""",https://github.com/Expensify/App/pull/59189,2025-03-26
+59153,[CP Staging] fix: select all checkbox is not marked when it is selected,https://github.com/Expensify/App/pull/59153,2025-03-26
+59152,"[CP Staging] Revert ""Fix - Update the scanned expense creation flow to allow user to see full receipt""",https://github.com/Expensify/App/pull/59152,2025-03-26
+59151,[CP Staging] fix: prevent long press on chat item,https://github.com/Expensify/App/pull/59151,2025-03-26
+59137,[CP Staging] fix: cannot change participant and cannot track expense,https://github.com/Expensify/App/pull/59137,2025-03-26
+59102,Remove iOS and Android standalone apps from our deploy workflows,https://github.com/Expensify/App/pull/59102,2025-03-27
+59067,[CP Staging] Fix Unable to dismiss keyboard by tapping outside the message field,https://github.com/Expensify/App/pull/59067,2025-03-25
+59066,[CP Staging] Fix error creating expense in self DM,https://github.com/Expensify/App/pull/59066,2025-03-25
+59057,[No QA] Fix `CFBundleVersion and CFBundleShortVersionString` IOS Build Warning,https://github.com/Expensify/App/pull/59057,2025-03-28
+59004,"[CP Staging] Revert ""Merge pull request #58666 from ishpaul777/add-x-in-tooltip""",https://github.com/Expensify/App/pull/59004,2025-03-24
+59000,Add iOS and Android Parameterization to enable fork testing of `deploy.yml`,https://github.com/Expensify/App/pull/59000,2025-03-24
+58904,[CP Staging] fix: chat jumps to top briefly each time the expense is created,https://github.com/Expensify/App/pull/58904,2025-03-21
+58901,[CP Staging] Receipt - Unable to replace receipt and page stucks,https://github.com/Expensify/App/pull/58901,2025-03-21
+58840,"Revert ""fix: use dismissModal action instead""",https://github.com/Expensify/App/pull/58840,2025-03-20
+58834," Revert ""Revert ""Share extension Android and iOS implementation""""",https://github.com/Expensify/App/pull/58834,2025-03-24
+58821,"[CP Staging] Revert ""fix: always render the skeleton when fetching report actions""",https://github.com/Expensify/App/pull/58821,2025-03-20
+58817,"Revert ""[CP Staging] Increase cached key size limit""",https://github.com/Expensify/App/pull/58817,2025-03-20
+58815,[No QA] Always hyphenate Two-Factor Authentication,https://github.com/Expensify/App/pull/58815,2025-03-20
+58763,"[CP Staging] Revert ""Share extension Android and iOS implementation""",https://github.com/Expensify/App/pull/58763,2025-03-19
+58757,"[CP Staging] Revert ""Fix browser history review duplicates and delete workspace flows""",https://github.com/Expensify/App/pull/58757,2025-03-19
+58754,"[CP Staging] Revert ""fix: Tapping an item from recent list directs blank page in mWeb & LHN in Android briefly""",https://github.com/Expensify/App/pull/58754,2025-03-19
+58738,[NO QA] Update Deel.md,https://github.com/Expensify/App/pull/58738,2025-03-19
+58716,[CP Staging] fix: User asked to again validate account after disabling 2FA,https://github.com/Expensify/App/pull/58716,2025-03-19
+58711,[CP Staging] [NoQA] Add accessibility label for the empty lhn view,https://github.com/Expensify/App/pull/58711,2025-03-19
+58689,"[CP Staging] Revert ""[CP Staging] Revert ""[CP Staging] fix: blocked scrolling event in reports list""""",https://github.com/Expensify/App/pull/58689,2025-03-19
+58675,"[CP Staging] Revert ""[CP Staging] fix: blocked scrolling event in reports list""",https://github.com/Expensify/App/pull/58675,2025-03-19
+58670,[CP Staging] Re-enable adding company cards to new workspaces,https://github.com/Expensify/App/pull/58670,2025-03-19
+58624,[CP Staging] Fix Tooltip animations ,https://github.com/Expensify/App/pull/58624,2025-03-18
+58598,[CP Staging] Remove control access,https://github.com/Expensify/App/pull/58598,2025-03-17
+58590,[CP staging] fix: unable to delete track expense using context menu,https://github.com/Expensify/App/pull/58590,2025-03-17
+58559,[CP Stage] - Fix - Share with accountant - Empty state list is missing referral screen,https://github.com/Expensify/App/pull/58559,2025-03-17
+58518,"[CP Staging] Revert ""New Feature: ""When to export"" selector for auto-sync for Quickbooks Online""",https://github.com/Expensify/App/pull/58518,2025-03-14
+58482,"[CP Staging] Revert ""Adds new RESOLVEDDUPLICATES action""",https://github.com/Expensify/App/pull/58482,2025-03-14
+58481,[CP Staging] fix: FormProvider had bottom safe area by default,https://github.com/Expensify/App/pull/58481,2025-03-14
+58469,[CP Staging] call scrollToBottom when create new expense,https://github.com/Expensify/App/pull/58469,2025-03-14
+58401,"[CP Staging] Revert ""loading-state-perception-improvement""",https://github.com/Expensify/App/pull/58401,2025-03-13
+58394,"[CP Staging] Revert ""Make Troubleshoot menu available in Sign In page""",https://github.com/Expensify/App/pull/58394,2025-03-13
+58390,[CP Staging] Fixed scan expense flow when participants are missing,https://github.com/Expensify/App/pull/58390,2025-03-14
+58327,[NO QA] Manually bump Mobile-Expensify submodule for HybridApp turbomodule PR changes,https://github.com/Expensify/App/pull/58327,2025-03-12
+58310,[CP Staging] Revert bouncy input,https://github.com/Expensify/App/pull/58310,2025-03-12
+58301,[HybridApp] Add HybridApp turbomodule,https://github.com/Expensify/App/pull/58301,2025-03-12
+58293,"[CP Staging] Revert ""[HybridApp] Add HybridApp turbomodule""",https://github.com/Expensify/App/pull/58293,2025-03-12
+58272,"[CP Staging] Revert ""Fix desktop updates to install the latest one""",https://github.com/Expensify/App/pull/58272,2025-03-12
+58219,[CP Staging] fix: blocked scrolling event in reports list,https://github.com/Expensify/App/pull/58219,2025-03-11
+58171,"[CP Staging] Revert Partial of ""Display Xero disable 2FA error from backend"", fixes Nothing happens after hitting Enter on amount input page",https://github.com/Expensify/App/pull/58171,2025-03-11
+58129,"[CP Staging] Fix ""prevent self approval"" showing too often",https://github.com/Expensify/App/pull/58129,2025-03-11
+58110,[CP Staging] [NoQA] Fix Help Button appearing in production,https://github.com/Expensify/App/pull/58110,2025-03-10
+58098,[CP Staging] App back button on country list directly returns to Expensify Classic,https://github.com/Expensify/App/pull/58098,2025-03-10
+58029,"Revert ""Update Using-Reports-in-New-Expensify.md""",https://github.com/Expensify/App/pull/58029,2025-03-07
+58008,[CP Staging] fix: App crashes after deleting workspace when it is selected in workspace switcher,https://github.com/Expensify/App/pull/58008,2025-03-08
+58001,[CP Staging] fix: refactor logics to show copy URL without reportID,https://github.com/Expensify/App/pull/58001,2025-03-07
+57988,[CP Staging] fix: infinite loading in company cards page,https://github.com/Expensify/App/pull/57988,2025-03-07
+57979,[CP Staging] fix: unable hold expense from reports,https://github.com/Expensify/App/pull/57979,2025-03-07
+57896,[NO QA] Reset the submodule commit to fix crash,https://github.com/Expensify/App/pull/57896,2025-03-06
+57894,"[NoQA] Revert ""fix: Message Previews Always Include Sender Name""",https://github.com/Expensify/App/pull/57894,2025-03-05
+57890,"[CP Staging] Revert ""Merge pull request #56602 from Amoralchik/clickable-emoji-for…",https://github.com/Expensify/App/pull/57890,2025-03-05
+57856,[CP STAGING] fix: Attachments-Swiping to the left through attachment,https://github.com/Expensify/App/pull/57856,2025-03-05
+57831,"[CP Staging] Fix: Scroll Issue on Reports Page, side pane appearing after language change",https://github.com/Expensify/App/pull/57831,2025-03-05
+57794,[CP STAGING] Add defensive check for signupQualifier in OnboardingFlow,https://github.com/Expensify/App/pull/57794,2025-03-05
+57788,[NO QA] Update action runners to 24.04,https://github.com/Expensify/App/pull/57788,2025-03-04
+57770,fix: Group chat - App crashes when creating group chat offline and reconnect network on details page.,https://github.com/Expensify/App/pull/57770,2025-03-04
+57680,"[CP Staging] Revert ""[No QA] Change offline status when Pusher PINGPONG fails""",https://github.com/Expensify/App/pull/57680,2025-03-03
+57406,[HybridApp] Add HybridApp turbomodule,https://github.com/Expensify/App/pull/57406,2025-03-12
+56953,[HybridApp] Adjust `RCTBootSplash.mm` to HybridApp requirements,https://github.com/Expensify/App/pull/56953,2025-03-06
+56698,[HybridApp] Receive structured initialProperties (not as url) and improve url handling,https://github.com/Expensify/App/pull/56698,2025-03-05
+53821,[CP staging] feat: Bump react-native-pager-view version and remove patch,https://github.com/Expensify/App/pull/53821,2025-03-17
+61214,"Revert ""Expense Navigation after refreshing transaction thread""",https://github.com/Expensify/App/pull/61214,2025-04-30
+61192,"[CP Staging] Revert ""Optimize getTransactionsSections to reduce redundant computation""",https://github.com/Expensify/App/pull/61192,2025-04-30
+61131,"[CP Staging] Revert ""Fix workspace features multiselect""",https://github.com/Expensify/App/pull/61131,2025-04-30
+61109,[No QA] Move where we push version updates to fix second deploy on CP to Production,https://github.com/Expensify/App/pull/61109,2025-04-29
+61101,[Fix] condition for showing manager MC test in MoneyRequestParticipants…,https://github.com/Expensify/App/pull/61101,2025-04-29
+61064,"[CP Staging] Revert ""Add New Task Section to Reports""",https://github.com/Expensify/App/pull/61064,2025-04-29
+61055,[CP Staging] Fix bug when app freezes after selecting a report item,https://github.com/Expensify/App/pull/61055,2025-04-29
+61049,Fix offline report name,https://github.com/Expensify/App/pull/61049,2025-04-29
+61044,[CP Staging] Default parentChatID to undefiend,https://github.com/Expensify/App/pull/61044,2025-04-29
+61026,[CP Staging] Fix: Card reconciliation - Incorrect navigation with RHP back button after enabling auto-sync,https://github.com/Expensify/App/pull/61026,2025-04-29
+61013,[No QA] CP to prod 🚀 ,https://github.com/Expensify/App/pull/61013,2025-04-29
+61008,[CP Staging] [No QA] fix: wrong onyx key value,https://github.com/Expensify/App/pull/61008,2025-04-29
+60988,[cp stg/prd] Add new modal for travel verification,https://github.com/Expensify/App/pull/60988,2025-04-28
+60888,[CP Staging] Put private onboarding flow behind beta,https://github.com/Expensify/App/pull/60888,2025-04-25
+60856,[CP Staging] Add flex to private domain flow,https://github.com/Expensify/App/pull/60856,2025-04-24
+60850,revert DraggableList change for ios only from PR #59723,https://github.com/Expensify/App/pull/60850,2025-04-25
+60824,[CP Staging] Fix amount value in header & report preview,https://github.com/Expensify/App/pull/60824,2025-04-24
+60777,[CP Staging] fix try it out button,https://github.com/Expensify/App/pull/60777,2025-04-25
+60728,[No QA] Add note about Java extensions in VS Code,https://github.com/Expensify/App/pull/60728,2025-04-24
+60669,[CP Staging] fix: cursor is unable to reach before the first digit in Time using b…,https://github.com/Expensify/App/pull/60669,2025-04-22
+60651,[CP staging] Fix import categories flow on iOS after document-picker bump,https://github.com/Expensify/App/pull/60651,2025-04-22
+60593,"Revert ""fix missing GBR on partial approval""",https://github.com/Expensify/App/pull/60593,2025-04-21
+60585,[CP Staging] Temporary fix to the crash,https://github.com/Expensify/App/pull/60585,2025-04-21
+60584,[NO QA] Remove workflow condition that throttled android releases,https://github.com/Expensify/App/pull/60584,2025-04-21
+60462,"Revert ""[Test Drive][Phase 1][FE] Implement the Test Drive modal""",https://github.com/Expensify/App/pull/60462,2025-04-17
+60461,[CP Staging]: Infinite Loading when logging in by adding a existing private domain ,https://github.com/Expensify/App/pull/60461,2025-04-17
+60427,fix - Review duplicates - Receipt thumbnail on the confirmation page does not have right margin,https://github.com/Expensify/App/pull/60427,2025-04-17
+60417,[CP Staging] Revert the debounced search in Search,https://github.com/Expensify/App/pull/60417,2025-04-18
+60387,[No QA] Fix Release Creation,https://github.com/Expensify/App/pull/60387,2025-04-17
+60379,FIX: [Private Domain Onboarding] Unable to enter long email on work email field,https://github.com/Expensify/App/pull/60379,2025-04-17
+60378,Adjust `cherryPick.yml` to take a URL instead of a PR number,https://github.com/Expensify/App/pull/60378,2025-04-17
+60328,[CP Staging] Disable moved actions,https://github.com/Expensify/App/pull/60328,2025-04-16
+60325,[CP Staging] Disable resolved concierge category options buttons instead of hiding the action,https://github.com/Expensify/App/pull/60325,2025-04-15
+60319,"Revert ""Enhance Search and Report Components with Policy Integration""",https://github.com/Expensify/App/pull/60319,2025-04-15
+60309,[CP Stag] add receiptGeneratedWithAI violation const,https://github.com/Expensify/App/pull/60309,2025-04-15
+60298,Show message when validating suspended phone number,https://github.com/Expensify/App/pull/60298,2025-04-15
+60294,[CP Staging] Add beta for report buttons for change transaction functionality,https://github.com/Expensify/App/pull/60294,2025-04-15
+60279,[CP Staging] fix: login - Email field is auto unfocused,https://github.com/Expensify/App/pull/60279,2025-04-15
+60262,[CP Staging] fix: Edge-to-edge bottom safe area padding fixes and `NewChatSelectorPage` refactoring,https://github.com/Expensify/App/pull/60262,2025-04-15
+60259,fix: Split - Individual split amount input is cut off.,https://github.com/Expensify/App/pull/60259,2025-04-15
+60249,[CP Staging] Fix issue with modal video player when sending attachments,https://github.com/Expensify/App/pull/60249,2025-04-15
+60242,[CP Staging] Fix ExpensifyApproved illustration display in the light mode,https://github.com/Expensify/App/pull/60242,2025-04-15
+60212,[CP Staging] Use the right key to find report NVPs,https://github.com/Expensify/App/pull/60212,2025-04-14
+60203,"[CP Staging] Revert ""perf: improve uploading image from gallery on native device""",https://github.com/Expensify/App/pull/60203,2025-04-14
+60145,Fix deploy comments and adjust how we pass version to `getDeployPullRequestList`,https://github.com/Expensify/App/pull/60145,2025-04-14
+60135,"[CP Staging] Remove beta `newDotHelpSidePanel`, show help button only based on Onyx key",https://github.com/Expensify/App/pull/60135,2025-04-11
+60133,Create the pre-release using the new staging tag suffix,https://github.com/Expensify/App/pull/60133,2025-04-11
+60061,Add `-staging` suffix to the tag version used in creating checklists,https://github.com/Expensify/App/pull/60061,2025-04-10
+60048,[CP Staging] fix: Paid expense preview shows Approve button after reset,https://github.com/Expensify/App/pull/60048,2025-04-10
+60046,Add `-staging` suffix to staging tags on staging deploys,https://github.com/Expensify/App/pull/60046,2025-04-10
+60037,[CP Staging] fix: empty row is displayed in the search chat,https://github.com/Expensify/App/pull/60037,2025-04-10
+60022,"[CP Staging] Revert ""Merge pull request #58825""",https://github.com/Expensify/App/pull/60022,2025-04-10
+60002,[CP Staging] fix wrong animation for profile tab,https://github.com/Expensify/App/pull/60002,2025-04-10
+59996,Fix/59945 update api calls for expensify cards,https://github.com/Expensify/App/pull/59996,2025-04-17
+59994,[CP Staging] prevent context menu for search result. ,https://github.com/Expensify/App/pull/59994,2025-04-10
+59956,[CP Staging] Fix sign in - validate screen is shown when signing in,https://github.com/Expensify/App/pull/59956,2025-04-09
+59931,"[CP Staging] Revert ""Simplified actions on report header""",https://github.com/Expensify/App/pull/59931,2025-04-09
+59930,"[CP Staging] Revert ""fix: empty green button after paying with Expensify""",https://github.com/Expensify/App/pull/59930,2025-04-09
+59892,[CP Staging] fix: empty green button after paying with Expensify,https://github.com/Expensify/App/pull/59892,2025-04-09
+59857,[No QA] Update version to 9.1.24-5,https://github.com/Expensify/App/pull/59857,2025-04-08
+59829,[CP Staging] Fix that Emoji Modal is under navigation bar on android,https://github.com/Expensify/App/pull/59829,2025-04-08
+59808,[CP Staging] Adjust popover positioning logic to ensure it remains within window,https://github.com/Expensify/App/pull/59808,2025-04-08
+59803,[CP Staging] Put merge account behind beta,https://github.com/Expensify/App/pull/59803,2025-04-08
+59799,[CP Staging] Refactor BottomDockedModal ESC and back button logic,https://github.com/Expensify/App/pull/59799,2025-04-08
+59798,[CP Staging] Fix - [Manager McTest] Only Allow Submitting Test Receipt to Manager,https://github.com/Expensify/App/pull/59798,2025-04-09
+59739,[No QA] Update `CIGitLogicTest.ts` for cherry pick to production,https://github.com/Expensify/App/pull/59739,2025-04-08
+59730,[CP Staging] Fix - [Manager McTest] Group chat - Test manager can be added to group chat when Add to group button is absent ,https://github.com/Expensify/App/pull/59730,2025-04-07
+59695,[No QA] Fix mobile expensify cp version bump,https://github.com/Expensify/App/pull/59695,2025-04-05
+59635,[No QA] Cherry-pick Mobile-Expensify version bumps to Mobile-Expensify staging,https://github.com/Expensify/App/pull/59635,2025-04-05
+59633,[CP Staging][Fix]: Disable attendee option,https://github.com/Expensify/App/pull/59633,2025-04-03
+59620,[CP Staging] fix: prevent selection text disapearing when closing modal,https://github.com/Expensify/App/pull/59620,2025-04-04
+59576,"[CP Staging] Revert ""Merge pull request #59008 from ishpaul777/revert-59004-revert…",https://github.com/Expensify/App/pull/59576,2025-04-03
+59547,[CP Staging] Update `setup-ruby` to fix iOS setup error,https://github.com/Expensify/App/pull/59547,2025-04-02
+59532,"[CP Staging] Revert ""Merge pull request #58645 from daledah/fix/58341""",https://github.com/Expensify/App/pull/59532,2025-04-02
+59496,[CP Staging] fix: Wrong icon is displayed for approved and paid report preview,https://github.com/Expensify/App/pull/59496,2025-04-02
+59490,"[CP Staging] Revert ""Fix nested markdown isn't applied""",https://github.com/Expensify/App/pull/59490,2025-04-01
+59482,[CP Staging] fix: correct review translation text,https://github.com/Expensify/App/pull/59482,2025-04-02
+59477,Add Web and Desktop parameters to deploy process,https://github.com/Expensify/App/pull/59477,2025-04-02
+59423,"[CP Staging] Revert ""feat: update optimistic data after the API response""",https://github.com/Expensify/App/pull/59423,2025-04-01
+59378,[CP Staging] fix: start chat page is broken after refreshing the page,https://github.com/Expensify/App/pull/59378,2025-04-01
+63166,"[CP staging] Revert ""Improve HybridApp initialProps""",https://github.com/Expensify/App/pull/63166,2025-05-30
+63139,[CP Staging] fix: missing headers in empty state and view tags,https://github.com/Expensify/App/pull/63139,2025-05-30
+63100,"[CP Staging] Revert #62642 ""fix: ComposeBox - When you click on the mention again, extra characters appear""",https://github.com/Expensify/App/pull/63100,2025-05-29
+63095,[CP Staging] [Better Expense Report Views] Fix for grey rows flash on edit and ability to select rows deleted offline,https://github.com/Expensify/App/pull/63095,2025-05-30
+63075,"Revert ""Split expense flow""",https://github.com/Expensify/App/pull/63075,2025-05-29
+63051,"Revert ""[Better Expense Report Views] Show chat bubble on both small screen and wide screen""",https://github.com/Expensify/App/pull/63051,2025-05-29
+63027,"[CP Staging] Revert ""fix: Update visual style of our text inputs for better consis…",https://github.com/Expensify/App/pull/63027,2025-05-29
+62973,"[CP Staging] Revert ""Fix report selection""",https://github.com/Expensify/App/pull/62973,2025-05-28
+62944,"Revert ""Attachment - From attachment preview page tapping device back button directs to LHN""",https://github.com/Expensify/App/pull/62944,2025-05-28
+62935,"Revert ""[Better Expense Report Views] Display transactions and IOU actions only if linked to the report""",https://github.com/Expensify/App/pull/62935,2025-05-28
+62908,"[CP Staging] Revert ""Bump `react-native-live-markdown`""",https://github.com/Expensify/App/pull/62908,2025-05-28
+62828,[CP Staging] Put Delete report Behind beta,https://github.com/Expensify/App/pull/62828,2025-05-26
+62827,[CP Staging] chore: attempt at fixing infinite loading on android,https://github.com/Expensify/App/pull/62827,2025-05-27
+62826,[CP Staging] Redirect admin to #admins chat after TestDrive modal,https://github.com/Expensify/App/pull/62826,2025-05-26
+62814,[Better Expense Reports] Duplicate detection flow after revert,https://github.com/Expensify/App/pull/62814,2025-05-28
+62800,[CP Staging] Fix Deploy Blockers: [Simplified Actions] Implement DeleteAppReport,https://github.com/Expensify/App/pull/62800,2025-05-26
+62798,Add optimistic and failure data handling for report deletion,https://github.com/Expensify/App/pull/62798,2025-05-26
+62784,[CP Staging] Removed the ability to select individual contacts when sharing a per diem expense,https://github.com/Expensify/App/pull/62784,2025-05-26
+62781,"[CP Staging] Revert ""Merge pull request #61170 from Expensify/jsenyitko-search-lhn…",https://github.com/Expensify/App/pull/62781,2025-05-26
+62768,[CP Staging] Fix next steps loading state,https://github.com/Expensify/App/pull/62768,2025-05-26
+62767,"[CP Staging] Revert ""[Better Expense Reports] Replace MoneyRequestPreview with TransactionPreview in Dupe-Detection flow""",https://github.com/Expensify/App/pull/62767,2025-05-26
+62701,[CP Staging] use legacy modal for FeatureTrainingModal,https://github.com/Expensify/App/pull/62701,2025-05-24
+62639,Update submodule to latest staging,https://github.com/Expensify/App/pull/62639,2025-05-23
+62628,Revert #62622,https://github.com/Expensify/App/pull/62628,2025-05-29
+62622,"[CP Staging] Revert #60171 ""Adjust copy for various report actions""",https://github.com/Expensify/App/pull/62622,2025-05-23
+62617,[CP Staging] Revert breaking changes,https://github.com/Expensify/App/pull/62617,2025-05-22
+62611,[CP Staging] Fix: Not here page opens when admin clicks Move expense in member's report,https://github.com/Expensify/App/pull/62611,2025-05-22
+62604,"Revert ""fix: keep validate code modal when open test tool menu""",https://github.com/Expensify/App/pull/62604,2025-05-23
+62562,[CP Staging] Fix blinking old type of report,https://github.com/Expensify/App/pull/62562,2025-05-22
+62528,[CP Staging] Close modal when we transition to move expense page from selected menu,https://github.com/Expensify/App/pull/62528,2025-05-21
+62526,[CP Staging] fix: Incorrect view button on the paid expense,https://github.com/Expensify/App/pull/62526,2025-05-21
+62524,[CP Staging] revert: add reimbursable toggle to create expense flow,https://github.com/Expensify/App/pull/62524,2025-05-21
+62515,[CP Staging] Fix moving expenses from Search,https://github.com/Expensify/App/pull/62515,2025-05-22
+62492,[No QA] Remove noisy log line,https://github.com/Expensify/App/pull/62492,2025-05-21
+62458,[CP Staging] Fix workspace distance rate selection on confirmation page when share with accountant ,https://github.com/Expensify/App/pull/62458,2025-05-21
+62431,"[CP Staging] Revert ""[Pre RN 0.79] Bump `react-native-live-markdown`""",https://github.com/Expensify/App/pull/62431,2025-05-20
+62428,"[CP Staging] Revert ""fix: not found page when going back from thread RHP""",https://github.com/Expensify/App/pull/62428,2025-05-20
+62417,[CP Staging] Rename single level tag export command to match API,https://github.com/Expensify/App/pull/62417,2025-05-20
+62390,"[CP Staging] Revert ""smallScreens/selectionMode - toggle the selection on selectRow""",https://github.com/Expensify/App/pull/62390,2025-05-20
+62373,"Revert ""fix - Chat- Next step changes when changing category""",https://github.com/Expensify/App/pull/62373,2025-05-20
+62364,[CP Staging] Fix `Share it with my accountant` navigation flow,https://github.com/Expensify/App/pull/62364,2025-05-20
+62304,[CP Staging] Remove the navigation bar from the screen where it shouldn't be,https://github.com/Expensify/App/pull/62304,2025-05-19
+62275,[CP Staging] Correct PR #62002 & (reverted) #61777,https://github.com/Expensify/App/pull/62275,2025-05-19
+62269,"[CP Staging] Reports - Self DM opened from Reports tab does not show expenses, Download is not working",https://github.com/Expensify/App/pull/62269,2025-05-19
+62237,[CP Staging] Align primary/search action logic,https://github.com/Expensify/App/pull/62237,2025-05-19
+62229,[CP Staging] Fix member details display to include any Expensify Card related information,https://github.com/Expensify/App/pull/62229,2025-05-19
+62226,[CP staging] fix: Account icon on bottom tab is briefly highlighted when returning from create workspace page.,https://github.com/Expensify/App/pull/62226,2025-05-16
+62200,"[CP Staging] Revert ""Merge pull request #61884 from nkdengineer/fix/61016""",https://github.com/Expensify/App/pull/62200,2025-05-16
+62190,"[CP Staging] Revert ""fix modal backdrop animation changes""",https://github.com/Expensify/App/pull/62190,2025-05-16
+62183,[CP Staging] Fix request step report when sharing with accountant,https://github.com/Expensify/App/pull/62183,2025-05-19
+62180,[CP Staging] Account - Account tab is accessible when navigating to public room as guest,https://github.com/Expensify/App/pull/62180,2025-05-16
+62171,"Revert ""Merge pull request #60267 from thelullabyy/fix/59566-chat-preview-display-wrong-when-paying""",https://github.com/Expensify/App/pull/62171,2025-05-16
+62164,"Revert GH Action changes, fix broken and incomplete deploy checklists",https://github.com/Expensify/App/pull/62164,2025-05-16
+62151,"[CP Staging] Revert ""Filter out report previews that shouldn't be shown in ReportPreview & MoneyRequestReportView""",https://github.com/Expensify/App/pull/62151,2025-05-16
+62129,"Revert ""fix: get rid of redundant /Search API calls when opening report in RHN""",https://github.com/Expensify/App/pull/62129,2025-05-15
+62112,[CP Staging] Fix RulesCustomNamePage linking,https://github.com/Expensify/App/pull/62112,2025-05-15
+62111,[CP Staging] fix all checkbox is auto checked when only having empty report,https://github.com/Expensify/App/pull/62111,2025-05-15
+62024,"[CP Staging] Revert ""Stop creating the transaction thread reports optimistically for RequestMoney""",https://github.com/Expensify/App/pull/62024,2025-05-14
+62023,[CP Staging] fix: unable to delete approval workflow,https://github.com/Expensify/App/pull/62023,2025-05-14
+62019,[CP Staging] fix: the attachment picker not show on android,https://github.com/Expensify/App/pull/62019,2025-05-14
+62004,[CP Staging] Put `Add expense` button behind the tableReportView beta,https://github.com/Expensify/App/pull/62004,2025-05-14
+61989,"Revert #60505 ""Update onboarding page with new integration choices""",https://github.com/Expensify/App/pull/61989,2025-05-14
+61984,"Revert Pull request #60959 ""Improve bottom tab switching by hiding PopoverMenu""",https://github.com/Expensify/App/pull/61984,2025-05-14
+61975,[CP Staging] Use correct reportID when opening a transaction report in RHP,https://github.com/Expensify/App/pull/61975,2025-05-14
+61971,[CP Staging] Fix amount navigation,https://github.com/Expensify/App/pull/61971,2025-05-14
+61969,[CP Staging] Fix workspace chat showing up,https://github.com/Expensify/App/pull/61969,2025-05-14
+61967,[CP Staging] Hide empty report view for non-beta users,https://github.com/Expensify/App/pull/61967,2025-05-14
+61964,"Revert ""Merge pull request  from Krishna2323/krishna2323/issue/60804"" - Fix room name mentions",https://github.com/Expensify/App/pull/61964,2025-05-13
+61955,"Revert ""Merge pull request #58608 from nyomanjyotisa/issue-58383""",https://github.com/Expensify/App/pull/61955,2025-05-13
+61952,[CP Staging] Enable right component display in search type menu,https://github.com/Expensify/App/pull/61952,2025-05-13
+61934,[CP Staging] Add missing React import,https://github.com/Expensify/App/pull/61934,2025-05-13
+61914,fix lhn not show tooltip,https://github.com/Expensify/App/pull/61914,2025-05-14
+61906,[CP Staging] Categories - Checkmark appears briefly next to the toggle after exiting selection mode,https://github.com/Expensify/App/pull/61906,2025-05-13
+61903,[CP Staging] Fix action buttons in search row,https://github.com/Expensify/App/pull/61903,2025-05-14
+61896,[CP Staging] Update submodule to 6becb99cfb to unblock deploy,https://github.com/Expensify/App/pull/61896,2025-05-13
+61875,[CP Staging] Manually bump version to 9.1.44.2,https://github.com/Expensify/App/pull/61875,2025-05-12
+61865,[NO QA] Update Remove-Members.md,https://github.com/Expensify/App/pull/61865,2025-05-12
+61844,[CP Staging] fix: search bar performance followup,https://github.com/Expensify/App/pull/61844,2025-05-13
+61840,[CP Staging] [Better Expense Reports]: Fix disabled arrow function,https://github.com/Expensify/App/pull/61840,2025-05-14
+61778,"Revert ""fix: an empty report state shows briefly when opening transaction thread in Reports""",https://github.com/Expensify/App/pull/61778,2025-05-09
+61765,fix: search bar UI and selection mode followup,https://github.com/Expensify/App/pull/61765,2025-05-09
+61746,Make search bars work with spaces,https://github.com/Expensify/App/pull/61746,2025-05-08
+61732,"Revert ""feat: Add register for webinar button""",https://github.com/Expensify/App/pull/61732,2025-05-08
+61704,[CP Staging] Update export logic,https://github.com/Expensify/App/pull/61704,2025-05-08
+61695,"[CP Staging] Revert ""Fix manual confirmation page shows per diem confirmation page""",https://github.com/Expensify/App/pull/61695,2025-05-08
+61686,fix: add search bar followups,https://github.com/Expensify/App/pull/61686,2025-05-09
+61679,[CP Staging] Fix: Padding for navigation bar on narrow layout,https://github.com/Expensify/App/pull/61679,2025-05-08
+61667,[CP Staging] Fix workspace change logic,https://github.com/Expensify/App/pull/61667,2025-05-08
+61616,Fix magic code modal being dismissed when entering bad magic code,https://github.com/Expensify/App/pull/61616,2025-05-07
+61516,[No QA]Adjust release creation to only use `--notes-start-tag` in the production deploy case,https://github.com/Expensify/App/pull/61516,2025-05-06
+61501,[NO QA] Disable attendee feature until next release,https://github.com/Expensify/App/pull/61501,2025-05-06
+61486,Accountant selector: Accept only valid logins,https://github.com/Expensify/App/pull/61486,2025-05-06
+61478,Turn off selection mode when one transaction is left,https://github.com/Expensify/App/pull/61478,2025-05-06
+61464,"Revert ""Fix: Expense Reports tab isn't highlighted anymore after clicking on an report""",https://github.com/Expensify/App/pull/61464,2025-05-06
+61423,[CP Staging] fix: persist selection followups,https://github.com/Expensify/App/pull/61423,2025-05-06
+61416,"Revert ""Violation RBR when changing to the higher amount for Travel Report""",https://github.com/Expensify/App/pull/61416,2025-05-05
+61392,[CP Staging] Noop for `onScrollToIndexFailed`,https://github.com/Expensify/App/pull/61392,2025-05-05
+61388,"[CP Staging] Revert ""Make sure that we stay in NewDot for small companies""",https://github.com/Expensify/App/pull/61388,2025-05-05
+61348,"Revert ""Optimize /Search call in useSearchHighlightAndScroll hook""",https://github.com/Expensify/App/pull/61348,2025-05-02
+61338,[CP Staging] Fix: Workspace chat tooltip not displayed when invited to workspace,https://github.com/Expensify/App/pull/61338,2025-05-03
+61286,[CP-stag] Remove fallback value,https://github.com/Expensify/App/pull/61286,2025-05-02
+61253,[CP Stag] fix: unable delete expense in reports page narrow,https://github.com/Expensify/App/pull/61253,2025-05-01
+61247,"Revert ""Fix - Remove $XX.XX from the submitted and approved system me…",https://github.com/Expensify/App/pull/61247,2025-05-06
+60759,[NO QA] Refactor checklist deploy with simpler PR comparison logic,https://github.com/Expensify/App/pull/60759,2025-05-05
+59865,[No QA] Update and rename Track-Expenses-on-Personal-Workspace.md to create-a…,https://github.com/Expensify/App/pull/59865,2025-05-08
+63255,[CP Staging] [NoQA] Enable table report view for everyone,https://github.com/Expensify/App/pull/63255,2025-06-02

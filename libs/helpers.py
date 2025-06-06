@@ -8,9 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 def parse_issue_url(issue_url: str) -> tuple[str, str, int] | None:
-    """
-    Strictly matches URLs like: https://github.com/Expensify/App/issues/25034
-    """
     pattern = r"^https://github\.com/([^/]+)/([^/]+)/issues/(\d+)$"
     match = re.match(pattern, issue_url)
 

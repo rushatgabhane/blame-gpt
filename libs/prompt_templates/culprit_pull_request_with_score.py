@@ -38,7 +38,7 @@ Focus on the following criteria to determine if a PR is likely responsible for t
 5. Provide the PRs most likely responsible for the issue.
 7. If multiple PRs have a good score, reason which one is more likely to be the culprit.
 8. Rank the PRs based on how the flow of issue reproduction steps matches with test steps of each PR.
-9. See the files changed in each PR and if they are related to the issue reproduction steps, consider it more likely to be the culprit. 
+9. See the files changed in each PR and if they are related to the issue reproduction steps, consider it more likely to be the culprit.
 10. PRs that change unrelated areas or cannot affect the described flow should not be considered.
 11. Use explaination field of PRs to understand the context of the PR. If it is unrelated to the issue, do not consider it as a culprit.
 12. Keep the reason concise and one sentence long.
