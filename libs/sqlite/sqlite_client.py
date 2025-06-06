@@ -24,9 +24,7 @@ def require_connection(method):
 
 class Database:
     def __init__(self, db_path: str = constants.DB_PATH):
-        self.connection = sqlite3.connect(
-            db_path, check_same_thread=False, timeout=10.0
-        )
+        self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=10.0)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
         self.connection.execute("PRAGMA synchronous=NORMAL;")
@@ -91,11 +89,7 @@ class Database:
                 raw_body=row[3],
                 labels=json.loads(row[4]),
                 is_processed=row[5],
-                culprit_pull_requests=(
-                    [CulpritPullRequest(**c) for c in json.loads(row[6])]
-                    if row[6]
-                    else None
-                ),
+                culprit_pull_requests=([CulpritPullRequest(**c) for c in json.loads(row[6])] if row[6] else None),
             )
             for row in rows
         ]
@@ -125,9 +119,7 @@ class Database:
             raise e
 
     @require_connection
-    def update_issue_processed_and_result(
-        self, issue_id: int, is_processed: bool, culprits: List[CulpritPullRequest]
-    ):
+    def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: List[CulpritPullRequest]):
         assert self.connection is not None
         self.connection.execute(
             queries.UPDATE_ISSUE_PROCESSED_AND_CULPRITS,
@@ -143,11 +135,7 @@ class Database:
             return None
 
         culprit_data = row[6]
-        cullprit_pull_requests = (
-            [CulpritPullRequest(**c) for c in json.loads(culprit_data)]
-            if culprit_data
-            else None
-        )
+        cullprit_pull_requests = [CulpritPullRequest(**c) for c in json.loads(culprit_data)] if culprit_data else None
 
         return Issue(
             id=row[0],
@@ -162,9 +150,7 @@ class Database:
     @require_connection
     def get_issue_processed_status(self, issue_id: int) -> bool:
         assert self.connection is not None
-        row = self.connection.execute(
-            queries.GET_ISSUE_IS_PROCESSED, (issue_id,)
-        ).fetchone()
+        row = self.connection.execute(queries.GET_ISSUE_IS_PROCESSED, (issue_id,)).fetchone()
         if row:
             return row[0]
         return False
@@ -172,17 +158,13 @@ class Database:
     @require_connection
     def add_issue_pull_request(self, issue_id: int, pull_request_id: int):
         assert self.connection is not None
-        self.connection.execute(
-            queries.INSERT_ISSUE_PULL_REQUEST, (issue_id, pull_request_id)
-        )
+        self.connection.execute(queries.INSERT_ISSUE_PULL_REQUEST, (issue_id, pull_request_id))
         self.connection.commit()
 
     @require_connection
     def get_pull_requests_for_issue(self, issue_id: int) -> List[PullRequest]:
         assert self.connection is not None
-        rows = self.connection.execute(
-            queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id,)
-        ).fetchall()
+        rows = self.connection.execute(queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id,)).fetchall()
         return [
             PullRequest(
                 id=row[0],
@@ -202,13 +184,9 @@ class Database:
         return [(row[0], row[1], row[2]) for row in rows]
 
     @require_connection
-    def get_pull_request_by_id_with_embedding(
-        self, pull_request_id: int
-    ) -> Optional[PullRequest]:
+    def get_pull_request_by_id_with_embedding(self, pull_request_id: int) -> Optional[PullRequest]:
         assert self.connection is not None
-        row = self.connection.execute(
-            queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id,)
-        ).fetchone()
+        row = self.connection.execute(queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id,)).fetchone()
         if not row:
             return None
 
@@ -222,9 +200,7 @@ class Database:
         )
 
     @require_connection
-    def update_issue_pull_request_score(
-        self, issue_id: int, pull_request_id: int, score: float
-    ):
+    def update_issue_pull_request_score(self, issue_id: int, pull_request_id: int, score: float):
         assert self.connection is not None
         self.connection.execute(
             queries.UPDATE_ISSUE_PULL_REQUEST_SCORE,
@@ -235,7 +211,5 @@ class Database:
     @require_connection
     def update_issue_actual_pull_request(self, issue_id: int, pull_request_id: int):
         assert self.connection is not None
-        self.connection.execute(
-            queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id)
-        )
+        self.connection.execute(queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id))
         self.connection.commit()
