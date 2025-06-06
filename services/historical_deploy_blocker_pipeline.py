@@ -6,15 +6,11 @@ from libs.github import repo_secondary
 
 logger = logging.getLogger(__name__)
 
-issue_url_pattern = re.compile(
-    r"- \[x\] https://github\.com/Expensify/App/issues/(\d+)"
-)
+issue_url_pattern = re.compile(r"- \[x\] https://github\.com/Expensify/App/issues/(\d+)")
 
 
 async def run():
-    deploy_checklist = repo_secondary.get_issues(
-        state="closed", labels=["StagingDeployCash"]
-    )
+    deploy_checklist = repo_secondary.get_issues(state="closed", labels=["StagingDeployCash"])
     deploy_blockers_data = []
 
     count = 0
@@ -26,9 +22,7 @@ async def run():
             continue
 
         try:
-            blockers_section = body.split("Deploy Blockers:")[1].split(
-                "Deployer verifications:"
-            )[0]
+            blockers_section = body.split("Deploy Blockers:")[1].split("Deployer verifications:")[0]
         except IndexError:
             continue
 
@@ -46,9 +40,7 @@ async def run():
                     "StagingDeployCash Issue": checklist.title,
                     "StagingDeployCash Issue Number": checklist.number,
                     "StagingDeployCash GitHub URL": checklist.html_url,
-                    "StagingDeployCash Created At": checklist.created_at.strftime(
-                        "%Y-%m-%d"
-                    ),
+                    "StagingDeployCash Created At": checklist.created_at.strftime("%Y-%m-%d"),
                 }
             )
     yield f"Processed deploy checklists."
@@ -74,9 +66,7 @@ async def get_historical_prs():
     slices = 50
 
     for _ in range(slices):
-        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(
-            days=1
-        )
+        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
         query_range = f"{start.date()}..{end.date()}"
         print(f"\n📅 Fetching merged PRs for: {query_range}")
 
@@ -103,9 +93,7 @@ async def get_historical_prs():
                         "PR Number": item["number"],
                         "PR Title": item["title"],
                         "PR URL": item["html_url"],
-                        "Merged At": (
-                            item["closed_at"][:10] if item.get("closed_at") else ""
-                        ),
+                        "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
                     }
                 )
 
@@ -122,9 +110,7 @@ async def get_historical_prs():
 
             page += 1
             if page > 10:
-                print(
-                    " ⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on."
-                )
+                print(" ⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
                 break
 
             time.sleep(1)  # GitHub rate safety
@@ -143,9 +129,7 @@ async def get_all_merged_prs():
     slices = 60
 
     for _ in range(slices):
-        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(
-            days=1
-        )
+        end = (start.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
         query_range = f"{start.date()}..{end.date()}"
         print(f"\n📅 Fetching merged PRs for: {query_range}")
 
@@ -169,9 +153,7 @@ async def get_all_merged_prs():
                         "PR Number": item["number"],
                         "PR Title": item["title"],
                         "PR URL": item["html_url"],
-                        "Merged At": (
-                            item["closed_at"][:10] if item.get("closed_at") else ""
-                        ),
+                        "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
                     }
                 )
 
@@ -188,9 +170,7 @@ async def get_all_merged_prs():
 
             page += 1
             if page > 10:
-                print(
-                    "⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on."
-                )
+                print("⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
                 break
 
             time.sleep(1)
