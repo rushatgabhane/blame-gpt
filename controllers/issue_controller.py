@@ -7,9 +7,7 @@ from middlewares import auth_middleware
 issue_router = APIRouter()
 
 
-@issue_router.get(
-    "/api/issues", dependencies=[Depends(auth_middleware.verify_auth_token)]
-)
+@issue_router.get("/api/issues", dependencies=[Depends(auth_middleware.verify_internal_auth_token)])
 async def get_issues(request: Request):
     db = cast(Database, request.app.state.db)
     issues = issue_service.get_all_issues(db)
@@ -18,7 +16,7 @@ async def get_issues(request: Request):
 
 @issue_router.get(
     "/api/issues/{issue_number}/pull-requests",
-    dependencies=[Depends(auth_middleware.verify_auth_token)],
+    dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_pull_requests_for_issue(request: Request, issue_number: int):
     db = cast(Database, request.app.state.db)
@@ -28,7 +26,7 @@ async def get_pull_requests_for_issue(request: Request, issue_number: int):
 
 @issue_router.get(
     "/api/issues/pull-requests",
-    dependencies=[Depends(auth_middleware.verify_auth_token)],
+    dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_all_pull_requests(request: Request):
     db = cast(Database, request.app.state.db)
@@ -38,7 +36,7 @@ async def get_all_pull_requests(request: Request):
 
 @issue_router.get(
     "/api/pull-request/{pull_request_id}",
-    dependencies=[Depends(auth_middleware.verify_auth_token)],
+    dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_pull_request_by_id_with_embedding(request: Request, pull_request_id: int):
     db = cast(Database, request.app.state.db)
