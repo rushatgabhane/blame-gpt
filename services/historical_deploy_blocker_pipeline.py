@@ -2,7 +2,7 @@ import logging
 import re
 import pandas as pd
 import os
-from libs.github import repo_secondary
+from libs.github import repo
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ issue_url_pattern = re.compile(r"- \[x\] https://github\.com/Expensify/App/issue
 
 
 async def run():
-    deploy_checklist = repo_secondary.get_issues(state="closed", labels=["StagingDeployCash"])
+    deploy_checklist = repo.get_issues(state="closed", labels=["StagingDeployCash"])
     deploy_blockers_data = []
 
     count = 0
@@ -74,7 +74,7 @@ async def get_historical_prs():
         while True:
             query = f"repo:Expensify/App is:pr is:merged merged:{query_range}"
             url = f"/search/issues?q={query}&per_page=100&page={page}"
-            result = repo_secondary._requester.requestJsonAndCheck("GET", url)
+            result = repo._requester.requestJsonAndCheck("GET", url)
             items = result[1].get("items", [])
 
             if not items:
@@ -137,7 +137,7 @@ async def get_all_merged_prs():
         while True:
             query = f"repo:Expensify/App is:pr is:merged merged:{query_range}"
             url = f"/search/issues?q={query}&per_page=100&page={page}"
-            result = repo_secondary._requester.requestJsonAndCheck("GET", url)
+            result = repo._requester.requestJsonAndCheck("GET", url)
             items = result[1].get("items", [])
 
             if not items:

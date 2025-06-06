@@ -1,6 +1,6 @@
 from typing import List
 import re
-from libs.github import gh, repo
+from libs.github import repo
 from models.models import PullRequest
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
