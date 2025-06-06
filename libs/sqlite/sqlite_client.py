@@ -24,7 +24,7 @@ def require_connection(method):
 
 class Database:
     def __init__(self, db_path: str = constants.DB_PATH):
-        self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=10.0)
+        self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=15.0)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
         self.connection.execute("PRAGMA synchronous=NORMAL;")
