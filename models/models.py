@@ -30,6 +30,7 @@ class Issue(BaseModel):
     is_processed: bool = False
     culprit_pull_requests: List[CulpritPullRequest] | None = None
     embedding: list[float] | None = None
+    actual_pull_request_id: int | None = None
 
 
 class PullRequestWithScore(BaseModel):

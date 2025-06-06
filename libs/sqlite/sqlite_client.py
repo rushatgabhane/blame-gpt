@@ -196,10 +196,10 @@ class Database:
         ]
 
     @require_connection
-    def get_all_issue_pull_requests(self) -> List[tuple[int, int]]:
+    def get_all_issue_pull_requests(self) -> List[tuple[int, int, float]]:
         assert self.connection is not None
         rows = self.connection.execute(queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
-        return [(row[0], row[1]) for row in rows]
+        return [(row[0], row[1], row[2]) for row in rows]
 
     @require_connection
     def get_pull_request_by_id_with_embedding(
@@ -220,3 +220,22 @@ class Database:
             files=json.loads(row[4]),
             embedding=json.loads(row[5]) if row[5] else None,
         )
+
+    @require_connection
+    def update_issue_pull_request_score(
+        self, issue_id: int, pull_request_id: int, score: float
+    ):
+        assert self.connection is not None
+        self.connection.execute(
+            queries.UPDATE_ISSUE_PULL_REQUEST_SCORE,
+            (score, issue_id, pull_request_id),
+        )
+        self.connection.commit()
+
+    @require_connection
+    def update_issue_actual_pull_request(self, issue_id: int, pull_request_id: int):
+        assert self.connection is not None
+        self.connection.execute(
+            queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id)
+        )
+        self.connection.commit()

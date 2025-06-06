@@ -52,8 +52,8 @@ async def run(issue_id: int, db: Database):
         ]
         yield f"found {len(pull_requests_without_cp)} pull requests without 'cp staging'."
 
-        prs_with_scores = get_top_pull_requests_by_semantic_score(
-            issue, pull_requests_without_cp, top_n=15
+        prs_with_scores = add_pull_request_semantic_score(
+            issue, pull_requests_without_cp, db=db
         )
         if not prs_with_scores or len(prs_with_scores) == 0:
             yield f"no pull requests with semantic scores found"
@@ -86,8 +86,8 @@ async def run(issue_id: int, db: Database):
         yield f"error in blame pipeline: {e}"
 
 
-def get_top_pull_requests_by_semantic_score(
-    issue: Issue, pull_requests: List[PullRequest], top_n: int
+def add_pull_request_semantic_score(
+    issue: Issue, pull_requests: List[PullRequest], db: Database
 ) -> List[PullRequestWithScore]:
     scored_prs: List[PullRequestWithScore] = [
         PullRequestWithScore(
@@ -96,15 +96,23 @@ def get_top_pull_requests_by_semantic_score(
         for pr in pull_requests
     ]
 
-    scored_prs.sort(key=lambda x: x.score, reverse=True)
-    top_n_culprits = scored_prs[: min(top_n, len(scored_prs))]
-    return top_n_culprits if top_n_culprits else []
+    for i, pr in enumerate(scored_prs):
+        db.update_issue_pull_request_score(
+            issue_id=issue.id, pull_request_id=pr.pull_request.id, score=pr.score
+        )
+
+    return scored_prs if scored_prs else []
 
 
 def find_culprit_pull_requests(
     issue: Issue, pull_requests: List[PullRequestWithScore]
 ) -> CulpritPullRequests | None:
-    pr_block = format_pull_requests(pull_requests)
+    top_n = 15
+    top_n_pull_requests = sorted(pull_requests, key=lambda x: x.score, reverse=True)[
+        : top_n if len(pull_requests) > top_n else len(pull_requests)
+    ]
+
+    pr_block = format_pull_requests(top_n_pull_requests)
     input_data = blame_prompt.format(
         issue_id=issue.id,
         issue_title=issue.title,

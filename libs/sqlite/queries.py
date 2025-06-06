@@ -30,12 +30,15 @@ CREATE TABLE IF NOT EXISTS issues (
     labels TEXT,                       -- Stored as a JSON array
     is_processed BOOLEAN DEFAULT FALSE,
     culprit_pull_requests TEXT,              -- JSON array of CulpritPullRequest objects
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actual_pull_request_id INTEGER, -- The PR that is actually the culprit used for analysis
+    FOREIGN KEY (actual_pull_request_id) REFERENCES pull_requests(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS issue_pull_request (
     issue_id INTEGER NOT NULL,
     pull_request_id INTEGER NOT NULL,
+    score float DEFAULT 0.0,
     PRIMARY KEY (issue_id, pull_request_id),
     FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE,
     FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
@@ -70,7 +73,7 @@ VALUES (?, ?);
 """
 
 GET_ALL_ISSUE_PULL_REQUESTS = """
-SELECT issue_id, pull_request_id from issue_pull_request;
+SELECT issue_id, pull_request_id, score from issue_pull_request;
 """
 
 GET_PULL_REQUESTS_BY_ISSUE_ID = """
@@ -107,4 +110,16 @@ VALUES (?, ?);
 INSERT_ISSUE_EMBEDDING = """
 INSERT OR REPLACE INTO issue_embeddings (issue_id, embedding)
 VALUES (?, ?);
+"""
+
+UPDATE_ISSUE_PULL_REQUEST_SCORE = """
+UPDATE issue_pull_request
+SET score = ?
+WHERE issue_id = ? AND pull_request_id = ?;
+"""
+
+UPADTE_ISSUE_ACTUAL_PULL_REQUEST = """
+UPDATE issues
+SET actual_pull_request_id = ?
+WHERE id = ?;
 """
