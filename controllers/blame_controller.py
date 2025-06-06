@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, Header, Response, Depends
+from fastapi.responses import StreamingResponse
 from libs import helpers
 from middlewares import auth_middleware
 from services import blame_pipeline
@@ -21,12 +22,10 @@ class ManualBlameRequest(BaseModel):
 
 
 # This is a webhook endpoint that listens for GitHub events.
-@blame_router.post("/api/blame")
+@blame_router.post("/api/webhook")
 async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     body = await request.body()
-    if not helpers.is_valid_signature(
-        x_hub_signature_256, os.getenv("GITHUB_WEBHOOK_SECRET") or "", body
-    ):
+    if not helpers.is_valid_signature(x_hub_signature_256, os.getenv("GITHUB_WEBHOOK_SECRET") or "", body):
         return Response(status_code=403, content="Invalid signature")
 
     payload = json.loads(body)
@@ -39,10 +38,7 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     repository_name = payload.get("repository").get("name")
     repository_owner = payload.get("repository").get("owner").get("login")
 
-    if (
-        repository_name != constants.REPO_NAME
-        or repository_owner != constants.REPO_OWNER
-    ):
+    if repository_name != constants.REPO_NAME or repository_owner != constants.REPO_OWNER:
         return Response(
             status_code=200,
             content=f"this repository is not supported",
@@ -53,21 +49,15 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
     db = cast(Database, request.app.state.db)
 
     asyncio.create_task(run_and_log_blame_pipeline(issue_number, db))
-    return Response(
-        status_code=200, content=f"blame process started for #{issue_number}"
-    )
+    return Response(status_code=200, content=f"blame process started for #{issue_number}")
 
 
-@blame_router.post(
-    "/api/blame-manual", dependencies=[Depends(auth_middleware.verify_auth_token)]
-)
+@blame_router.post("/api/blame", dependencies=[Depends(auth_middleware.verify_user_auth_token)])
 async def blame_manual(request: Request, data: ManualBlameRequest):
     db = cast(Database, request.app.state.db)
-
-    asyncio.create_task(run_and_log_blame_pipeline(data.issue_id, db))
-    return Response(
-        status_code=200,
-        content=f"blame process started for #{data.issue_id}",
+    return StreamingResponse(
+        (f"#{data.issue_id}: {step}" async for step in blame_pipeline.run(data.issue_id, db)),
+        media_type="text/plain",
     )
 
 
