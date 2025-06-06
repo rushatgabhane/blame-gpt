@@ -5,9 +5,7 @@ from models.models import CulpritPullRequests
 logger = logging.getLogger(__name__)
 
 
-async def add_comment(
-    issue_number: int, culprit_pull_requests: CulpritPullRequests
-) -> str:
+async def add_comment(issue_number: int, culprit_pull_requests: CulpritPullRequests) -> str:
     try:
         comment = format_comment(culprit_pull_requests)
         repo_secondary.get_issue(number=issue_number).create_comment(comment)

@@ -22,29 +22,24 @@ def get_pull_requests_between(base: str, head: str) -> List[int] | None:
     return sorted(list(pr_numbers)) if pr_numbers else None
 
 
-def add_new_pull_requests_between(
-    base: str, head: str, issue_id: int, db: Database
-) -> List[PullRequest] | None:
+def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> List[PullRequest] | None:
     new_ids = get_pull_requests_between(base, head)
     if not new_ids:
         return
 
-    logging.info(f"found {len(new_ids)} new pull requests {new_ids}")
+    logging.info(f"{issue_id}: found {len(new_ids)} new pull requests {new_ids}")
     existing_ids = db.get_existing_pr_ids()
     new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
 
     result: List[PullRequest] = []
 
     if not new_ids_to_process:
-        logging.info("no new pull requests to process")
+        logging.info("{issue_id} no new pull requests to process")
     else:
-        logging.info(f"processing {len(new_ids_to_process)} new pull requests")
+        logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
     with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {
-            executor.submit(get_pr_with_embeddings, pr_id): pr_id
-            for pr_id in new_ids_to_process
-        }
+        futures = {executor.submit(get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
         for future in as_completed(futures):
             pull_request = future.result()
             if pull_request:
