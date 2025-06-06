@@ -55,10 +55,12 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
 @blame_router.post("/api/blame", dependencies=[Depends(auth_middleware.verify_user_auth_token)])
 async def blame_manual(request: Request, data: ManualBlameRequest):
     db = cast(Database, request.app.state.db)
-    return StreamingResponse(
-        (f"#{data.issue_id}: {step}" + "\n" async for step in blame_pipeline.run(data.issue_id, db)),
-        media_type="text/plain",
-    )
+
+    async def stream_logs():
+        async for step in blame_pipeline.run(data.issue_id, db):
+            yield f"#{data.issue_id}: {step}\n"
+
+    return StreamingResponse(stream_logs(), media_type="text/plain")
 
 
 async def run_and_log_blame_pipeline(issue_id: int, db: Database):

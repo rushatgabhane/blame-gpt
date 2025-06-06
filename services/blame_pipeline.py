@@ -102,12 +102,14 @@ def add_pull_request_semantic_score(
 
 
 def find_culprit_pull_requests(issue: Issue, pull_requests: List[PullRequestWithScore]) -> CulpritPullRequests | None:
-    top_n = 15
-    top_n_pull_requests = sorted(pull_requests, key=lambda x: x.score, reverse=True)[
-        : top_n if len(pull_requests) > top_n else len(pull_requests)
-    ]
+    pull_requests_sorted_by_score = sorted(pull_requests, key=lambda x: x.score, reverse=True)
 
-    pr_block = format_pull_requests(top_n_pull_requests)
+    start_index = 0
+    max_items = 15
+
+    selected_pull_requests = pull_requests_sorted_by_score[start_index : start_index + max_items]
+
+    pr_block = format_pull_requests(selected_pull_requests)
     input_data = blame_prompt.format(
         issue_id=issue.id,
         issue_title=issue.title,
