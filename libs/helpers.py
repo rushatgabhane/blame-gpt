@@ -31,7 +31,5 @@ def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
     if signature is None:
         return False
 
-    expected_signature = (
-        "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
-    )
+    expected_signature = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected_signature, signature)
