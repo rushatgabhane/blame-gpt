@@ -56,7 +56,7 @@ async def blame(request: Request, x_hub_signature_256: str = Header(None)):
 async def blame_manual(request: Request, data: ManualBlameRequest):
     db = cast(Database, request.app.state.db)
     return StreamingResponse(
-        (f"#{data.issue_id}: {step}" async for step in blame_pipeline.run(data.issue_id, db)),
+        (f"#{data.issue_id}: {step}" + "\n" async for step in blame_pipeline.run(data.issue_id, db)),
         media_type="text/plain",
     )
 

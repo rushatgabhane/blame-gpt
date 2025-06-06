@@ -76,12 +76,12 @@ async def run(issue_id: int, db: Database):
 
         yield f"found culprit pull requests for the issue."
         comment = await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
-        logger.info(f"{issue_id}: added comment to the issue")
-        yield f"added comment to the issue: \n{comment}"
+        logger.info(f"{issue_id}: added comment to the issue {comment}")
+        yield f"added comment to the issue."
 
         db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests.pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
-        yield f"blame pipeline completed successfully"
+        yield f"blame pipeline completed successfully!"
     except Exception as e:
         logger.error(f"{issue_id}: error in blame pipeline {e}")
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"
