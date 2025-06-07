@@ -9,7 +9,7 @@ from libs import constants
 from typing import List
 from functools import wraps
 
-os.makedirs(os.path.dirname(constants.DB_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(constants.CACHE_DB_PATH), exist_ok=True)
 
 
 def require_connection(method):
@@ -23,7 +23,7 @@ def require_connection(method):
 
 
 class Database:
-    def __init__(self, db_path: str = constants.DB_PATH):
+    def __init__(self, db_path: str = constants.CACHE_DB_PATH):
         self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=15.0)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
