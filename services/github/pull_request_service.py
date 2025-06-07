@@ -5,7 +5,7 @@ from models.models import PullRequest
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from libs.llm import embedding_model
-from libs.sqlite.sqlite_client import Database
+from libs.sqlite.core.core_sqlite_client import Database
 
 logger = logging.getLogger(__name__)
 

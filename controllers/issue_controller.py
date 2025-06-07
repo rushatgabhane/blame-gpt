@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from typing import cast
-from libs.sqlite.sqlite_client import Database
+from libs.sqlite.core.core_sqlite_client import Database
 from services.github import issue_service
 from middlewares import auth_middleware
 

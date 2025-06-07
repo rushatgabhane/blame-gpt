@@ -36,3 +36,10 @@ class Issue(BaseModel):
 class PullRequestWithScore(BaseModel):
     pull_request: PullRequest
     score: float
+
+
+class Docs(BaseModel):
+    path: str
+    title: str
+    content_hash: str
+    embedding: List[float]

@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from libs import helpers
 from middlewares import auth_middleware
 from services import blame_pipeline
-from libs.sqlite.sqlite_client import Database
+from libs.sqlite.core.core_sqlite_client import Database
 from pydantic import BaseModel
 import logging
 from typing import cast

@@ -3,7 +3,7 @@ import logging
 import re
 from models.models import Issue
 from libs.github import repo
-from libs.sqlite.sqlite_client import Database
+from libs.sqlite.core.core_sqlite_client import Database
 from typing import List
 from libs.llm import embedding_model
 

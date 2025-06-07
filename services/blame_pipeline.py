@@ -1,7 +1,7 @@
 import asyncio
 from services.github import pull_request_service, issue_service
 from models.models import Issue
-from libs.sqlite.sqlite_client import Database
+from libs.sqlite.core.core_sqlite_client import Database
 from models.models import (
     PullRequest,
     CulpritPullRequests,
