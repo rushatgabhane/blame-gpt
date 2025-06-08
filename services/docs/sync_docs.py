@@ -1,0 +1,66 @@
+import json
+import subprocess
+from pathlib import Path
+import logging
+
+from dotenv import load_dotenv
+from libs.sqlite.docs.docs_sqlite_client import Database
+from libs.helpers import compute_sha256
+from libs.llm import embedding_model
+
+CLONE_DIR = Path("data/app")
+ARTICLES_DIR = CLONE_DIR / "docs/articles"
+REPO_URL = "https://github.com/Expensify/App.git"
+logger = logging.getLogger(__name__)
+
+
+def get_title_from_path(path: str) -> str:
+    return path.split("/")[-1] if path else ""
+
+
+# We need to do this because we don't have github workflows setup on this repo
+def clone_or_pull_repo(repo_url: str, clone_path: Path):
+    if not clone_path.exists():
+        logger.info(f"cloning repository to {clone_path}")
+        subprocess.run(["git", "clone", repo_url, str(clone_path)], check=True)
+    else:
+        logger.info(f"pulling latest changes in {clone_path}")
+        subprocess.run(["git", "-C", str(clone_path), "pull"], check=True)
+
+
+def update_docs_embedding(docs_db: Database):
+    logger.info("updating docs embeddings")
+
+    all_docs = list(ARTICLES_DIR.rglob("*.md"))
+    current_paths = {str(p.relative_to(ARTICLES_DIR)) for p in all_docs}
+
+    existing_paths = docs_db.get_all_paths()
+    for path in existing_paths - current_paths:
+        logger.info(f"deleting doc from db: {path}")
+        docs_db.delete_doc(path)
+
+    for file_path in all_docs:
+        rel_path = str(file_path.relative_to(ARTICLES_DIR))
+        content = file_path.read_text(encoding="utf-8").strip()
+        if not content:
+            continue
+
+        content_hash = compute_sha256(content)
+        existing_hash = docs_db.get_content_hash(rel_path)
+        if existing_hash == content_hash:
+            continue
+
+        title = get_title_from_path(rel_path)
+        embedding = embedding_model.embed_query(f"Path: {rel_path}\n\n Content:{content}")
+
+        docs_db.upsert_doc(rel_path, title, content_hash, json.dumps(embedding))
+    logger.info("docs embeddings updated successfully")
+
+
+def sync_docs(docs_db: Database):
+    try:
+        clone_or_pull_repo(REPO_URL, CLONE_DIR)
+        update_docs_embedding(docs_db)
+    except Exception as e:
+        logger.error(f"failed to sync docs: {e}")
+        raise e

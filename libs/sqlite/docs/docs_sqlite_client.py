@@ -2,7 +2,7 @@ from libs import constants
 import sqlite3
 from . import docs_queries as q
 from libs import constants
-from typing import List, Optional
+from typing import Optional, Set
 from functools import wraps
 import os
 import json
@@ -71,3 +71,10 @@ class Database:
 
         self.connection.execute(q.DELETE_DOC, (path,))
         self.connection.commit()
+
+    @require_connection
+    def get_all_paths(self) -> Set[str]:
+        assert self.connection is not None
+
+        rows = self.connection.execute(q.GET_ALL_PATHS).fetchall()
+        return {row["path"] for row in rows}

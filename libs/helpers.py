@@ -33,3 +33,7 @@ def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
 
     expected_signature = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected_signature, signature)
+
+
+def compute_sha256(content: str) -> str:
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
