@@ -8,3 +8,5 @@ LABELS = {
     "DeployBlockerCash": "DeployBlockerCash",
     "DeployBlocker": "DeployBlocker",
 }
+
+EN_TS = "en.ts"

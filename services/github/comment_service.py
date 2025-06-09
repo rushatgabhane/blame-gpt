@@ -23,3 +23,12 @@ def format_comment(culprit_pull_requests: CulpritPullRequests) -> str:
     for pr in culprit_pull_requests.pull_requests:
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
     return comment
+
+
+def add_comment_to_pull_request(pull_request_id: int, comment: str) -> None:
+    try:
+        pull_request = repo.get_pull(pull_request_id)
+        pull_request.create_issue_comment(comment)
+    except Exception as e:
+        logger.error(f"error adding comment to pull request #{pull_request_id}: {e}")
+        raise

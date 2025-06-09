@@ -3,6 +3,8 @@ import numpy as np
 import hmac
 import hashlib
 import logging
+import difflib
+import html
 
 logger = logging.getLogger(__name__)
 
@@ -37,3 +39,24 @@ def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
 
 def compute_sha256(content: str) -> str:
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def highlight_diff_markdown(before: str, after: str) -> str:
+    before_words = before.split()
+    after_words = after.split()
+    diff = difflib.ndiff(before_words, after_words)
+
+    result = []
+    for word in diff:
+        content = html.escape(word[2:])  # escape Markdown-breaking characters
+        if word.startswith("- "):
+            result.append(f"~~{content}~~")
+        elif word.startswith("+ "):
+            result.append(f"`{content}`")
+        elif word.startswith("  "):
+            result.append(content)
+    return " ".join(result)
+
+def blockquote(text: str) -> str:
+    lines = text.strip().splitlines()
+    return "\n".join([f"> {line}" for line in lines])

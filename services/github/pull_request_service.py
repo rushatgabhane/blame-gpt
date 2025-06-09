@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Optional
 import re
 from libs.github import repo
-from models.models import PullRequest
+from models.models import PullRequest, FilePatch
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from libs.llm import embedding_model
@@ -10,7 +10,7 @@ from libs.sqlite.core.core_sqlite_client import Database
 logger = logging.getLogger(__name__)
 
 
-def get_pull_requests_between(base: str, head: str) -> List[int] | None:
+def _get_pull_requests_between(base: str, head: str) -> List[int] | None:
     comparison = repo.compare(base=base, head=head)
 
     pr_numbers = set()
@@ -23,7 +23,7 @@ def get_pull_requests_between(base: str, head: str) -> List[int] | None:
 
 
 def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> List[PullRequest] | None:
-    new_ids = get_pull_requests_between(base, head)
+    new_ids = _get_pull_requests_between(base, head)
     if not new_ids:
         return
 
@@ -39,7 +39,7 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
         logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
     with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
+        futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
         for future in as_completed(futures):
             pull_request = future.result()
             if pull_request:
@@ -52,13 +52,13 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
     return result
 
 
-def get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
+def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
     try:
         pr = repo.get_pull(pull_request_id)
         files = [f.filename for f in pr.get_files()]
 
-        pr_test = parse_test_steps(pr.body or "")
-        pr_explaination = parse_explaination(pr.body or "")
+        pr_test = _parse_test_steps(pr.body or "")
+        pr_explaination = _parse_explaination(pr.body or "")
 
         pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}"
         pr_embedding = embedding_model.embed_query(pr_text)
@@ -67,7 +67,7 @@ def get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             id=pr.number,
             title=pr.title,
             test=pr_test,
-            explaination=parse_explaination(pr.body or ""),
+            explaination=_parse_explaination(pr.body or ""),
             files=files,
             embedding=pr_embedding,
         )
@@ -76,7 +76,7 @@ def get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
         return None
 
 
-def parse_test_steps(body: str) -> str:
+def _parse_test_steps(body: str) -> str:
     pattern = r"(### Tests.*?)(?=### PR Author Checklist)"
     match = re.search(pattern, body, re.DOTALL | re.IGNORECASE)
     if not match:
@@ -91,7 +91,7 @@ def parse_test_steps(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def parse_explaination(body: str) -> str:
+def _parse_explaination(body: str) -> str:
     pattern = r"### Explanation of Change(.*?)### Fixed Issues"
     match = re.search(pattern, body, re.DOTALL | re.IGNORECASE)
     if not match:
@@ -102,3 +102,34 @@ def parse_explaination(body: str) -> str:
     normalized_spacing = re.sub(r"\n{3,}", "\n\n", without_comments)
 
     return normalized_spacing.strip()
+
+
+def get_pull_request_patch(pull_request_id: int) -> List[FilePatch]:
+    patches: List[FilePatch] = []
+
+    pr = repo.get_pull(pull_request_id)
+    for file in pr.get_files():
+        if not file.patch:
+            continue
+
+        patches.append(
+            FilePatch(
+                filename=file.filename,
+                patch=file.patch or "",
+            )
+        )
+    return patches
+
+
+def add_pull_request(pull_request_id: int, db: Database) -> Optional[PullRequest]:
+    existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
+    if existing_pr:
+        return existing_pr
+
+    pull_request = _get_pr_with_embeddings(pull_request_id)
+    if not pull_request:
+        logging.error(f"failed to fetch pull request {pull_request_id}")
+        return None
+
+    db.add_pull_request(pull_request)
+    return pull_request

@@ -3,7 +3,6 @@ import subprocess
 from pathlib import Path
 import logging
 
-from dotenv import load_dotenv
 from libs.sqlite.docs.docs_sqlite_client import Database
 from libs.helpers import compute_sha256
 from libs.llm import embedding_model
@@ -53,7 +52,7 @@ def update_docs_embedding(docs_db: Database):
         title = get_title_from_path(rel_path)
         embedding = embedding_model.embed_query(f"Path: {rel_path}\n\n Content:{content}")
 
-        docs_db.upsert_doc(rel_path, title, content_hash, json.dumps(embedding))
+        docs_db.upsert_doc(rel_path, title, content_hash, json.dumps(embedding), content)
     logger.info("docs embeddings updated successfully")
 
 

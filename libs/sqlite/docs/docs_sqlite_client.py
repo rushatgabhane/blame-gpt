@@ -2,11 +2,12 @@ from libs import constants
 import sqlite3
 from . import docs_queries as q
 from libs import constants
-from typing import Optional, Set
+from typing import Optional, Set, List
 from functools import wraps
 import os
 import json
 import datetime
+from models.models import Doc
 
 
 def require_connection(method):
@@ -49,19 +50,13 @@ class Database:
         return row["content_hash"] if row else None
 
     @require_connection
-    def upsert_doc(self, path: str, title: str, content_hash: str, embedding: str):
+    def upsert_doc(self, path: str, title: str, content_hash: str, embedding: str, content: str):
         assert self.connection is not None
         now = datetime.datetime.now().isoformat()
 
         self.connection.execute(
             q.UPSERT_DOC,
-            (
-                path,
-                title,
-                content_hash,
-                embedding,
-                now,
-            ),
+            (path, title, content_hash, embedding, content, now),
         )
         self.connection.commit()
 
@@ -78,3 +73,34 @@ class Database:
 
         rows = self.connection.execute(q.GET_ALL_PATHS).fetchall()
         return {row["path"] for row in rows}
+
+    @require_connection
+    def get_all_docs_with_embeddings(self) -> List[Doc]:
+        assert self.connection is not None
+
+        rows = self.connection.execute(q.GET_ALL_DOCS_WITH_EMBEDDINGS).fetchall()
+        return [
+            Doc(
+                path=row["path"],
+                title=row["title"],
+                content_hash=row["content_hash"],
+                embedding=json.loads(row["embedding"]),
+                raw_content=row["content"],
+            )
+            for row in rows
+        ]
+
+    @require_connection
+    def get_doc_with_content_by_path(self, path: str) -> Optional[Doc]:
+        assert self.connection is not None
+
+        row = self.connection.execute(q.GET_DOC_WITH_CONTENT_BY_PATH, (path,)).fetchone()
+        if not row:
+            return None
+
+        return Doc(
+            path=row["path"],
+            title=row["title"],
+            content_hash=row["content_hash"],
+            raw_content=row["content"],
+        )

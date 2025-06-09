@@ -110,21 +110,14 @@ def find_culprit_pull_requests(issue: Issue, pull_requests: List[PullRequestWith
     selected_pull_requests = pull_requests_sorted_by_score[start_index : start_index + max_items]
 
     pr_block = format_pull_requests(selected_pull_requests)
-    input_data = blame_prompt.format(
+    input = blame_prompt.format(
         issue_id=issue.id,
         issue_title=issue.title,
         issue_steps=issue.steps,
         pull_requests_block=pr_block,
     )
-    response = llm.invoke(input_data)
-    content = response.content
-    if isinstance(content, str):
-        return culprit_parser.parse(content)
-    elif isinstance(content, list):
-        return culprit_parser.parse(str(content))
-    else:
-        logger.error("Unexpected response content type: %s", type(content))
-        return None
+    response = llm.invoke(input)
+    return culprit_parser.invoke(response)
 
 
 def format_pull_requests(prs: List[PullRequestWithScore]) -> str:

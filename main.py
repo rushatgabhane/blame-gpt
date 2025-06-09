@@ -15,7 +15,7 @@ from controllers.blame_controller import blame_router
 from controllers.issue_controller import issue_router
 from controllers.deploy_blocker_controller import deploy_blocker_router
 from controllers.docs_controller import docs_router
-from services.docs.sync_docs import sync_docs
+from services.docs_service.sync import sync_docs
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -34,6 +34,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("database connections initialized.")
 
+    sync_docs(docs_db)
     scheduler.add_job(
         lambda: sync_docs(docs_db), trigger=CronTrigger(hour=8, minute=0), name="daily docs sync", id="daily_docs_sync"
     )
