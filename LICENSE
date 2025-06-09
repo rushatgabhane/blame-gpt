@@ -1,37 +1,21 @@
-END USER LICENSE AGREEMENT (EULA)
+MIT License
 
-IMPORTANT: PLEASE READ THIS END USER LICENSE AGREEMENT ("AGREEMENT") CAREFULLY BEFORE USING THE SOFTWARE.
+Copyright (c) 2025 Rushat Gabhane
 
-BY INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THE TERMS OF THIS AGREEMENT, DO NOT INSTALL OR USE THE SOFTWARE.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-This Agreement is a legal agreement between you (either an individual or a single entity) and Rushat Gabhane ("Licensor") for the software product "blame gpt", which includes associated software components, media, printed materials, and "online" or electronic documentation ("Software").
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-1. GRANT OF LICENSE
-Licensor grants you a non-transferable, non-exclusive, revocable license to use the Software solely for personal, non-commercial evaluation purposes. All rights not expressly granted to you are reserved by the Licensor.
-
-2. RESTRICTIONS
-You may NOT:
-- Use the Software in production or for commercial purposes.
-- Reverse engineer, decompile, or disassemble the Software.
-- Modify, adapt, translate, rent, lease, or create derivative works based on the Software.
-- Distribute, sublicense, or otherwise make the Software available to third parties.
-
-3. OWNERSHIP
-The Software is licensed, not sold. Licensor retains all right, title, and interest in and to the Software, including all copyrights, intellectual property rights, and trademarks.
-
-4. DISCLAIMER OF WARRANTY
-The Software is provided "AS IS" without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
-
-5. LIMITATION OF LIABILITY
-In no event shall Licensor be liable for any damages whatsoever arising out of the use or inability to use the Software, even if Licensor has been advised of the possibility of such damages.
-
-6. TERMINATION
-This Agreement is effective until terminated. It will terminate automatically without notice if you fail to comply with any of its terms. Upon termination, you must destroy all copies of the Software and all of its components.
-
-7. GOVERNING LAW
-This Agreement shall be governed by and construed in accordance with the laws of [Your Country/State], without regard to its conflict of law principles.
-
-8. ENTIRE AGREEMENT
-This Agreement constitutes the entire agreement between you and the Licensor and supersedes all prior or contemporaneous understandings regarding the Software.
-
-© 2025 Rushat Gabhane. All rights reserved.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
