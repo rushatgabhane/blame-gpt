@@ -20,7 +20,9 @@ def format_comment(culprit_pull_requests: CulpritPullRequests) -> str:
         return ""
 
     comment = "### Possible culprit PRs for this issue\n"
-    for pr in culprit_pull_requests.pull_requests:
+    for i, pr in enumerate(culprit_pull_requests.pull_requests):
+        if i == 2:
+            comment += f"\n#### Exploratory PRs\n"
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
     return comment
 
