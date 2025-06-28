@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from libs.llm import embedding_model
 from libs.sqlite.core.core_sqlite_client import Database
+import sqlite3
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,10 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
                 result.append(pull_request)
 
     for pr_id in new_ids:
-        db.add_issue_pull_request(issue_id, pr_id)
+        try:
+            db.add_issue_pull_request(issue_id, pr_id)
+        except sqlite3.IntegrityError as e:
+            logging.error(f"failed to add issue pull request {issue_id} - {pr_id}: {e}")
 
     return result
 
