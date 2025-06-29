@@ -91,3 +91,9 @@ class State(TypedDict):
     should_docs_update: Optional[bool]
     update_reason: Optional[str]
     comment: Optional[str]
+
+
+class FileSummary(BaseModel):
+    path: str
+    summary: str
+    hash: str
