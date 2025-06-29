@@ -59,7 +59,7 @@ def update_docs_embedding(docs_db: Database):
 def sync_docs(docs_db: Database):
     try:
         clone_or_pull_repo(REPO_URL, CLONE_DIR)
-        update_docs_embedding(docs_db)
+        # update_docs_embedding(docs_db)
     except Exception as e:
         logger.error(f"failed to sync docs: {e}")
         raise e

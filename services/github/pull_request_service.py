@@ -51,7 +51,7 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
         try:
             db.add_issue_pull_request(issue_id, pr_id)
         except sqlite3.IntegrityError as e:
-            logging.error(f"failed to add issue pull request {issue_id} - {pr_id}: {e}")
+            logging.warning(f"failed to add issue pull request {issue_id} - {pr_id}: {e}")
 
     return result
 
