@@ -64,19 +64,24 @@ async def run(issue_id: int, db: Database):
             return
 
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
-
         yield f"finding culprit pull requests"
 
-        top_prs, exploratory_prs = await asyncio.gather(
-            asyncio.to_thread(
-                find_culprit_pull_requests, page=0, culprits_to_find=2, issue=issue, pull_requests=prs_with_scores
-            ),
-            asyncio.to_thread(
-                find_culprit_pull_requests, page=1, culprits_to_find=1, issue=issue, pull_requests=prs_with_scores
-            ),
-        )
-        culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
+        tasks = [
+            asyncio.create_task(
+                _culprit_task(page=0, culprits_to_find=2, issue=issue, prs_with_scores=prs_with_scores)
+            ),  # Top PRs
+            asyncio.create_task(
+                _culprit_task(page=1, culprits_to_find=1, issue=issue, prs_with_scores=prs_with_scores)
+            ),  # Exploratory PRs
+        ]
 
+        # heartbeat until both tasks are done to avoid thread being killed by timeout
+        while any(not t.done() for t in tasks):
+            await asyncio.sleep(10)
+            yield "crunching pull requests...\n"
+
+        top_prs, exploratory_prs = [t.result() for t in tasks]
+        culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
             yield f"no culprit pull requests found"
@@ -95,6 +100,16 @@ async def run(issue_id: int, db: Database):
     except Exception as e:
         logger.error(f"{issue_id}: error in blame pipeline {e}")
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"
+
+
+async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
+    return await asyncio.to_thread(
+        find_culprit_pull_requests,
+        page=page,
+        culprits_to_find=culprits_to_find,
+        issue=issue,
+        pull_requests=prs_with_scores,
+    )
 
 
 def add_pull_request_semantic_score(
@@ -122,6 +137,9 @@ def find_culprit_pull_requests(
     start_index = page * max_items
 
     selected_pull_requests = pull_requests_sorted_by_score[start_index : start_index + max_items]
+    if not selected_pull_requests or len(selected_pull_requests) == 0:
+        logger.info(f"{issue.id}: no pull requests found for page {page}")
+        return None
 
     pr_block = format_pull_requests(selected_pull_requests)
     input = blame_prompt.format(
