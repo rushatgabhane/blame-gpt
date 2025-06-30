@@ -9,6 +9,7 @@ class PullRequest(BaseModel):
     explaination: str
     files: List[str]
     embedding: list[float] | None = None
+    code_diff_summary: str | None = None
 
 
 class CulpritPullRequest(BaseModel):
@@ -93,7 +94,5 @@ class State(TypedDict):
     comment: Optional[str]
 
 
-class FileSummary(BaseModel):
-    path: str
-    summary: str
-    hash: str
+class CodeDiffSummary(BaseModel):
+    pull_request_description: str

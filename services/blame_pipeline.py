@@ -12,7 +12,7 @@ from libs.prompt_templates.culprit_pull_request_with_score import (
     culprit_parser,
 )
 from typing import List
-from libs.llm import llm
+from libs.llm import llmReasoning
 import logging
 from services.github import comment_service
 from libs.helpers import cosine_similarity
@@ -66,20 +66,30 @@ async def run(issue_id: int, db: Database):
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
 
         yield f"finding culprit pull requests"
-        culprit_pull_requests = await asyncio.to_thread(find_culprit_pull_requests, issue, prs_with_scores)
-        if not culprit_pull_requests or not culprit_pull_requests.pull_requests:
+
+        top_prs, exploratory_prs = await asyncio.gather(
+            asyncio.to_thread(
+                find_culprit_pull_requests, page=0, culprits_to_find=2, issue=issue, pull_requests=prs_with_scores
+            ),
+            asyncio.to_thread(
+                find_culprit_pull_requests, page=1, culprits_to_find=1, issue=issue, pull_requests=prs_with_scores
+            ),
+        )
+        culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
+
+        if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
             yield f"no culprit pull requests found"
             return
 
-        logger.info(f"{issue_id}: found {len(culprit_pull_requests.pull_requests)} culprit pull requests")
+        logger.info(f"{issue_id}: found {len(culprit_pull_requests)} culprit pull requests")
 
         yield f"found culprit pull requests for the issue."
         comment = await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
         logger.info(f"{issue_id}: added comment to the issue {comment}")
         yield f"added comment to the issue."
 
-        db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests.pull_requests)
+        db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
         yield f"blame pipeline completed successfully!"
     except Exception as e:
@@ -101,11 +111,15 @@ def add_pull_request_semantic_score(
     return scored_prs if scored_prs else []
 
 
-def find_culprit_pull_requests(issue: Issue, pull_requests: List[PullRequestWithScore]) -> CulpritPullRequests | None:
+# Page is a zero-based index, so page 0 means the first 20 items.
+# culprits_to_find is the number of pull requests to return.
+def find_culprit_pull_requests(
+    page: int, culprits_to_find: int, issue: Issue, pull_requests: List[PullRequestWithScore]
+) -> CulpritPullRequests | None:
     pull_requests_sorted_by_score = sorted(pull_requests, key=lambda x: x.score, reverse=True)
 
-    start_index = 0
-    max_items = 15
+    max_items = 20
+    start_index = page * max_items
 
     selected_pull_requests = pull_requests_sorted_by_score[start_index : start_index + max_items]
 
@@ -114,9 +128,10 @@ def find_culprit_pull_requests(issue: Issue, pull_requests: List[PullRequestWith
         issue_id=issue.id,
         issue_title=issue.title,
         issue_steps=issue.steps,
+        culprits_to_find=culprits_to_find,
         pull_requests_block=pr_block,
     )
-    response = llm.invoke(input)
+    response = llmReasoning.invoke(input)
     return culprit_parser.invoke(response)
 
 
@@ -129,6 +144,8 @@ Title: {pr.pull_request.title}
 Test Steps: {pr.pull_request.test.strip() if pr.pull_request.test else 'No test steps provided.'}
 
 Files Changed: {", ".join(pr.pull_request.files) if pr.pull_request.files else 'No files listed.'}
+
+Code diff summary: {pr.pull_request.code_diff_summary if pr.pull_request.code_diff_summary else 'No code diff summary provided.'}
 
 Score: {pr.score:.2f}
 
