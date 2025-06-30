@@ -38,13 +38,21 @@ async def run(issue_id: int, db: Database):
             logger.info(f"{issue_id}: not labeled with {constants.LABELS['DeployBlockerCash']}.")
             return
 
-        await asyncio.to_thread(
-            pull_request_service.add_new_pull_requests_between,
-            base="production",
-            head="staging",
-            issue_id=issue_id,
-            db=db,
+        task_add_pulls = asyncio.create_task(
+            asyncio.to_thread(
+                pull_request_service.add_new_pull_requests_between,
+                base="production",
+                head="staging",
+                issue_id=issue_id,
+                db=db,
+            )
         )
+
+        while not task_add_pulls.done():
+            await asyncio.sleep(10)
+            yield "this will take a few minutes. fetching pull requests..."  # heartbeat to avoid closing the thread
+        
+        await task_add_pulls
 
         pull_requests = db.get_pull_requests_for_issue(issue_id)
         if not pull_requests or len(pull_requests) == 0:
@@ -66,7 +74,7 @@ async def run(issue_id: int, db: Database):
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
         yield f"finding culprit pull requests"
 
-        tasks = [
+        tasks_culprit_pull_requests = [
             asyncio.create_task(
                 _culprit_task(page=0, culprits_to_find=2, issue=issue, prs_with_scores=prs_with_scores)
             ),  # Top PRs
@@ -76,11 +84,11 @@ async def run(issue_id: int, db: Database):
         ]
 
         # heartbeat until both tasks are done to avoid thread being killed by timeout
-        while any(not t.done() for t in tasks):
+        while any(not t.done() for t in tasks_culprit_pull_requests):
             await asyncio.sleep(10)
-            yield "crunching pull requests...\n"
+            yield "ranking pull requests..."
 
-        top_prs, exploratory_prs = [t.result() for t in tasks]
+        top_prs, exploratory_prs = [t.result() for t in tasks_culprit_pull_requests]
         culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
