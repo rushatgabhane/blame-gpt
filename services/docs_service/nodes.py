@@ -1,7 +1,7 @@
 from models.models import State
 from models.models import PullRequestIntent, DocUpdateDiff, Doc, DocEditEvaluation
 from libs.prompt_templates.pull_request_intent import pull_request_intent_prompt, pull_request_intent_parser
-from libs.llm import llm, embedding_model
+from libs.llm import llmReasoningCheap, embedding_model
 import logging
 from libs.helpers import cosine_similarity
 from libs.sqlite.docs import docs_sqlite_client
@@ -52,7 +52,7 @@ def pull_request_intent_node(state: State) -> State:
         en_patch=en_patch,
     )
 
-    output = llm.invoke(input)
+    output = llmReasoningCheap.invoke(input)
     p: PullRequestIntent = pull_request_intent_parser.invoke(output)
     if not p or not p.intent:
         logger.error(f"{pull_request.id}: intent parsing failed. output: {output}")
@@ -124,7 +124,7 @@ def doc_edit_suggestions_node(state: State) -> State:
             content=content,
         )
 
-        output = llm.invoke(input)
+        output = llmReasoningCheap.invoke(input)
         p = doc_edit_parser.invoke(output)
         if not p or not p.edits:
             logger.info(f"{state["pull_request_id"]}: doc {doc.path}: edit suggestions is empty")
@@ -149,7 +149,7 @@ def doc_edit_evaluation_node(state: State) -> State:
         intent=state["intent"], suggestions_json=json.dumps([s.model_dump() for s in suggestions])
     )
 
-    output = llm.invoke(input)
+    output = llmReasoningCheap.invoke(input)
     p: DocEditEvaluation = doc_edit_evaluation_parser.invoke(output)
 
     state["should_docs_update"] = p.should_docs_update

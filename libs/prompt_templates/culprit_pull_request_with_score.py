@@ -19,6 +19,7 @@ Each PR includes:
 - Title
 - Test steps
 - Files Changed - List of files changed in the PR
+- Code diff summary - a summary of what and why the code was changed
 - Score: Semantic similarity with the issue title and steps. This is between 0 and 1. Score above 0.5 is good but not always a culprit so look at lower scores too.
 - Explanation (if available)
 
@@ -26,8 +27,7 @@ Your task is to find which PR might be responsible for the reported issue.
 
 Instructions:
 
-Do not predict if the PR could be culprit based on some reason. Just analyze the PRs based on the issue reproduction steps and the test steps of each PR and title.
-eg: This PR addresses report sorting, which might impact how reports are displayed, including potentially empty states in the reports page.
+Analyze the PRs based on the issue reproduction steps and the test steps of each PR and title.
 Do not make any guesses or assumptions about the issue or PRs.
 
 Focus on the following criteria to determine if a PR is likely responsible for the issue:
@@ -38,11 +38,10 @@ Focus on the following criteria to determine if a PR is likely responsible for t
 5. Provide the PRs most likely responsible for the issue.
 7. If multiple PRs have a good score, reason which one is more likely to be the culprit.
 8. Rank the PRs based on how the flow of issue reproduction steps matches with test steps of each PR.
-9. See the files changed in each PR and if they are related to the issue reproduction steps, consider it more likely to be the culprit.
+9. Use the code diff summary and the files changed in each PR and if they are related to the issue reproduction steps, consider it more likely to be the culprit.
 10. PRs that change unrelated areas or cannot affect the described flow should not be considered.
-11. Use explaination field of PRs to understand the context of the PR. If it is unrelated to the issue, do not consider it as a culprit.
-12. Keep the reason concise and one sentence long.
-13. Return at least two PRs, but no more than three PRs.
+11. Keep the reason concise and one sentence long and based on code diff summary, and test steps.
+12. Return top {culprits_to_find} most likely culprit PRs only.
 
 Finally, sort based on most likely culprit PR for the issue and return the result as JSON matching this schema:
 
@@ -64,6 +63,6 @@ Steps to Reproduce:
 
 blame_prompt = PromptTemplate(
     template=template,
-    input_variables=["issue_id", "issue_title", "issue_steps", "pull_requests_block"],
+    input_variables=["issue_id", "issue_title", "issue_steps", "pull_requests_block", "culprits_to_find"],
     partial_variables={"format_instructions": culprit_parser.get_format_instructions()},
 )

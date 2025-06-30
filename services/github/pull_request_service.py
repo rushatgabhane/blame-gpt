@@ -1,12 +1,15 @@
-from typing import List, Optional
-import re
-from libs.github import repo
-from models.models import PullRequest, FilePatch
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Optional
+import re, requests
+from libs.github import repo
+from models.models import PullRequest, FilePatch, CodeDiffSummary
 import logging
-from libs.llm import embedding_model
+from libs.llm import embedding_model, llmReasoningCheap
 from libs.sqlite.core.core_sqlite_client import Database
 import sqlite3
+from github.PullRequest import PullRequest as GithubPullRequest
+from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,7 @@ def _get_pull_requests_between(base: str, head: str) -> List[int] | None:
     return sorted(list(pr_numbers)) if pr_numbers else None
 
 
-def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> List[PullRequest] | None:
+def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> None:
     new_ids = _get_pull_requests_between(base, head)
     if not new_ids:
         return
@@ -31,38 +34,70 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
     logging.info(f"{issue_id}: found {len(new_ids)} new pull requests {new_ids}")
     existing_ids = db.get_existing_pr_ids()
     new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
+    logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
-    result: List[PullRequest] = []
-
-    if not new_ids_to_process:
-        logging.info("{issue_id} no new pull requests to process")
-    else:
-        logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
         for future in as_completed(futures):
             pull_request = future.result()
             if pull_request:
                 db.add_pull_request(pull_request)
-                result.append(pull_request)
 
+    # link all pull requests to the issue, even if they are not new
     for pr_id in new_ids:
         try:
             db.add_issue_pull_request(issue_id, pr_id)
         except sqlite3.IntegrityError as e:
-            logging.warning(f"failed to add issue pull request {issue_id} - {pr_id}: {e}")
+            logging.warning(f"#{issue_id} failed to add issue pull request - {pr_id}: {e}")
 
-    return result
+
+def _get_code_diff(diff_url: str) -> str:
+    try:
+        headers = {"Accept": "application/vnd.github.v3.diff"}
+        response = requests.get(diff_url, headers=headers, timeout=30)
+        if response.status_code != 200:
+            logging.error(f"failed to fetch diff from {diff_url}: {response.status_code}")
+            return ""
+
+        diff_text = response.text
+
+        kept_lines = []
+        keep = False
+        file_header_re = re.compile(r"^diff --git a/(.*?) b/")
+        for line in diff_text.splitlines(keepends=True):
+            m = file_header_re.match(line)
+            if m:
+                keep = m.group(1).startswith("src/") and not m.group(1).startswith("src/languages")
+            if keep:
+                kept_lines.append(line)
+
+        filtered_diff = "".join(kept_lines)
+        return filtered_diff.strip() if filtered_diff else ""
+    except Exception as e:
+        logging.error(f"failed to fetch code diff from {diff_url}: {e}")
+        return ""
 
 
 def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
     try:
         pr = repo.get_pull(pull_request_id)
-        files = [f.filename for f in pr.get_files()]
+        all_files = pr.get_files()
+
+        files = [f.filename for f in all_files]
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explaination = _parse_explaination(pr.body or "")
+
+        code_diff = _get_code_diff(pr.diff_url)
+        code_diff_summary_input = code_diff_summary_prompt.format(
+            title=pr.title,
+            test=pr_test,
+            explanation=pr_explaination,
+            code_diff=code_diff,
+        )
+        response = llmReasoningCheap.invoke(code_diff_summary_input)
+        code_diff_summary = code_diff_summary_parser.invoke(response)
+        assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
         pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}"
         pr_embedding = embedding_model.embed_query(pr_text)
@@ -71,12 +106,13 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             id=pr.number,
             title=pr.title,
             test=pr_test,
-            explaination=_parse_explaination(pr.body or ""),
+            explaination=pr_explaination,
             files=files,
             embedding=pr_embedding,
+            code_diff_summary=code_diff_summary.pull_request_description,
         )
     except Exception as e:
-        logging.error(f"failed to fetch PR {pull_request_id}: {e}")
+        logging.error(f"failed to process PR {pull_request_id}: {e}")
         return None
 
 

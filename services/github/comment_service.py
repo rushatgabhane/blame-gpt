@@ -1,11 +1,12 @@
 from libs.github import repo
 import logging
-from models.models import CulpritPullRequests
+from models.models import CulpritPullRequest
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-async def add_comment(issue_number: int, culprit_pull_requests: CulpritPullRequests) -> str:
+async def add_comment(issue_number: int, culprit_pull_requests: List[CulpritPullRequest]) -> str:
     try:
         comment = format_comment(culprit_pull_requests)
         repo.get_issue(number=issue_number).create_comment(comment)
@@ -15,14 +16,14 @@ async def add_comment(issue_number: int, culprit_pull_requests: CulpritPullReque
         raise
 
 
-def format_comment(culprit_pull_requests: CulpritPullRequests) -> str:
-    if not culprit_pull_requests.pull_requests:
+def format_comment(culprit_pull_requests: List[CulpritPullRequest]) -> str:
+    if not culprit_pull_requests:
         return ""
 
     comment = "### Possible culprit PRs for this issue\n"
-    for i, pr in enumerate(culprit_pull_requests.pull_requests):
+    for i, pr in enumerate(culprit_pull_requests):
         if i == 2:
-            comment += f"\n#### Exploratory PRs\n"
+            comment += f"\n#### If not above, check these\n"
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
     return comment
 
