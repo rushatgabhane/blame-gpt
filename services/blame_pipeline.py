@@ -89,7 +89,7 @@ async def run(issue_id: int, db: Database):
         logger.info(f"{issue_id}: added comment to the issue {comment}")
         yield f"added comment to the issue."
 
-        # db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests.pull_requests)
+        db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
         yield f"blame pipeline completed successfully!"
     except Exception as e:
