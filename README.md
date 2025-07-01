@@ -16,6 +16,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - [ ] Index a codebase (graph, rag, or hybrid of both, or something better).
 - [ ] Q&A over a codebase. Chat with a codebase.
 - [ ] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature.
+- [ ] Read images, logs from issues.
 - [ ] Post proposals on Expensify issues to earn revenue.
 - [ ] Auditing tool (for a given feature, what code has changed over the past few months).
 - [ ] Build moree tools.
