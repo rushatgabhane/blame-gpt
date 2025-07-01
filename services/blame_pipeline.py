@@ -51,7 +51,7 @@ async def run(issue_id: int, db: Database):
         while not task_add_pulls.done():
             await asyncio.sleep(10)
             yield "this will take a few minutes. fetching pull requests..."  # heartbeat to avoid closing the thread
-        
+
         await task_add_pulls
 
         pull_requests = db.get_pull_requests_for_issue(issue_id)
