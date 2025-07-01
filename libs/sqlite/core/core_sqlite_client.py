@@ -3,6 +3,7 @@ import sqlite3
 from . import core_queries
 import os
 import json
+import logging
 from typing import Optional
 from models.models import PullRequest, CulpritPullRequest, Issue
 from libs import constants
@@ -37,6 +38,20 @@ class Database:
             raise ValueError("database connection is not initialized.")
 
         self.connection.executescript(core_queries.CREATE_TABLES)
+        
+        # Handle migration for existing installations
+        try:
+            # Check if code_diff column exists
+            cursor = self.connection.execute("PRAGMA table_info(pull_requests)")
+            columns = [column[1] for column in cursor.fetchall()]
+            
+            if 'code_diff' not in columns:
+                # Add the column if it doesn't exist
+                self.connection.execute("ALTER TABLE pull_requests ADD COLUMN code_diff TEXT")
+                logging.info("Added code_diff column to pull_requests table")
+        except Exception as e:
+            logging.warning(f"Migration check failed: {e}")
+        
         self.connection.commit()
 
     def close(self):
