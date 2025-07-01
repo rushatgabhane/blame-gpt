@@ -34,8 +34,24 @@ class Database:
         if self.connection is None:
             raise ValueError("database connection is not initialized for docs db.")
 
-        self.connection.executescript(q.CREATE_TABLES)
-        self.connection.commit()
+        # Check if we're using migrations by looking for schema_migrations table
+        try:
+            result = self.connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_migrations'"
+            ).fetchone()
+            
+            if result:
+                # Migrations table exists, assume migrations are being used
+                # Just ensure basic constraints are enabled
+                self.connection.execute("PRAGMA foreign_keys=ON;")
+            else:
+                # No migrations table, use old method
+                self.connection.executescript(q.CREATE_TABLES)
+                self.connection.commit()
+        except Exception as e:
+            # Fallback to old method if anything goes wrong
+            self.connection.executescript(q.CREATE_TABLES)
+            self.connection.commit()
 
     def close(self):
         if self.connection:
