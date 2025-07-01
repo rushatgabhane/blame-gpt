@@ -15,7 +15,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - [ ] Find culprit pull request for any issue, not just deploy blockers.
 - [ ] Index a codebase (graph, rag, or hybrid of both, or something better).
 - [ ] Q&A over a codebase. Chat with a codebase.
-- [ ] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature.
+- [ ] [MCP] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature. Probably using MCP
 - [ ] Read images, logs from issues.
 - [ ] Post proposals on Expensify issues to earn revenue.
 - [ ] Auditing tool (for a given feature, what code has changed over the past few months).
