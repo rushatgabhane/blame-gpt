@@ -13,7 +13,7 @@ This is a rough roadmap. Please suggest small ideas, big ideas, anything and eve
 - [ ] Post proposals on Expensify issues to earn revenue.
 - [ ] Auditing tool (for a given feature, what code has changed over the past few months).
 - [ ] Build moree tools.
-- [ ] Make the tools generic.
+- [ ] Make the tools work for any repository.
 - [ ] Enterprise support (self hosting, bring your own LLM, auditable code).
 - [ ] Sell to more companies.
 - [ ] ...
