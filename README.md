@@ -11,22 +11,34 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 ## Product roadmap
 This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
 
-- [x] Find a culprit pull request for a given deploy blocker.
-- [ ] Find culprit pull request for any issue, not just deploy blockers.
-- [ ] Index a codebase (graph, rag, or hybrid of both, or something better).
-- [ ] Q&A over a codebase. Chat with a codebase.
-- [ ] [MCP] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature. Probably using MCP
-- [ ] Read images, logs from issues.
-- [ ] Install blamegpt on our own repo, and use it.
-- [ ] Post proposals on Expensify issues to earn revenue.
-- [ ] Auditing tool (for a given feature, what code has changed over the past few months).
-- [ ] Build moree tools.
-- [ ] Make the tools work for any repository.
-- [ ] Enterprise support (jira, self hosting, bring your own LLM, auditable code).
-- [ ] Sell to more companies.
-- [ ] ...
-- [ ] 💰💰💰
+- **Culprit detection**
+  - [x] Find a culprit pull request for a given deploy blocker
+  - [ ] Generalise to *any* issue, not just deploy blockers
 
+- **Code understanding**
+  - [ ] Index a codebase (graph, RAG, hybrid, or better)
+  - [ ] Q&A / “Chat with the codebase”
+  - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
+
+- **Autonomous coding agents**
+  - [ ] Bug fixing agent powered by MCP connected to Claude-Code, using the code-index + Q&A features
+
+- **Issue improvements**
+  - [ ] Parse images & log attachments from issues (screenshots, stack traces, etc.)
+
+- **Internal dog-fooding**
+  - [ ] Install BlameGPT on **our own repo** and use it daily
+
+- **Monetisation & growth**
+  - [ ] Post solution proposals on Expensify issues (earn revenue)
+  - [ ] Build more tools
+  - [ ] Make the tool-suite work for *any* repository
+  - [ ] Enterprise tier  
+        - Jira integration  
+        - Self-hosting / BYO-LLM  
+        - Auditable code paths
+  - [ ] Sell to more companies
+  - [ ] 💰💰💰
 
 ### How to run locally?
 
