@@ -8,5 +8,10 @@ This tool finds the pull requests begging to be reverted so you can go back to s
 (Blame the PR, not your coworker. Probably.)
 
 
-## Finding the PR causing a deploy blocker
-<img src="https://github.com/user-attachments/assets/c049bc22-b194-45ef-b2c7-1e58bd6a999b" height=500>
+### How to run locally?
+
+1. Create a virtual env `python3 -m venv venv`
+2. Activate the virtual env `source venv/bin/activate`
+3. Install requirements `pip install -r requirements.txt`
+4. Copy the env file `cp .env.example .env`, and set your personal github token, set openai api key
+5. Start the server using `uvicorn main:app --reload`
