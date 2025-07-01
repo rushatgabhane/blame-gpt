@@ -1,0 +1,95 @@
+{
+  "indexing_stats": {
+    "total_files": 3,
+    "processed_files": 3,
+    "error_files": 0,
+    "skipped_files": 0,
+    "total_nodes": 0,
+    "total_relationships": 0,
+    "errors": []
+  },
+  "graph_stats": {
+    "files": {
+      "total_files": 4,
+      "parsed_files": 4,
+      "error_files": 0,
+      "pending_files": 0
+    },
+    "nodes": [
+      {
+        "node_type": "import",
+        "count": 12
+      },
+      {
+        "node_type": "class",
+        "count": 5
+      },
+      {
+        "node_type": "function",
+        "count": 5
+      }
+    ],
+    "relationships": [
+      {
+        "relationship_type": "inherits",
+        "count": 2
+      },
+      {
+        "relationship_type": "imports",
+        "count": 1
+      }
+    ]
+  },
+  "complex_classes": [
+    [
+      "TestClass",
+      "/tmp/test_file.ts",
+      1
+    ],
+    [
+      "DataService",
+      "/tmp/codegraph_demo/service.ts",
+      1
+    ],
+    [
+      "Result",
+      "/tmp/codegraph_demo/analyzer.py",
+      0
+    ],
+    [
+      "DataAnalyzer",
+      "/tmp/codegraph_demo/analyzer.py",
+      0
+    ],
+    [
+      "DataProcessor",
+      "/tmp/codegraph_demo/utils.ts",
+      0
+    ]
+  ],
+  "import_heavy_files": [
+    [
+      "/tmp/codegraph_demo/analyzer.py",
+      1
+    ]
+  ],
+  "function_distribution": [
+    [
+      "/tmp/test_file.ts",
+      2
+    ],
+    [
+      "/tmp/codegraph_demo/utils.ts",
+      2
+    ],
+    [
+      "/tmp/codegraph_demo/analyzer.py",
+      1
+    ]
+  ],
+  "pattern_analysis": {
+    "test_functions": 0,
+    "utility_functions": 1,
+    "async_functions": 0
+  }
+}
