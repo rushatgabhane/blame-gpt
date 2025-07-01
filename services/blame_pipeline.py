@@ -15,7 +15,6 @@ from typing import List
 from libs.llm import llmReasoning
 import logging
 from services.github import comment_service
-from libs.helpers import cosine_similarity
 from libs import constants
 
 logger = logging.getLogger(__name__)
@@ -123,13 +122,36 @@ async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
 def add_pull_request_semantic_score(
     issue: Issue, pull_requests: List[PullRequest], db: Database
 ) -> List[PullRequestWithScore]:
-    scored_prs: List[PullRequestWithScore] = [
-        PullRequestWithScore(pull_request=pr, score=cosine_similarity(issue.embedding, pr.embedding))
-        for pr in pull_requests
-    ]
+    # Use database vector similarity search instead of Python calculation
+    similar_prs = db.get_pull_requests_by_similarity(issue.id, limit=len(pull_requests))
+    
+    # Convert distance to similarity score (cosine similarity = 1 - cosine distance)
+    pr_scores = {pr_id: 1.0 - distance for pr_id, distance in similar_prs}
+    
+    # Create scored PR list, only including PRs that were passed in
+    pr_lookup = {pr.id: pr for pr in pull_requests}
+    scored_prs: List[PullRequestWithScore] = []
+    
+    for pr_id, score in pr_scores.items():
+        if pr_id in pr_lookup:
+            scored_prs.append(
+                PullRequestWithScore(pull_request=pr_lookup[pr_id], score=score)
+            )
+    
+    # Add PRs that weren't found in similarity search with score 0
+    for pr in pull_requests:
+        if pr.id not in pr_scores:
+            scored_prs.append(
+                PullRequestWithScore(pull_request=pr, score=0.0)
+            )
 
-    for i, pr in enumerate(scored_prs):
-        db.update_issue_pull_request_score(issue_id=issue.id, pull_request_id=pr.pull_request.id, score=pr.score)
+    # Store scores in database
+    for scored_pr in scored_prs:
+        db.update_issue_pull_request_score(
+            issue_id=issue.id, 
+            pull_request_id=scored_pr.pull_request.id, 
+            score=scored_pr.score
+        )
 
     return scored_prs if scored_prs else []
 

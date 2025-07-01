@@ -3,7 +3,6 @@ from models.models import PullRequestIntent, DocUpdateDiff, Doc, DocEditEvaluati
 from libs.prompt_templates.pull_request_intent import pull_request_intent_prompt, pull_request_intent_parser
 from libs.llm import llmReasoningCheap, embedding_model
 import logging
-from libs.helpers import cosine_similarity
 from libs.sqlite.docs import docs_sqlite_client
 from libs.sqlite.core import core_sqlite_client
 from models.models import DocWithScore
@@ -77,18 +76,25 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
         return state
 
     query_embedding = embedding_model.embed_query(intent)
-    docs = docs_db.get_all_docs_with_embeddings()
-
+    
+    # Use database vector similarity search instead of loading all docs into memory
+    similar_docs = docs_db.get_docs_by_similarity(query_embedding, limit=100)
+    
+    # Filter out expensify-classic docs and convert distance to similarity score
     scored_docs: List[DocWithScore] = []
-    for doc in docs:
-        if "expensify-classic" in doc.path.lower():
+    for doc_path, distance in similar_docs:
+        if "expensify-classic" in doc_path.lower():
             continue
+            
+        # Convert distance to similarity (similarity = 1 - distance)
+        similarity = 1.0 - distance
+        
+        # Get the full doc info
+        doc = docs_db.get_doc_with_content_by_path(doc_path)
+        if doc:
+            scored_docs.append(DocWithScore(doc=doc, score=similarity))
 
-        similarity = cosine_similarity(query_embedding, doc.embedding)
-        scored_docs.append(DocWithScore(doc=doc, score=similarity))
-
-    scored_docs.sort(key=lambda x: x.score, reverse=True)
-
+    # Already sorted by similarity from database query
     threshold = 0.45
     docs_above_threshold = [doc for doc in scored_docs if doc.score >= threshold]
     if not docs_above_threshold:

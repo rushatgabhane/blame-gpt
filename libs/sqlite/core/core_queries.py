@@ -9,18 +9,14 @@ CREATE TABLE IF NOT EXISTS pull_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS pull_request_embeddings (
+CREATE VIRTUAL TABLE IF NOT EXISTS pull_request_embeddings USING vec0(
     pull_request_id INTEGER PRIMARY KEY,
-    embedding TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
+    embedding float[1536]
 );
 
-CREATE TABLE IF NOT EXISTS issue_embeddings (
+CREATE VIRTUAL TABLE IF NOT EXISTS issue_embeddings USING vec0(
     issue_id INTEGER PRIMARY KEY,
-    embedding TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
+    embedding float[1536]
 );
 
 CREATE TABLE IF NOT EXISTS issues (

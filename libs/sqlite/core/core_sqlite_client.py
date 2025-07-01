@@ -8,8 +8,20 @@ from models.models import PullRequest, CulpritPullRequest, Issue
 from libs import constants
 from typing import List
 from functools import wraps
+import sqlite_vec
+import numpy as np
 
 os.makedirs(os.path.dirname(constants.CACHE_DB_PATH), exist_ok=True)
+
+
+def _embedding_to_vector(embedding: List[float]) -> bytes:
+    """Convert embedding list to vector bytes for sqlite-vec"""
+    return np.array(embedding, dtype=np.float32).tobytes()
+
+
+def _vector_to_embedding(vector_bytes: bytes) -> List[float]:
+    """Convert vector bytes from sqlite-vec to embedding list"""
+    return np.frombuffer(vector_bytes, dtype=np.float32).tolist()
 
 
 def require_connection(method):
@@ -30,6 +42,11 @@ class Database:
         self.connection.execute("PRAGMA synchronous=NORMAL;")
         self.connection.execute("PRAGMA strict=ON;")
         self.connection.execute("PRAGMA foreign_keys=ON;")
+        
+        # Load sqlite-vec extension
+        self.connection.enable_load_extension(True)
+        sqlite_vec.load(self.connection)
+        
         self._init_db()
 
     def _init_db(self):
@@ -68,7 +85,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_PULL_REQUEST_EMBEDDING,
-                (pr.id, json.dumps(pr.embedding)),
+                (pr.id, _embedding_to_vector(pr.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -112,7 +129,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_ISSUE_EMBEDDING,
-                (issue.id, json.dumps(issue.embedding)),
+                (issue.id, _embedding_to_vector(issue.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -174,7 +191,7 @@ class Database:
                 explaination=row[3],
                 files=json.loads(row[4]),
                 code_diff_summary=row[5] if row[5] else None,
-                embedding=json.loads(row[6]) if row[6] else None,
+                embedding=_vector_to_embedding(row[6]) if row[6] else None,
             )
             for row in rows
         ]
@@ -199,7 +216,7 @@ class Database:
             explaination=row[3],
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
-            embedding=json.loads(row[6]) if row[6] else None,
+            embedding=_vector_to_embedding(row[6]) if row[6] else None,
         )
 
     @require_connection
@@ -216,3 +233,31 @@ class Database:
         assert self.connection is not None
         self.connection.execute(core_queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id))
         self.connection.commit()
+
+    @require_connection
+    def get_pull_requests_by_similarity(self, issue_id: int, limit: int = 100) -> List[tuple[int, float]]:
+        """Get pull requests ordered by vector similarity to the given issue.
+        Returns list of (pull_request_id, distance) tuples ordered by similarity."""
+        assert self.connection is not None
+        
+        # First get the issue embedding
+        issue_embedding_row = self.connection.execute(
+            "SELECT embedding FROM issue_embeddings WHERE issue_id = ?", (issue_id,)
+        ).fetchone()
+        
+        if not issue_embedding_row or not issue_embedding_row[0]:
+            return []
+            
+        issue_embedding_bytes = issue_embedding_row[0]
+        
+        # Query for similar pull requests
+        query = """
+        SELECT pull_request_id, distance 
+        FROM pull_request_embeddings 
+        WHERE embedding MATCH ? 
+        ORDER BY distance 
+        LIMIT ?
+        """
+        
+        rows = self.connection.execute(query, (issue_embedding_bytes, limit)).fetchall()
+        return [(row[0], row[1]) for row in rows]
