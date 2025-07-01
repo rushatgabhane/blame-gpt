@@ -160,3 +160,5 @@ websockets==15.0.1
 wrapt==1.17.2
 xxhash==3.5.0
 zstandard==0.23.0
+tree-sitter==0.24.0
+tree-sitter-typescript==0.23.0

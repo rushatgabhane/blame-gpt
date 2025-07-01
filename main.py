@@ -15,6 +15,7 @@ from controllers.blame_controller import blame_router
 from controllers.issue_controller import issue_router
 from controllers.deploy_blocker_controller import deploy_blocker_router
 from controllers.docs_controller import docs_router
+from controllers.codegraph_controller import codegraph_router
 from services.docs_service.sync import sync_docs
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -53,3 +54,4 @@ app.include_router(blame_router)
 app.include_router(issue_router)
 app.include_router(deploy_blocker_router)
 app.include_router(docs_router)
+app.include_router(codegraph_router)
