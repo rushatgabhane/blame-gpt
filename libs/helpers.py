@@ -57,6 +57,7 @@ def highlight_diff_markdown(before: str, after: str) -> str:
             result.append(content)
     return " ".join(result)
 
+
 def blockquote(text: str) -> str:
     lines = text.strip().splitlines()
     return "\n".join([f"> {line}" for line in lines])
