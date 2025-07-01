@@ -28,7 +28,7 @@ try:
     logging.info("GitHub repo initialized as %s", _base_repo.full_name)
     logging.info("GitHub rate limit information: %s", rate)
 except Exception as e:
-    logging.warning(f"Failed to initialize GitHub repo (this is expected in test environments): {e}")
+    logging.warning(f"Failed to initialize GitHub repo (this is expected in test environments without API keys)")
 
     # Create a mock repo for testing environments
     class MockRepo:
@@ -38,6 +38,13 @@ except Exception as e:
             raise NotImplementedError("Mock repo - GitHub token required")
 
         def compare(self, base, head):
+            raise NotImplementedError("Mock repo - GitHub token required")
+
+        def get_issues(self, **kwargs):
+            raise NotImplementedError("Mock repo - GitHub token required")
+
+        @property
+        def _requester(self):
             raise NotImplementedError("Mock repo - GitHub token required")
 
     repo = MockRepo()
