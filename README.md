@@ -7,6 +7,7 @@ This tool finds the pull requests begging to be reverted so you can go back to s
 ### Roadmap
 This is a rough roadmap. Please suggest small ideas, big ideas, anything and everything!
 
+- [x] Find a culprit pull request for a given deploy blocker.
 - [ ] Index a codebase.
 - [ ] Q&A over a codebase. Chat with a codebase.
 - [ ] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature.
