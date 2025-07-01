@@ -86,8 +86,8 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
         if "expensify-classic" in doc_path.lower():
             continue
             
-        # Convert distance to similarity (similarity = 1 - distance)
-        similarity = 1.0 - distance
+        # Convert distance to similarity (for normalized vectors: cosine_similarity = 1 - L2_distance^2/2)
+        similarity = 1.0 - (distance * distance / 2.0)
         
         # Get the full doc info
         doc = docs_db.get_doc_with_content_by_path(doc_path)

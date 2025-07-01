@@ -125,8 +125,8 @@ def add_pull_request_semantic_score(
     # Use database vector similarity search instead of Python calculation
     similar_prs = db.get_pull_requests_by_similarity(issue.id, limit=len(pull_requests))
     
-    # Convert distance to similarity score (cosine similarity = 1 - cosine distance)
-    pr_scores = {pr_id: 1.0 - distance for pr_id, distance in similar_prs}
+    # Convert distance to similarity score (for normalized vectors: cosine_similarity = 1 - L2_distance^2/2)
+    pr_scores = {pr_id: 1.0 - (distance * distance / 2.0) for pr_id, distance in similar_prs}
     
     # Create scored PR list, only including PRs that were passed in
     pr_lookup = {pr.id: pr for pr in pull_requests}
