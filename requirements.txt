@@ -63,6 +63,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 kiwisolver==1.4.8
 langchain==0.3.25
+langchain-anthropic==0.3.6
 langchain-core==0.3.61
 langchain-openai==0.3.18
 langchain-text-splitters==0.3.8
