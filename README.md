@@ -37,3 +37,30 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 6. Start the server using `uvicorn main:app --reload`
 
 
+### Project Structure
+
+```
+blame-gpt/
+├── controllers/          # FastAPI route handlers
+│   ├── blame_controller.py
+│   ├── issue_controller.py
+│   └── ...
+├── frontend/            # React TypeScript frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+├── libs/                # Shared libraries and utilities
+│   ├── github.py
+│   ├── llm.py
+│   └── sqlite/          # Database clients
+├── middlewares/
+├── models/              # Pydantic data models
+├── services/            # Business logic layer
+│   ├── blame_pipeline.py
+│   ├── github/
+│   └── docs_service/
+├── main.py              # FastAPI application entry point
+└── requirements.txt
+```
+
+
