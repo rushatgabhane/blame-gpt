@@ -64,6 +64,7 @@ class Database:
                     pr.explaination,
                     json.dumps(pr.files),
                     pr.code_diff_summary if pr.code_diff_summary else None,
+                    pr.code_diff if pr.code_diff else None,
                 ),
             )
             self.connection.execute(
@@ -174,7 +175,8 @@ class Database:
                 explaination=row[3],
                 files=json.loads(row[4]),
                 code_diff_summary=row[5] if row[5] else None,
-                embedding=json.loads(row[6]) if row[6] else None,
+                code_diff=row[6] if row[6] else None,
+                embedding=json.loads(row[7]) if row[7] else None,
             )
             for row in rows
         ]
@@ -199,7 +201,8 @@ class Database:
             explaination=row[3],
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
-            embedding=json.loads(row[6]) if row[6] else None,
+            code_diff=row[6] if row[6] else None,
+            embedding=json.loads(row[7]) if row[7] else None,
         )
 
     @require_connection

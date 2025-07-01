@@ -162,6 +162,33 @@ def find_culprit_pull_requests(
 
 
 def format_pull_requests(prs: List[PullRequestWithScore]) -> str:
+    def truncate_diff(diff: str, max_lines: int = 100) -> str:
+        """Truncate diff to reasonable size for LLM context"""
+        if not diff:
+            return ""
+        lines = diff.split('\n')
+        if len(lines) <= max_lines:
+            return diff
+        
+        # Try to keep complete file sections when truncating
+        truncated_lines = []
+        current_count = 0
+        in_file_header = False
+        
+        for line in lines:
+            if line.startswith('diff --git'):
+                in_file_header = True
+                if current_count + 20 > max_lines:  # Reserve space for file header + some context
+                    break
+            
+            truncated_lines.append(line)
+            current_count += 1
+            
+            if current_count >= max_lines:
+                break
+        
+        return '\n'.join(truncated_lines) + f"\n\n... (truncated - showing first {current_count} lines of {len(lines)} total lines)"
+    
     return "\n\n".join(
         f"""PR id #{pr.pull_request.id}
 
@@ -172,6 +199,11 @@ Test Steps: {pr.pull_request.test.strip() if pr.pull_request.test else 'No test 
 Files Changed: {", ".join(pr.pull_request.files) if pr.pull_request.files else 'No files listed.'}
 
 Code diff summary: {pr.pull_request.code_diff_summary if pr.pull_request.code_diff_summary else 'No code diff summary provided.'}
+
+Code diff:
+```diff
+{truncate_diff(pr.pull_request.code_diff) if pr.pull_request.code_diff else 'No code diff available.'}
+```
 
 Score: {pr.score:.2f}
 

@@ -10,6 +10,7 @@ class PullRequest(BaseModel):
     files: List[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
+    code_diff: str | None = None
 
 
 class CulpritPullRequest(BaseModel):
