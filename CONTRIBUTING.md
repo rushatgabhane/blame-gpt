@@ -28,17 +28,7 @@ Before contributing, ensure you have:
 
 #### Quick Setup (Recommended)
 
-Use our development helper script:
-
-```bash
-# Full setup (installs dependencies, formats code, builds frontend)
-./dev.sh setup
-
-# Start development server
-./dev.sh dev
-```
-
-#### Manual Setup
+#### Setup Steps
 
 1. **Fork and Clone**
    ```bash
@@ -75,10 +65,10 @@ Use our development helper script:
 5. **Verify Installation**
    ```bash
    # Format code first
-   ./dev.sh format
+   black . --line-length=120
    
    # Build and test frontend
-   ./dev.sh build && ./dev.sh lint
+   cd frontend && npm run build && npm run lint && cd ..
    
    # Note: Backend requires valid GitHub token to fully test
    ```
@@ -113,14 +103,7 @@ blame-gpt/
 
 ### Running in Development Mode
 
-#### Using Development Helper Script (Recommended)
-
-```bash
-# Start development server
-./dev.sh dev
-```
-
-#### Manual Commands
+#### Development Commands
 
 1. **Backend Development**
    ```bash

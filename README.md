@@ -40,20 +40,6 @@ BlameGPT consists of:
 
 ## ⚙️ Installation & Setup
 
-### Quick Start (Recommended)
-
-We provide a development helper script to streamline setup:
-
-```bash
-# Full setup (install dependencies, format code, build frontend)
-./dev.sh setup
-
-# Start development server
-./dev.sh dev
-```
-
-### Manual Setup
-
 ### 1. Clone the repository
 
 ```bash
@@ -164,30 +150,6 @@ Once the backend is running, you can access:
 
 ## 🛠️ Development
 
-### Development Helper Script
-
-We provide a helper script to streamline common development tasks:
-
-```bash
-# Full setup
-./dev.sh setup
-
-# Start development server  
-./dev.sh dev
-
-# Format code
-./dev.sh format
-
-# Build frontend
-./dev.sh build
-
-# Run linting
-./dev.sh lint
-
-# Show help
-./dev.sh help
-```
-
 ### Code Formatting
 
 The project uses Black for Python code formatting:
@@ -207,7 +169,6 @@ blame-gpt/
 ├── models/              # Pydantic data models
 ├── services/            # Business logic and external integrations
 ├── main.py              # FastAPI application entry point
-├── dev.sh               # Development helper script
 └── requirements.txt     # Python dependencies
 ```
 
