@@ -65,7 +65,7 @@ async def run(issue_id: int, db: Database):
         pull_requests_without_cp = [pr for pr in pull_requests if "cp staging" not in pr.title.lower()]
         logger.info(f"{issue_id}: found {len(pull_requests_without_cp)} pull requests without 'cp staging'")
 
-        prs_with_scores = add_pull_request_semantic_score(issue, pull_requests_without_cp, db=db)
+        prs_with_scores = _add_pull_request_semantic_score(issue, pull_requests_without_cp, db=db)
         if not prs_with_scores or len(prs_with_scores) == 0:
             logger.info(f"{issue_id}: no pull requests with semantic scores found")
             yield f"no culprit pull requests found."
@@ -112,7 +112,7 @@ async def run(issue_id: int, db: Database):
 
 async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
     return await asyncio.to_thread(
-        find_culprit_pull_requests,
+        _find_culprit_pull_requests,
         page=page,
         culprits_to_find=culprits_to_find,
         issue=issue,
@@ -120,7 +120,7 @@ async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
     )
 
 
-def add_pull_request_semantic_score(
+def _add_pull_request_semantic_score(
     issue: Issue, pull_requests: List[PullRequest], db: Database
 ) -> List[PullRequestWithScore]:
     scored_prs: List[PullRequestWithScore] = [
@@ -136,7 +136,7 @@ def add_pull_request_semantic_score(
 
 # Page is a zero-based index, so page 0 means the first 20 items.
 # culprits_to_find is the number of pull requests to return.
-def find_culprit_pull_requests(
+def _find_culprit_pull_requests(
     page: int, culprits_to_find: int, issue: Issue, pull_requests: List[PullRequestWithScore]
 ) -> CulpritPullRequests | None:
     pull_requests_sorted_by_score = sorted(pull_requests, key=lambda x: x.score, reverse=True)
@@ -149,7 +149,7 @@ def find_culprit_pull_requests(
         logger.info(f"{issue.id}: no pull requests found for page {page}")
         return None
 
-    pr_block = format_pull_requests(selected_pull_requests)
+    pr_block = _format_pull_requests(selected_pull_requests)
     input = blame_prompt.format(
         issue_id=issue.id,
         issue_title=issue.title,
@@ -161,7 +161,7 @@ def find_culprit_pull_requests(
     return culprit_parser.invoke(response)
 
 
-def format_pull_requests(prs: List[PullRequestWithScore]) -> str:
+def _format_pull_requests(prs: List[PullRequestWithScore]) -> str:
     return "\n\n".join(
         f"""PR id #{pr.pull_request.id}
 
