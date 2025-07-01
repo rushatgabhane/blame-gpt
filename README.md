@@ -9,7 +9,7 @@ Beat cursor, greptile etc by building AI tools that integrate into existing proc
 See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__Ff9Z-xIFyyEpIt9GkBQ). 
 
 ## Product roadmap
-This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything!
+This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
 
 - [x] Find a culprit pull request for a given deploy blocker.
 - [ ] Find culprit pull request for any issue, not just deploy blockers.
