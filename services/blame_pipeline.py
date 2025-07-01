@@ -50,8 +50,8 @@ async def run(issue_id: int, db: Database):
 
         while not task_add_pulls.done():
             await asyncio.sleep(10)
-            yield "this will take a few minutes. fetching pull requests..."  # heartbeat to avoid closing the thread
-        
+            yield "this might take a minute. fetching pull requests..."  # heartbeat to avoid closing the thread
+
         await task_add_pulls
 
         pull_requests = db.get_pull_requests_for_issue(issue_id)
@@ -86,7 +86,7 @@ async def run(issue_id: int, db: Database):
         # heartbeat until both tasks are done to avoid thread being killed by timeout
         while any(not t.done() for t in tasks_culprit_pull_requests):
             await asyncio.sleep(10)
-            yield "ranking pull requests..."
+            yield "this might take a minute. ranking pull requests..."
 
         top_prs, exploratory_prs = [t.result() for t in tasks_culprit_pull_requests]
         culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
