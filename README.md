@@ -29,10 +29,11 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 
 ### How to run locally?
 
-1. Create a virtual env `python3 -m venv venv`
-2. Activate the virtual env `source venv/bin/activate`
-3. Install requirements `pip install -r requirements.txt`
-4. Copy the env file `cp .env.example .env`, and set your personal github token, set openai api key
-5. Start the server using `uvicorn main:app --reload`
+1. Use python version `3.13`
+2. Create a virtual env `python3 -m venv venv`
+3. Activate the virtual env `source venv/bin/activate`
+4. Install requirements `pip install -r requirements.txt`
+5. Copy the env file `cp .env.example .env`, and set your personal github token, set openai api key
+6. Start the server using `uvicorn main:app --reload`
 
 
