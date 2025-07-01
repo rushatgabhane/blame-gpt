@@ -2,6 +2,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Optional
 import re, requests
 from libs.github import repo
+from libs.task_queue import github_task_queue, process_items_in_batches
+from libs.rate_limiter import rate_limited_github
 from models.models import PullRequest, FilePatch, CodeDiffSummary
 import logging
 from libs.llm import embedding_model, llmReasoningCheap
@@ -14,6 +16,7 @@ import asyncio
 logger = logging.getLogger(__name__)
 
 
+@rate_limited_github
 def _get_pull_requests_between(base: str, head: str) -> List[int] | None:
     comparison = repo.compare(base=base, head=head)
 
@@ -36,12 +39,19 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
     new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
     logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
-        for future in as_completed(futures):
-            pull_request = future.result()
-            if pull_request:
-                db.add_pull_request(pull_request)
+    # Use rate-limited task queue instead of ThreadPoolExecutor
+    if new_ids_to_process:
+        results = github_task_queue.execute_sync_batch(
+            tasks=[_get_pr_with_embeddings for _ in new_ids_to_process],
+            args_list=[(pr_id,) for pr_id in new_ids_to_process],
+        )
+
+        # Process successful results
+        for result in results:
+            if result.success and result.result:
+                db.add_pull_request(result.result)
+            elif not result.success:
+                logging.error(f"Failed to process PR: {result.error}")
 
     # link all pull requests to the issue, even if they are not new
     for pr_id in new_ids:
@@ -78,6 +88,7 @@ def _get_code_diff(diff_url: str) -> str:
         return ""
 
 
+@rate_limited_github
 def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
     try:
         pr = repo.get_pull(pull_request_id)
@@ -144,6 +155,7 @@ def _parse_explaination(body: str) -> str:
     return normalized_spacing.strip()
 
 
+@rate_limited_github
 def get_pull_request_patch(pull_request_id: int) -> List[FilePatch]:
     patches: List[FilePatch] = []
 

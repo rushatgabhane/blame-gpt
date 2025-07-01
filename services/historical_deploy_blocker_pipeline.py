@@ -2,15 +2,34 @@ import logging
 import re
 import pandas as pd
 import os
+import asyncio
 from libs.github import repo
+from libs.rate_limiter import rate_limited_github
+from libs.task_queue import github_task_queue
+from datetime import datetime, timedelta
+import time
 
 logger = logging.getLogger(__name__)
 
 issue_url_pattern = re.compile(r"- \[x\] https://github\.com/Expensify/App/issues/(\d+)")
 
 
+@rate_limited_github
+def _get_deploy_checklist_issues():
+    """Get deploy checklist issues with rate limiting."""
+    return repo.get_issues(state="closed", labels=["StagingDeployCash"])
+
+
+@rate_limited_github
+def _search_prs_for_date_range(query_range: str, page: int):
+    """Search PRs for a specific date range with rate limiting."""
+    query = f"repo:Expensify/App is:pr is:merged merged:{query_range}"
+    url = f"/search/issues?q={query}&per_page=100&page={page}"
+    return repo._requester.requestJsonAndCheck("GET", url)
+
+
 async def run():
-    deploy_checklist = repo.get_issues(state="closed", labels=["StagingDeployCash"])
+    deploy_checklist = _get_deploy_checklist_issues()
     deploy_blockers_data = []
 
     count = 0
@@ -52,11 +71,6 @@ async def run():
         yield f"Saved {len(df)} deploy blockers to deploy_blockers.csv"
 
 
-import pandas as pd
-from datetime import datetime, timedelta
-import time
-
-
 async def get_historical_prs():
     output_file = "merged_cp_staging_prs.csv"
     total_saved = 0
@@ -72,51 +86,57 @@ async def get_historical_prs():
 
         page = 1
         while True:
-            query = f"repo:Expensify/App is:pr is:merged merged:{query_range}"
-            url = f"/search/issues?q={query}&per_page=100&page={page}"
-            result = repo._requester.requestJsonAndCheck("GET", url)
-            items = result[1].get("items", [])
+            try:
+                result = _search_prs_for_date_range(query_range, page)
+                items = result[1].get("items", [])
 
-            if not items:
+                if not items:
+                    break
+
+                pr_data = []
+                for item in items:
+                    title = item["title"].lower()
+                    labels = [label["name"].lower() for label in item.get("labels", [])]
+
+                    if "revert" not in title and "cp staging" not in labels:
+                        continue
+
+                    pr_data.append(
+                        {
+                            "PR Number": item["number"],
+                            "PR Title": item["title"],
+                            "PR URL": item["html_url"],
+                            "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
+                        }
+                    )
+
+                if pr_data:
+                    df = pd.DataFrame(pr_data)
+                    df.to_csv(
+                        output_file,
+                        mode="a",
+                        header=not os.path.exists(output_file),
+                        index=False,
+                    )
+                    print(f"  ✅ Appended {len(df)} PRs from page {page}")
+                    total_saved += len(df)
+
+                page += 1
+                if page > 10:
+                    print(" ⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
+                    break
+
+                # Rate limiting handled by decorator, but add small delay between pages
+                await asyncio.sleep(0.2)
+            except Exception as e:
+                logger.error(f"Error fetching PRs for {query_range}, page {page}: {e}")
                 break
-
-            pr_data = []
-            for item in items:
-                title = item["title"].lower()
-                labels = [label["name"].lower() for label in item.get("labels", [])]
-
-                if "revert" not in title and "cp staging" not in labels:
-                    continue
-
-                pr_data.append(
-                    {
-                        "PR Number": item["number"],
-                        "PR Title": item["title"],
-                        "PR URL": item["html_url"],
-                        "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
-                    }
-                )
-
-            if pr_data:
-                df = pd.DataFrame(pr_data)
-                df.to_csv(
-                    output_file,
-                    mode="a",
-                    header=not os.path.exists(output_file),
-                    index=False,
-                )
-                print(f"  ✅ Appended {len(df)} PRs from page {page}")
-                total_saved += len(df)
-
-            page += 1
-            if page > 10:
-                print(" ⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
-                break
-
-            time.sleep(1)  # GitHub rate safety
 
         # Advance to next month
         start = (start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+        # Small delay between months
+        await asyncio.sleep(1)
 
     print(f"\n🎉 Done! Total PRs saved: {total_saved}")
 
@@ -135,46 +155,53 @@ async def get_all_merged_prs():
 
         page = 1
         while True:
-            query = f"repo:Expensify/App is:pr is:merged merged:{query_range}"
-            url = f"/search/issues?q={query}&per_page=100&page={page}"
-            result = repo._requester.requestJsonAndCheck("GET", url)
-            items = result[1].get("items", [])
+            try:
+                result = _search_prs_for_date_range(query_range, page)
+                items = result[1].get("items", [])
 
-            if not items:
+                if not items:
+                    break
+
+                pr_data = []
+                for item in items:
+                    if item.get("user", {}).get("login", "").lower() == "osbotify":
+                        continue
+
+                    pr_data.append(
+                        {
+                            "PR Number": item["number"],
+                            "PR Title": item["title"],
+                            "PR URL": item["html_url"],
+                            "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
+                        }
+                    )
+
+                if pr_data:
+                    df = pd.DataFrame(pr_data)
+                    df.to_csv(
+                        output_file,
+                        mode="a",
+                        header=not os.path.exists(output_file),
+                        index=False,
+                    )
+                    print(f"  ✅ Appended {len(df)} PRs from page {page}")
+                    total_saved += len(df)
+
+                page += 1
+                if page > 10:
+                    print("⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
+                    break
+
+                # Rate limiting handled by decorator, but add small delay between pages
+                await asyncio.sleep(0.2)
+            except Exception as e:
+                logger.error(f"Error fetching PRs for {query_range}, page {page}: {e}")
                 break
 
-            pr_data = []
-            for item in items:
-                if item.get("user", {}).get("login", "").lower() == "osbotify":
-                    continue
-
-                pr_data.append(
-                    {
-                        "PR Number": item["number"],
-                        "PR Title": item["title"],
-                        "PR URL": item["html_url"],
-                        "Merged At": (item["closed_at"][:10] if item.get("closed_at") else ""),
-                    }
-                )
-
-            if pr_data:
-                df = pd.DataFrame(pr_data)
-                df.to_csv(
-                    output_file,
-                    mode="a",
-                    header=not os.path.exists(output_file),
-                    index=False,
-                )
-                print(f"  ✅ Appended {len(df)} PRs from page {page}")
-                total_saved += len(df)
-
-            page += 1
-            if page > 10:
-                print("⚠️ Hit GitHub Search API 1000-item limit for this month. Moving on.")
-                break
-
-            time.sleep(1)
-
+        # Advance to next month
         start = (start.replace(day=28) + timedelta(days=4)).replace(day=1)
+
+        # Small delay between months
+        await asyncio.sleep(1)
 
     print(f"\n🎉 Done! Total PRs saved: {total_saved}")
