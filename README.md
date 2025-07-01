@@ -8,7 +8,8 @@ This tool finds the pull requests begging to be reverted so you can go back to s
 This is a rough roadmap. Please suggest small ideas, big ideas, anything and everything!
 
 - [x] Find a culprit pull request for a given deploy blocker.
-- [ ] Index a codebase.
+- [ ] Find culprit pull request for any issue, not just deploy blockers.
+- [ ] Index a codebase (graph, rag, or hybrid of both, or something better).
 - [ ] Q&A over a codebase. Chat with a codebase.
 - [ ] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature.
 - [ ] Post proposals on Expensify issues to earn revenue.
