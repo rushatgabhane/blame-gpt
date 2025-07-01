@@ -20,6 +20,11 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Q&A / “Chat with the codebase”
   - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
 
+- **Culprit prevention**
+  - [ ] Analyze past deploy blockers and build a review bot to prevent new deploy blockers
+
+- **Analytics**
+  - [ ] Build dashboards  
 - **Autonomous coding agents**
   - [ ] Bug fixing agent powered by MCP connected to Claude-Code, using the code-index + Q&A features
 
