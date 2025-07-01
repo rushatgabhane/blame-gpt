@@ -17,6 +17,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - [ ] Q&A over a codebase. Chat with a codebase.
 - [ ] [MCP] Create a bug fixing coding agent. Use existing agents like claude code that can use the codebase index, Q&A feature. Probably using MCP
 - [ ] Read images, logs from issues.
+- [ ] Install blamegpt on our own repo, and use it.
 - [ ] Post proposals on Expensify issues to earn revenue.
 - [ ] Auditing tool (for a given feature, what code has changed over the past few months).
 - [ ] Build moree tools.
