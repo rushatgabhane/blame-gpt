@@ -1,20 +1,20 @@
-from libs.github import repo
 import logging
-from models.models import CulpritPullRequest
-from typing import List
 import os
+
+from libs.github import repo
+from models.models import CulpritPullRequest
 
 logger = logging.getLogger(__name__)
 
 
-async def add_comment(issue_number: int, culprit_pull_requests: List[CulpritPullRequest]) -> str:
+async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
     try:
         comment = format_comment(culprit_pull_requests)
         if os.getenv("ENVIRONMENT") == "production":
             repo.get_issue(number=issue_number).create_comment(comment)
             return comment
 
-        logger.info(f"skipping comment creation in non-production environment")
+        logger.info("skipping comment creation in non-production environment")
         return comment
 
     except Exception as e:
@@ -22,14 +22,14 @@ async def add_comment(issue_number: int, culprit_pull_requests: List[CulpritPull
         raise
 
 
-def format_comment(culprit_pull_requests: List[CulpritPullRequest]) -> str:
+def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
     comment = "### Possible culprit PRs for this issue\n"
     for i, pr in enumerate(culprit_pull_requests):
         if i == 2:
-            comment += f"\n#### If not above, check these\n"
+            comment += "\n#### If not above, check these\n"
         comment += f"- #{pr.pull_request_id}: {pr.reason}\n"
     return comment
 

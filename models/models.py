@@ -1,5 +1,6 @@
+from typing import TypedDict
+
 from pydantic import BaseModel, Field
-from typing import List, TypedDict, Optional
 
 
 class PullRequest(BaseModel):
@@ -7,7 +8,7 @@ class PullRequest(BaseModel):
     title: str
     test: str
     explaination: str
-    files: List[str]
+    files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
 
@@ -19,7 +20,7 @@ class CulpritPullRequest(BaseModel):
 
 class CulpritPullRequests(BaseModel):
     issue_id: int
-    pull_requests: List[CulpritPullRequest]
+    pull_requests: list[CulpritPullRequest]
 
 
 class Issue(BaseModel):
@@ -27,9 +28,9 @@ class Issue(BaseModel):
     title: str
     steps: str
     raw_body: str
-    labels: List[str]
+    labels: list[str]
     is_processed: bool = False
-    culprit_pull_requests: List[CulpritPullRequest] | None = None
+    culprit_pull_requests: list[CulpritPullRequest] | None = None
     embedding: list[float] | None = None
     actual_pull_request_id: int | None = None
 
@@ -43,7 +44,7 @@ class Doc(BaseModel):
     path: str
     title: str
     content_hash: str
-    embedding: List[float] | None = None
+    embedding: list[float] | None = None
     raw_content: str | None = None
 
 
@@ -69,7 +70,7 @@ class Edits(BaseModel):
 
 class DocUpdateDiff(BaseModel):
     path: str = Field(..., description="relative path of the article")
-    edits: List[Edits] = Field(
+    edits: list[Edits] = Field(
         ..., description="list of edits to be applied to the article. Empty list means no edits needed."
     )
 
@@ -77,21 +78,21 @@ class DocUpdateDiff(BaseModel):
 class DocEditEvaluation(BaseModel):
     should_docs_update: bool = Field(..., description="true if any user facing help articles need updates.")
     update_reason: str = Field(..., description="explanation for the decision.")
-    edits_to_apply: List[DocUpdateDiff] = Field(
+    edits_to_apply: list[DocUpdateDiff] = Field(
         ..., description="list of articles that need updates and the suggested edits to apply."
     )
 
 
 class State(TypedDict):
     pull_request_id: int
-    pull_request: Optional[PullRequest]
-    en_patch: Optional[str]
-    intent: Optional[str]
-    relevant_docs: Optional[List[Doc]]
-    doc_edit_suggestions: Optional[List[DocUpdateDiff]]
-    should_docs_update: Optional[bool]
-    update_reason: Optional[str]
-    comment: Optional[str]
+    pull_request: PullRequest | None
+    en_patch: str | None
+    intent: str | None
+    relevant_docs: list[Doc] | None
+    doc_edit_suggestions: list[DocUpdateDiff] | None
+    should_docs_update: bool | None
+    update_reason: str | None
+    comment: str | None
 
 
 class CodeDiffSummary(BaseModel):

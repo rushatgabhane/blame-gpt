@@ -1,8 +1,8 @@
+from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
 from langchain.prompts import PromptTemplate
-from langchain.output_parsers import PydanticOutputParser
-from models.models import DocUpdateDiff
-from langchain.output_parsers import OutputFixingParser
+
 from libs.llm import llmReasoningCheap
+from models.models import DocUpdateDiff
 
 _raw_parser = PydanticOutputParser(pydantic_object=DocUpdateDiff)
 doc_edit_parser = OutputFixingParser.from_llm(parser=_raw_parser, llm=llmReasoningCheap)

@@ -1,10 +1,12 @@
-from fastapi import Header, HTTPException
-import os
 import logging
+import os
+
+from fastapi import Header, HTTPException
 
 logger = logging.getLogger(__name__)
 
 
+# Used for authenticating customer facing APIs
 def verify_user_auth_token(authorization: str = Header(...)):
     expected_token = os.getenv("USER_API_AUTH_TOKEN")
     if not expected_token:
@@ -15,6 +17,7 @@ def verify_user_auth_token(authorization: str = Header(...)):
         raise HTTPException(status_code=403)
 
 
+# Used for authenticating internal APIs that should not be exposed to customers
 def verify_internal_auth_token(authorization: str = Header(...)):
     expected_internal_token = os.getenv("INTERNAL_API_AUTH_TOKEN")
     if not expected_internal_token:

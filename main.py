@@ -1,24 +1,23 @@
-from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 import logging
+from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 
-from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from libs.sqlite.core import core_sqlite_client
-from libs.sqlite.docs import docs_sqlite_client
+from apscheduler.triggers.cron import CronTrigger
+from fastapi import FastAPI
+
 from controllers.blame_controller import blame_router
-from controllers.issue_controller import issue_router
 from controllers.deploy_blocker_controller import deploy_blocker_router
 from controllers.docs_controller import docs_router
+from controllers.issue_controller import issue_router
+from libs.sqlite.core import core_sqlite_client
+from libs.sqlite.docs import docs_sqlite_client
 from services.docs_service.sync import sync_docs
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
-
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()

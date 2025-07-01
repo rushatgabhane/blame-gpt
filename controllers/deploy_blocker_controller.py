@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, Response
-from services import historical_deploy_blocker_pipeline
 import logging
+
+from fastapi import APIRouter, Depends, Response
+
 from middlewares import auth_middleware
+from services import historical_deploy_blocker_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,7 @@ async def run_historical_deploy_blocker_pipeline():
     dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_historical_prs_api():
-    prs = await historical_deploy_blocker_pipeline.get_historical_prs()
+    await historical_deploy_blocker_pipeline.get_historical_prs()
     return Response(status_code=200, content="historical PRs pipeline started.")
 
 

@@ -1,11 +1,10 @@
-import libs.constants as constants
 import logging
 import re
-from models.models import Issue
+
 from libs.github import repo
-from libs.sqlite.core.core_sqlite_client import Database
-from typing import List
 from libs.llm import embedding_model
+from libs.sqlite.core.core_sqlite_client import Database
+from models.models import Issue
 
 logger = logging.getLogger(__name__)
 
@@ -52,5 +51,5 @@ def extract_steps_from_description(description: str) -> str:
         return ""
 
 
-def get_all_issues(db: Database) -> List[Issue]:
+def get_all_issues(db: Database) -> list[Issue]:
     return db.get_all_issues()

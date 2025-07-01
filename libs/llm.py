@@ -1,6 +1,6 @@
-from langchain_openai import ChatOpenAI
-from langchain_openai import OpenAIEmbeddings
 import os
+
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 llmReasoningCheap = ChatOpenAI(model="o3-mini-2025-01-31", api_key=os.getenv("OPENAI_API_KEY"))
 llmReasoning = ChatOpenAI(model="o3-2025-04-16", api_key=os.getenv("OPENAI_API_KEY"))

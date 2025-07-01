@@ -1,20 +1,20 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Optional
-import re, requests
-from libs.github import repo
-from models.models import PullRequest, FilePatch, CodeDiffSummary
 import logging
-from libs.llm import embedding_model, llmReasoningCheap
-from libs.sqlite.core.core_sqlite_client import Database
+import re
 import sqlite3
-from github.PullRequest import PullRequest as GithubPullRequest
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import requests
+
+from libs.github import repo
+from libs.llm import embedding_model, llmReasoningCheap
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
-import asyncio
+from libs.sqlite.core.core_sqlite_client import Database
+from models.models import CodeDiffSummary, FilePatch, PullRequest
 
 logger = logging.getLogger(__name__)
 
 
-def _get_pull_requests_between(base: str, head: str) -> List[int] | None:
+def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
     comparison = repo.compare(base=base, head=head)
 
     pr_numbers = set()
@@ -144,8 +144,8 @@ def _parse_explaination(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def get_pull_request_patch(pull_request_id: int) -> List[FilePatch]:
-    patches: List[FilePatch] = []
+def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
+    patches: list[FilePatch] = []
 
     pr = repo.get_pull(pull_request_id)
     for file in pr.get_files():
@@ -161,7 +161,7 @@ def get_pull_request_patch(pull_request_id: int) -> List[FilePatch]:
     return patches
 
 
-def add_pull_request(pull_request_id: int, db: Database) -> Optional[PullRequest]:
+def add_pull_request(pull_request_id: int, db: Database) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr

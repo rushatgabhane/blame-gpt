@@ -1,7 +1,9 @@
-import os
-from github import Github
-from libs import constants
 import logging
+import os
+
+from github import Github
+
+from libs import constants
 
 gh = Github(os.getenv("GITHUB_TOKEN"))
 repo = gh.get_repo(f"{constants.REPO_OWNER}/{constants.REPO_NAME}")

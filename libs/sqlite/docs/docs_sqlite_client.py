@@ -1,13 +1,12 @@
-from libs import constants
-import sqlite3
-from . import docs_queries as q
-from libs import constants
-from typing import Optional, Set, List
-from functools import wraps
-import os
-import json
 import datetime
+import json
+import sqlite3
+from functools import wraps
+
+from libs import constants
 from models.models import Doc
+
+from . import docs_queries as q
 
 
 def require_connection(method):
@@ -43,7 +42,7 @@ class Database:
             self.connection = None
 
     @require_connection
-    def get_content_hash(self, path: str) -> Optional[str]:
+    def get_content_hash(self, path: str) -> str | None:
         assert self.connection is not None
 
         row = self.connection.execute(q.GET_CONTENT_HASH, (path,)).fetchone()
@@ -68,14 +67,14 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def get_all_paths(self) -> Set[str]:
+    def get_all_paths(self) -> set[str]:
         assert self.connection is not None
 
         rows = self.connection.execute(q.GET_ALL_PATHS).fetchall()
         return {row["path"] for row in rows}
 
     @require_connection
-    def get_all_docs_with_embeddings(self) -> List[Doc]:
+    def get_all_docs_with_embeddings(self) -> list[Doc]:
         assert self.connection is not None
 
         rows = self.connection.execute(q.GET_ALL_DOCS_WITH_EMBEDDINGS).fetchall()
@@ -91,7 +90,7 @@ class Database:
         ]
 
     @require_connection
-    def get_doc_with_content_by_path(self, path: str) -> Optional[Doc]:
+    def get_doc_with_content_by_path(self, path: str) -> Doc | None:
         assert self.connection is not None
 
         row = self.connection.execute(q.GET_DOC_WITH_CONTENT_BY_PATH, (path,)).fetchone()

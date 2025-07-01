@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Request, Response
-from services.docs_service import run_graph
 from pydantic import BaseModel
 
 from middlewares import auth_middleware
+from services.docs_service import run_graph
 
 docs_router = APIRouter()
 

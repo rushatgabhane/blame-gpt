@@ -1,8 +1,10 @@
+import logging
+
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
-import logging
-from .graph import build_graph
 from models.models import State
+
+from .graph import build_graph
 
 logger = logging.getLogger(__name__)
 

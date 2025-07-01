@@ -1,7 +1,9 @@
 import logging
-import re
-import pandas as pd
 import os
+import re
+
+import pandas as pd
+
 from libs.github import repo
 
 logger = logging.getLogger(__name__)
@@ -43,7 +45,7 @@ async def run():
                     "StagingDeployCash Created At": checklist.created_at.strftime("%Y-%m-%d"),
                 }
             )
-    yield f"Processed deploy checklists."
+    yield "Processed deploy checklists."
     yield f"Total deploy checklists without blocker: {count}"
     if deploy_blockers_data:
         yield f"Found {len(deploy_blockers_data)} deploy blockers."
@@ -52,9 +54,8 @@ async def run():
         yield f"Saved {len(df)} deploy blockers to deploy_blockers.csv"
 
 
-import pandas as pd
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 
 
 async def get_historical_prs():

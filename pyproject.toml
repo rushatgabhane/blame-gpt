@@ -1,2 +1,8 @@
-[tool.black]
+[tool.ruff]
 line-length = 120
+target-version = "py313"
+exclude = ["**/*.ipynb"]
+
+[tool.ruff.lint]
+select = ["F", "I", "UP", "B", "TID", "SIM"]
+ignore = []

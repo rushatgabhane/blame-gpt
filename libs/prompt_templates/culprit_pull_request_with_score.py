@@ -1,6 +1,7 @@
 from langchain.output_parsers import PydanticOutputParser
-from models.models import CulpritPullRequests
 from langchain_core.prompts import PromptTemplate
+
+from models.models import CulpritPullRequests
 
 culprit_parser = PydanticOutputParser(pydantic_object=CulpritPullRequests)
 

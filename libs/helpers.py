@@ -1,10 +1,11 @@
-import re
-import numpy as np
-import hmac
-import hashlib
-import logging
 import difflib
+import hashlib
+import hmac
 import html
+import logging
+import re
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

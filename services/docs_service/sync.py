@@ -1,11 +1,11 @@
 import json
+import logging
 import subprocess
 from pathlib import Path
-import logging
 
-from libs.sqlite.docs.docs_sqlite_client import Database
 from libs.helpers import compute_sha256
 from libs.llm import embedding_model
+from libs.sqlite.docs.docs_sqlite_client import Database
 
 CLONE_DIR = Path("data/app")
 ARTICLES_DIR = CLONE_DIR / "docs/articles"

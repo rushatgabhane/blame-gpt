@@ -1,13 +1,12 @@
 import json
-import sqlite3
-from . import core_queries
 import os
-import json
-from typing import Optional
-from models.models import PullRequest, CulpritPullRequest, Issue
-from libs import constants
-from typing import List
+import sqlite3
 from functools import wraps
+
+from libs import constants
+from models.models import CulpritPullRequest, Issue, PullRequest
+
+from . import core_queries
 
 os.makedirs(os.path.dirname(constants.CACHE_DB_PATH), exist_ok=True)
 
@@ -76,7 +75,7 @@ class Database:
             raise e
 
     @require_connection
-    def get_all_issues(self) -> List[Issue]:
+    def get_all_issues(self) -> list[Issue]:
         assert self.connection is not None
         rows = self.connection.execute(core_queries.GET_ALL_ISSUES).fetchall()
         if not rows:
@@ -120,7 +119,7 @@ class Database:
             raise e
 
     @require_connection
-    def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: List[CulpritPullRequest]):
+    def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: list[CulpritPullRequest]):
         assert self.connection is not None
         self.connection.execute(
             core_queries.UPDATE_ISSUE_PROCESSED_AND_CULPRITS,
@@ -129,7 +128,7 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def get_issue_by_id(self, issue_id: int) -> Optional[Issue]:
+    def get_issue_by_id(self, issue_id: int) -> Issue | None:
         assert self.connection is not None
         row = self.connection.execute(core_queries.GET_ISSUE_BY_ID, (issue_id,)).fetchone()
         if not row:
@@ -163,7 +162,7 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def get_pull_requests_for_issue(self, issue_id: int) -> List[PullRequest]:
+    def get_pull_requests_for_issue(self, issue_id: int) -> list[PullRequest]:
         assert self.connection is not None
         rows = self.connection.execute(core_queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id,)).fetchall()
         return [
@@ -180,13 +179,13 @@ class Database:
         ]
 
     @require_connection
-    def get_all_issue_pull_requests(self) -> List[tuple[int, int, float]]:
+    def get_all_issue_pull_requests(self) -> list[tuple[int, int, float]]:
         assert self.connection is not None
         rows = self.connection.execute(core_queries.GET_ALL_ISSUE_PULL_REQUESTS).fetchall()
         return [(row[0], row[1], row[2]) for row in rows]
 
     @require_connection
-    def get_pull_request_by_id_with_embedding(self, pull_request_id: int) -> Optional[PullRequest]:
+    def get_pull_request_by_id_with_embedding(self, pull_request_id: int) -> PullRequest | None:
         assert self.connection is not None
         row = self.connection.execute(core_queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id,)).fetchone()
         if not row:

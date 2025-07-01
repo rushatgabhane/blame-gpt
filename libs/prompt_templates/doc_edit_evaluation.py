@@ -1,5 +1,6 @@
-from langchain.prompts import PromptTemplate
 from langchain.output_parsers import PydanticOutputParser
+from langchain.prompts import PromptTemplate
+
 from models.models import DocEditEvaluation
 
 doc_edit_evaluation_parser = PydanticOutputParser(pydantic_object=DocEditEvaluation)
