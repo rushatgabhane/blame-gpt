@@ -19,6 +19,9 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
   - [ ] Q&A / “Chat with the codebase”
   - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
+      
+- **Test generator for evaluating agent**
+  - [ ] For a given issue, we won't know if solution is correct. So write tests (similar to [swe-lancer](https://github.com/openai/SWELancer-Benchmark/blob/6fee3b0200d90f5b24aab36de6c787ec849e76aa/issues/102/test.py#L97) for frontend), and figure out for backend too.
 
 - **Review bot**
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
