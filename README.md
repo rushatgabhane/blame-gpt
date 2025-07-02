@@ -21,7 +21,10 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
 
 - **Culprit prevention**
-  - [ ] Analyze past deploy blockers and build a review bot to prevent new deploy blockers
+  - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
+
+- **QA test steps generation**
+  - [ ] For a PR, authors can generate test steps to start with.
 
 - **Analytics**
   - [ ] Build dashboards  
@@ -35,6 +38,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Install BlameGPT on **our own repo** and use it daily
 
 - **Monetisation & growth**
+  - [ ] User acquisition using comment. Users can `@blamegpt` on any issue and we can invoke a tool, and auto create a freemium account.
   - [ ] Post solution proposals on Expensify issues (earn revenue)
   - [ ] Build more tools
   - [ ] Make the tool-suite work for *any* repository
