@@ -60,7 +60,7 @@ def sync_docs(docs_db: Database):
     try:
         clone_or_pull_repo(REPO_URL, CLONE_DIR)
 
-        # don't upadate embeddings because docs endpoint has no real users and it is expensive
+        # don't update embeddings because docs endpoint has no real users and it is expensive
         # update_docs_embedding(docs_db)
     except Exception as e:
         logger.error(f"failed to sync docs: {e}")
