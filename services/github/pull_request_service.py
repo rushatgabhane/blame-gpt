@@ -99,7 +99,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
-        pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}"
+        pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}\n Code diff summary: {code_diff_summary.pull_request_description}"
         pr_embedding = embedding_model.embed_query(pr_text)
 
         return PullRequest(
