@@ -1,7 +1,14 @@
 #!/bin/bash
 
+set -euo pipefail # exit on first error
+
 cd /home/blamegpt/blame-gpt
 git pull
-sudo systemctl restart fastapi
 
+echo "pulled latest code ✅"
+
+bash ./migrate.sh
+echo "ran db migrations ✅"
+
+sudo systemctl restart fastapi
 echo "restarted fastapi server ✅"

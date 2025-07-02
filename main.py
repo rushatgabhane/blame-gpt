@@ -15,6 +15,7 @@ from controllers.blame_controller import blame_router
 from controllers.deploy_blocker_controller import deploy_blocker_router
 from controllers.docs_controller import docs_router
 from controllers.issue_controller import issue_router
+from libs import constants
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from services.docs_service.sync import sync_docs
@@ -25,10 +26,10 @@ scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db = core_sqlite_client.Database()
+    db = core_sqlite_client.Database(constants.CACHE_DB_PATH)
     app.state.db = db
 
-    docs_db = docs_sqlite_client.Database()
+    docs_db = docs_sqlite_client.Database(constants.DOCS_DB_PATH)
     app.state.docs_db = docs_db
 
     logger.info("database connections initialized.")
