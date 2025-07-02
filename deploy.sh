@@ -6,7 +6,7 @@ cd /home/blamegpt/blame-gpt
 git pull
 echo "pulled latest code ✅"
 
-pip install -r requirements.txt
+source venv/bin/activate && pip install -r requirements.txt
 echo "installed requirements ✅"
 
 bash ./migrate.sh
