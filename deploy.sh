@@ -8,6 +8,7 @@ git pull
 echo "pulled latest code ✅"
 
 bash ./migrate.sh
+echo "ran db migrations ✅"
 
 sudo systemctl restart fastapi
 echo "restarted fastapi server ✅"
