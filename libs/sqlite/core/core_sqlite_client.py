@@ -73,6 +73,7 @@ class Database:
             self.connection.rollback()
             raise e
 
+    # Does not return embeddings
     @require_connection
     def get_all_issues(self) -> list[Issue]:
         assert self.connection is not None
