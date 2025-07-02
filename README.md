@@ -39,6 +39,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 
 - **Monetisation & growth**
   - [ ] User acquisition using comment. Users can `@blamegpt` on any issue and we can invoke a tool, and auto create a freemium account.
+    - i.e. use bottom up approach to acquire users. Figure out bottom up approach for private repos too. 
   - [ ] Post solution proposals on Expensify issues (earn revenue)
   - [ ] Build more tools
   - [ ] Make the tool-suite work for *any* repository
