@@ -86,4 +86,15 @@ blame-gpt/
 └── requirements.txt
 ```
 
+### Database Migrations
+We use Yoyo-migrations to manage database schema changes. 
+- All migrations are written in pure SQL.
+- The app automatically applies migrations on start. You can also manually apply them using `migrate.sh`
+- The migrations are in `libs/sqlite/[db_name]/migrations/`
 
+Naming convention
+```sql
+000001_init_schema.sql
+000002_add_pull_requests_table.sql
+000003_add_index_on_issues.sql
+```
