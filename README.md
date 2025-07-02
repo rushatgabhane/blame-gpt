@@ -20,7 +20,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Q&A / “Chat with the codebase”
   - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
 
-- **Culprit prevention**
+- **Review bot**
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
 
 - **QA test steps generation**
