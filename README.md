@@ -51,6 +51,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
         - Jira integration  
         - Self-hosting / BYO-LLM  
         - Auditable code paths
+  - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
   - [ ] Sell to more companies
   - [ ] 💰💰💰
 
