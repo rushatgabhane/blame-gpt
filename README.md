@@ -104,3 +104,8 @@ Naming convention
 000002_add_pull_requests_table.sql
 000003_add_index_on_issues.sql
 ```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=rushatgabhane/blame-gpt&type=Date)](https://www.star-history.com/#rushatgabhane/blame-gpt&Date)
+
