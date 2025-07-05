@@ -16,10 +16,7 @@ async def add_issue(issue_id: int, db: Database) -> Issue:
         steps = extract_steps_from_description(gh_issue.body or "")
         title = gh_issue.title or ""
         embedding_model = llmFactory.llmFactory().getLLM(
-            "open-ai",
-            False,
-            modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
-            cost=modeltypeenums.ModelCostType.STANDARD,
+            modelType=modeltypeenums.ModelThinkingType.EMBEDDING, cost=modeltypeenums.ModelCostType.STANDARD
         )
         issue_embedding = embedding_model.embed_query(f"{title}\n {steps}")
 

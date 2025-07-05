@@ -13,5 +13,6 @@ class ModelThinkingType(Enum):
 
 
 class ModelCostType(Enum):
+    DEFAULT = "default"
     CHEAP = "cheap"
     STANDARD = "standard"

@@ -7,14 +7,13 @@ from libs import llmFactory, modeltypeenums
 from models.models import DocUpdateDiff
 
 ai_env = os.getenv("LLM_TYPE", "open-ai")
+local_llm = os.getenv("LOCAL_LLM", False) == "True"
 
 _raw_parser = PydanticOutputParser(pydantic_object=DocUpdateDiff)
 llmReasoningCheap = llmFactory.llmFactory().getLLM(
-    ai_env,
-    False,
-    modelType=modeltypeenums.ModelThinkingType.REASONING,
-    cost=modeltypeenums.ModelCostType.CHEAP,
+    modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.CHEAP
 )
+
 doc_edit_parser = OutputFixingParser.from_llm(parser=_raw_parser, llm=llmReasoningCheap)
 
 

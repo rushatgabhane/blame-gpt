@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import subprocess
 from pathlib import Path
 
@@ -12,7 +11,6 @@ CLONE_DIR = Path("data/app")
 ARTICLES_DIR = CLONE_DIR / "docs/articles"
 REPO_URL = "https://github.com/Expensify/App.git"
 logger = logging.getLogger(__name__)
-ai_env = os.getenv("LLM_TYPE", "open-ai")  # Get the LLM type from environment variable, if needed
 
 
 def get_title_from_path(path: str) -> str:
@@ -53,10 +51,7 @@ def update_docs_embedding(docs_db: Database):
 
         title = get_title_from_path(rel_path)
         embedding_model = llmFactory.llmFactory().getLLM(
-            ai_env,
-            False,
-            modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
-            cost=modeltypeenums.ModelCostType.STANDARD,
+            modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.STANDARD
         )
         embedding = embedding_model.embed_query(f"Path: {rel_path}\n\n Content:{content}")
 

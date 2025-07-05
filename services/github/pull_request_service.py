@@ -96,10 +96,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             code_diff=code_diff,
         )
         llmReasoningCheap = llmFactory.llmFactory().getLLM(
-            "open-ai",
-            False,
-            modelType=modeltypeenums.ModelThinkingType.REASONING,
-            cost=modeltypeenums.ModelCostType.CHEAP,
+            modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.CHEAP
         )
         response = llmReasoningCheap.invoke(code_diff_summary_input)
         code_diff_summary = code_diff_summary_parser.invoke(response)
@@ -107,10 +104,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
 
         pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}\n Code diff summary: {code_diff_summary.pull_request_description}"
         embedding_model = llmFactory.llmFactory().getLLM(
-            "open-ai",
-            False,
-            modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
-            cost=modeltypeenums.ModelCostType.STANDARD,
+            modelType=modeltypeenums.ModelThinkingType.EMBEDDING, cost=modeltypeenums.ModelCostType.STANDARD
         )
         pr_embedding = embedding_model.embed_query(pr_text)
 

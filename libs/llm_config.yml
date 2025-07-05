@@ -1,0 +1,70 @@
+models:
+  reasoning:
+    STANDARD:
+      - provider: openai
+        name: gpt-4o
+      - provider: ollama
+        name: llama3
+        options:
+          temperature: 0.7
+          num_ctx: 4096
+    CHEAP:
+      - provider: openai
+        name: gpt-3.5-turbo
+      - provider: ollama
+        name: phi3
+        options:
+          temperature: 0.4
+    PREMIUM:
+      - provider: openai
+        name: gpt-4-turbo
+      - provider: ollama
+        name: wizardlm
+        options:
+          temperature: 0.9
+  foundational:
+    STANDARD:
+      - provider: openai
+        name: gpt-4.1-mini
+      - provider: ollama
+        name: mistral
+        options:
+          temperature: 0.2
+    CHEAP:
+      - provider: openai
+        name: gpt-3.5-turbo
+      - provider: ollama
+        name: gemma
+        options:
+          temperature: 0.2
+    PREMIUM:
+      - provider: openai
+        name: gpt-4.1
+  embedding:
+    STANDARD:
+      - provider: openai
+        name: text-embedding-3-large
+      - provider: ollama
+        name: nomic-embed-text
+        options:
+          embedding_only: true
+    CHEAP:
+      - provider: openai
+        name: text-embedding-3-small
+    PREMIUM:
+      - provider: openai
+        name: text-embedding-3-huge
+
+defaults:
+  reasoning:
+    provider: openai    # Options: openai, ollama
+    cost: STANDARD
+    index: 0            # 0 = first in the list for that cost+provider
+  foundational:
+    provider: openai
+    cost: STANDARD
+    index: 0
+  embedding:
+    provider: openai
+    cost: STANDARD
+    index: 0

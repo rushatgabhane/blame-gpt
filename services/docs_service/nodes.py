@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 from libs import constants, llmFactory, modeltypeenums
 from libs.helpers import blockquote, cosine_similarity
@@ -29,7 +28,6 @@ from services.github import pull_request_service
 from services.github.comment_service import add_comment_to_pull_request
 
 logger = logging.getLogger(__name__)
-ai_env = os.getenv("LLM_TYPE", "open-ai")  # Get the LLM type from environment variable
 
 
 def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
@@ -66,10 +64,7 @@ def pull_request_intent_node(state: State) -> State:
     )
 
     llmReasoningCheap = llmFactory.llmFactory().getLLM(
-        ai_env,
-        False,
-        modelType=modeltypeenums.ModelThinkingType.REASONING,
-        cost=modeltypeenums.ModelCostType.CHEAP,
+        modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.CHEAP
     )
     output = llmReasoningCheap.invoke(input)
     p: PullRequestIntent = pull_request_intent_parser.invoke(output)
@@ -96,11 +91,9 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
         return state
 
     embedding_model = llmFactory.llmFactory().getLLM(
-        ai_env,
-        False,
-        modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
-        cost=modeltypeenums.ModelCostType.STANDARD,
+        modelType=modeltypeenums.ModelThinkingType.EMBEDDING, cost=modeltypeenums.ModelCostType.STANDARD
     )
+
     query_embedding = embedding_model.embed_query(intent)
     docs = docs_db.get_all_docs_with_embeddings()
 
@@ -149,10 +142,7 @@ def doc_edit_suggestions_node(state: State) -> State:
             content=content,
         )
         llmReasoningCheap = llmFactory.llmFactory().getLLM(
-            ai_env,
-            False,
-            modelType=modeltypeenums.ModelThinkingType.REASONING,
-            cost=modeltypeenums.ModelCostType.CHEAP,
+            modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.CHEAP
         )
 
         output = llmReasoningCheap.invoke(input)
@@ -181,10 +171,7 @@ def doc_edit_evaluation_node(state: State) -> State:
         suggestions_json=json.dumps([s.model_dump() for s in suggestions]),
     )
     llmReasoningCheap = llmFactory.llmFactory().getLLM(
-        ai_env,
-        False,
-        modelType=modeltypeenums.ModelThinkingType.REASONING,
-        cost=modeltypeenums.ModelCostType.CHEAP,
+        modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.CHEAP
     )
     output = llmReasoningCheap.invoke(input)
     p: DocEditEvaluation = doc_edit_evaluation_parser.invoke(output)

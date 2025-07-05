@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 
 from libs import constants, llmFactory, modeltypeenums
 from libs.helpers import cosine_similarity
@@ -10,7 +9,6 @@ from models.models import CulpritPullRequests, Issue, PullRequest, PullRequestWi
 from services.github import comment_service, issue_service, pull_request_service
 
 logger = logging.getLogger(__name__)
-ai_env = os.getenv("LLM_TYPE", "open-ai")  # Get the LLM type from environment variable
 
 
 async def run(issue_id: int, db: Database):
@@ -164,12 +162,8 @@ def _find_culprit_pull_requests(
     )
 
     llmReasoning = llmFactory.llmFactory().getLLM(
-        ai_env,
-        False,
-        modelType=modeltypeenums.ModelThinkingType.REASONING,
-        cost=modeltypeenums.ModelCostType.STANDARD,
+        modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.STANDARD
     )
-
     response = llmReasoning.invoke(input)
     return culprit_parser.invoke(response)
 

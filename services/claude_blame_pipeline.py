@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 
-from libs import constants, llmFactory
+from libs import constants, llmFactory, modeltypeenums
 from libs.helpers import cosine_similarity
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -11,6 +11,7 @@ from services.github import comment_service, issue_service, pull_request_service
 
 logger = logging.getLogger(__name__)
 ai_env = os.getenv("LLM_TYPE", "open-ai")  # Get the LLM type from environment variable
+local_llm = os.getenv("LOCAL_LLM", False).lower() == "True"  # Check if local LLM is enabled
 
 
 async def run(issue_id: int, db: Database):
@@ -163,7 +164,7 @@ def _find_culprit_pull_requests(
         pull_requests_block=pr_block,
     )
     llmReasoning = llmFactory.llmFactory().getLLM(
-        ai_env, False, constants.ModelThinkingType.REASONING, constants.ModelCostType.STANDARD
+        modelType=modeltypeenums.ModelThinkingType.REASONING, cost=modeltypeenums.ModelCostType.STANDARD
     )
 
     response = llmReasoning.invoke(input)

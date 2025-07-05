@@ -18,12 +18,8 @@ def build_graph(db: core_sqlite_client.Database, docs_db: docs_sqlite_client.Dat
 
     builder.add_node("pull_request_node", lambda state: pull_request_node(state, db))
     builder.add_node("pull_request_intent_node", pull_request_intent_node)
-    builder.add_node(
-        "get_relevant_docs_node", lambda state: get_relevant_docs_node(state, docs_db)
-    )
-    builder.add_node(
-        "doc_edit_suggestions_node", lambda state: doc_edit_suggestions_node(state)
-    )
+    builder.add_node("get_relevant_docs_node", lambda state: get_relevant_docs_node(state, docs_db))
+    builder.add_node("doc_edit_suggestions_node", lambda state: doc_edit_suggestions_node(state))
     builder.add_node("doc_edit_evaluation_node", doc_edit_evaluation_node)
     builder.add_node("add_comment_node", add_comment_node)
 
@@ -33,15 +29,11 @@ def build_graph(db: core_sqlite_client.Database, docs_db: docs_sqlite_client.Dat
 
     builder.add_conditional_edges(
         "pull_request_intent_node",
-        lambda state: END
-        if state["should_docs_update"] is False
-        else "get_relevant_docs_node",
+        lambda state: END if state["should_docs_update"] is False else "get_relevant_docs_node",
     )
     builder.add_conditional_edges(
         "get_relevant_docs_node",
-        lambda state: END
-        if state["should_docs_update"] is False
-        else "doc_edit_suggestions_node",
+        lambda state: END if state["should_docs_update"] is False else "doc_edit_suggestions_node",
     )
 
     builder.add_edge("doc_edit_suggestions_node", "doc_edit_evaluation_node")
