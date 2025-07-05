@@ -122,7 +122,7 @@ Users cannot login. I went to login page, submitted username and password, but I
 Pipeline: 
 - Converts the issue to an embedding
 - Gets all the recent PRs
-- Converts PR tile, description and code summary to embeddings, saves them to DB so new issues can use.
+- Converts PR title, description and code summary to embeddings, saves them to DB so new issues don't have to recompute.
 - And then finds the relevant PRs using cosine similarity between the issue embedding and PR embedding.
 - ~Top 20 similar PRs are sent to LLM to find the top 3 culprit PRs.
 - Using blamegpt's personal github token, we add a comment to the issue.
