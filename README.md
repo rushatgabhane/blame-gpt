@@ -109,6 +109,24 @@ Naming convention
 000003_add_index_on_issues.sql
 ```
 
+## Flows
+### Blame pipeline
+
+When a new issue is created, a [github action](https://github.com/Blame-GPT/action/blob/main/action.yml) installed on a repo invokes `api/blame` endpoint.
+`blame_pipeline` streams the logs to the action, gets all relevant pull requests, and performs RAG over the issue description and pull requests to rank them.
+#### Example
+Input: Issue
+```
+Users cannot login. I went to login page, submitted username and password, but I'm getting a server error.
+```
+Pipeline: 
+- Converts the issue to an embedding
+- Gets all the recent PRs
+- Converts PR tile, description and code summary to embeddings, saves them to DB so new issues can use.
+- And then finds the relevant PRs using cosine similarity between the issue embedding and PR embedding.
+- ~Top 20 similar PRs are sent to LLM to find the top 3 culprit PRs.
+- Using blamegpt's personal github token, we add a comment to the issue.
+  
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=rushatgabhane/blame-gpt&type=Date)](https://www.star-history.com/#rushatgabhane/blame-gpt&Date)
