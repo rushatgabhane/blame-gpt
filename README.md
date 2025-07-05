@@ -69,6 +69,8 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 5. Copy the env file `cp .env.example .env`, and set your personal github token, set openai api key
 6. Start the server using `uvicorn main:app --reload`
 
+### Notebooks
+To run the notebooks run `jupyter lab`.
 
 ### Project Structure
 
