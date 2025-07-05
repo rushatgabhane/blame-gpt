@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 
-from libs import constants, llmFactory, modeltypeenums
+from libs import constants, llmFactory
 from libs.helpers import cosine_similarity
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -162,12 +162,8 @@ def _find_culprit_pull_requests(
         culprits_to_find=culprits_to_find,
         pull_requests_block=pr_block,
     )
-
     llmReasoning = llmFactory.llmFactory().getLLM(
-        ai_env,
-        False,
-        modelType=modeltypeenums.ModelThinkingType.REASONING,
-        cost=modeltypeenums.ModelCostType.STANDARD,
+        ai_env, False, constants.ModelThinkingType.REASONING, constants.ModelCostType.STANDARD
     )
 
     response = llmReasoning.invoke(input)

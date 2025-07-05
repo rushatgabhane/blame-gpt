@@ -37,7 +37,7 @@ async def get_all_pull_requests(request: Request):
 
 
 @issue_router.get(
-    "/api/pull-request/{pull_request_id}",
+    "/api/pull-requests/{pull_request_id}",
     dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_pull_request_by_id_with_embedding(request: Request, pull_request_id: int):

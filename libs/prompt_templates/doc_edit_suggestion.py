@@ -1,10 +1,20 @@
+import os
+
 from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
 from langchain.prompts import PromptTemplate
 
-from libs.llm import llmReasoningCheap
+from libs import llmFactory, modeltypeenums
 from models.models import DocUpdateDiff
 
+ai_env = os.getenv("LLM_TYPE", "open-ai")
+
 _raw_parser = PydanticOutputParser(pydantic_object=DocUpdateDiff)
+llmReasoningCheap = llmFactory.llmFactory().getLLM(
+    ai_env,
+    False,
+    modelType=modeltypeenums.ModelThinkingType.REASONING,
+    cost=modeltypeenums.ModelCostType.CHEAP,
+)
 doc_edit_parser = OutputFixingParser.from_llm(parser=_raw_parser, llm=llmReasoningCheap)
 
 

@@ -1,8 +1,8 @@
 import logging
 import re
 
+from libs import llmFactory, modeltypeenums
 from libs.github import repo
-from libs.llm import embedding_model
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import Issue
 
@@ -15,6 +15,12 @@ async def add_issue(issue_id: int, db: Database) -> Issue:
         labels = [label.name for label in gh_issue.labels] or []
         steps = extract_steps_from_description(gh_issue.body or "")
         title = gh_issue.title or ""
+        embedding_model = llmFactory.llmFactory().getLLM(
+            "open-ai",
+            False,
+            modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
+            cost=modeltypeenums.ModelCostType.STANDARD,
+        )
         issue_embedding = embedding_model.embed_query(f"{title}\n {steps}")
 
         issue = Issue(

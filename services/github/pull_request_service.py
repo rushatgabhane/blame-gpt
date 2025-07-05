@@ -5,8 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
+from libs import llmFactory, modeltypeenums
 from libs.github import repo
-from libs.llm import embedding_model, llmReasoningCheap
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CodeDiffSummary, FilePatch, PullRequest
@@ -95,11 +95,23 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             explanation=pr_explaination,
             code_diff=code_diff,
         )
+        llmReasoningCheap = llmFactory.llmFactory().getLLM(
+            "open-ai",
+            False,
+            modelType=modeltypeenums.ModelThinkingType.REASONING,
+            cost=modeltypeenums.ModelCostType.CHEAP,
+        )
         response = llmReasoningCheap.invoke(code_diff_summary_input)
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
         pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}\n Code diff summary: {code_diff_summary.pull_request_description}"
+        embedding_model = llmFactory.llmFactory().getLLM(
+            "open-ai",
+            False,
+            modelType=modeltypeenums.ModelThinkingType.EMBEDDING,
+            cost=modeltypeenums.ModelCostType.STANDARD,
+        )
         pr_embedding = embedding_model.embed_query(pr_text)
 
         return PullRequest(
