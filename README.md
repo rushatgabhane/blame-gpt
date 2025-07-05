@@ -3,7 +3,7 @@
 BlameGPT finds the PR causing a deploy blocker so you can go back to shipping.
 
 ## Vision
-Beat cursor, greptile etc by building AI tools that integrate into existing processes of engineers working in a company.
+Be obsessed with developer experience. Beat cursor, greptile etc by building AI tools that integrate into existing processes of engineers working in a company.
 Make the repository public once the roadmap is shipped. Use SaaS model.
 
 ## How it started?
