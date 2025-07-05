@@ -2,13 +2,13 @@ import json
 import os
 import sqlite3
 from functools import wraps
+from pathlib import Path
 
-from libs import constants
+from yoyo import get_backend, read_migrations
+
 from models.models import CulpritPullRequest, Issue, PullRequest
 
 from . import core_queries
-
-os.makedirs(os.path.dirname(constants.CACHE_DB_PATH), exist_ok=True)
 
 
 def require_connection(method):
@@ -22,21 +22,20 @@ def require_connection(method):
 
 
 class Database:
-    def __init__(self, db_path: str = constants.CACHE_DB_PATH):
+    def __init__(self, db_path: str):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
+        migrations_directory: Path = Path(__file__).parent / "migrations"
+        backend = get_backend(f"sqlite:///{db_path}")
+        migrations = read_migrations(str(migrations_directory))
+        backend.apply_migrations(backend.to_apply(migrations))
+
         self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=15.0)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
         self.connection.execute("PRAGMA synchronous=NORMAL;")
         self.connection.execute("PRAGMA strict=ON;")
         self.connection.execute("PRAGMA foreign_keys=ON;")
-        self._init_db()
-
-    def _init_db(self):
-        if self.connection is None:
-            raise ValueError("database connection is not initialized.")
-
-        self.connection.executescript(core_queries.CREATE_TABLES)
-        self.connection.commit()
 
     def close(self):
         if self.connection:
@@ -74,6 +73,7 @@ class Database:
             self.connection.rollback()
             raise e
 
+    # Does not return embeddings
     @require_connection
     def get_all_issues(self) -> list[Issue]:
         assert self.connection is not None
