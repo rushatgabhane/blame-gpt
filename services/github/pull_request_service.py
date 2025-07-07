@@ -110,6 +110,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             files=files,
             embedding=pr_embedding,
             code_diff_summary=code_diff_summary.pull_request_description,
+            code_diff=code_diff,
         )
     except Exception as e:
         logging.error(f"failed to process PR {pull_request_id}: {e}")

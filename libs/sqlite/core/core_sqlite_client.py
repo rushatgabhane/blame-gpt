@@ -215,3 +215,49 @@ class Database:
         assert self.connection is not None
         self.connection.execute(core_queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id))
         self.connection.commit()
+
+    @require_connection
+    def get_pull_request_test_steps(self, pull_request_id: int) -> PullRequest | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS, (pull_request_id,)).fetchone()
+        if not row:
+            return None
+
+        return PullRequest(
+            id=row[0],
+            title=row[1],
+            test=row[2],
+            explaination=row[3],
+            files=json.loads(row[4]),
+            code_diff_summary=row[5] if row[5] else None,
+            embedding=json.loads(row[6]) if row[6] else None,
+            test_steps=row[7] if row[7] else None,
+        )
+
+    @require_connection
+    def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
+        assert self.connection is not None
+        try:
+            self.connection.execute("BEGIN;")
+            self.connection.execute(
+                core_queries.ADD_PULL_REQUEST_TEST_STEPS,
+                (pull_request_id, test_steps),
+            )
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+
+    @require_connection
+    def update_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
+        assert self.connection is not None
+        try:
+            self.connection.execute("BEGIN;")
+            self.connection.execute(
+                core_queries.UPDATE_PULL_REQUEST_TEST_STEPS,
+                (test_steps, pull_request_id),
+            )
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise e

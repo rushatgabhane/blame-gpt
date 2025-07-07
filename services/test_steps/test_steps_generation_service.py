@@ -1,4 +1,5 @@
 import logging
+
 from libs.llm import llmReasoningCheap
 from libs.prompt_templates.test_steps_generation import test_steps_generation_parser, test_steps_prompt
 from models.models import PullRequest, TestStepsGeneration
@@ -18,6 +19,7 @@ def generate_test_steps(pull_request: PullRequest) -> TestStepsGeneration | None
         code_diff_summary=pull_request.code_diff_summary,
         explanation=pull_request.explaination,
         title=pull_request.title,
+        code_diff=pull_request.code_diff,
     )
 
     try:

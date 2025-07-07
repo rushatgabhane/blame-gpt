@@ -10,6 +10,7 @@ You are a skilled QA engineer with expertise in software testing. You are tasked
 
 # Instructions:
 1. You will be given the pull request's title, explanation of changes and a summary of the diff, i.e, the files that changed.
+You are also given the code diff of the pull request to help you understand the changes made in the codebase.
 You need to analyse these details to understand what parts of the application have changed and how they affect the functionality.
 2. Based on this understanding, your goal is to create a comprehensive set of test steps that cover the changes made in the pull request. 
 3. The test steps should be clear, concise, and actionable, allowing a tester to verify the functionality introduced or modified by the pull request.
@@ -34,6 +35,7 @@ Tests
 # PR details:
 Title: {title}
 Explanation: {explanation}
+Code Diff: {code_diff}
 Code Diff Summary: {diff_summary}
 
 Return the output as JSON matching this schema:
@@ -43,7 +45,7 @@ Return the output as JSON matching this schema:
 
 test_steps_prompt = PromptTemplate(
     template=template,
-    input_variables=["title", "explanation", "diff_summary"],
+    input_variables=["title", "explanation", "diff_summary", "code_diff"],
     partial_variables={"format_instructions": test_steps_generation_parser.get_format_instructions()},
     output_parser=test_steps_generation_parser,
 )

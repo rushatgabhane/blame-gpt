@@ -11,6 +11,8 @@ class PullRequest(BaseModel):
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
+    test_steps: str | None = None
+    code_diff: str | None = None
 
 
 class CulpritPullRequest(BaseModel):
