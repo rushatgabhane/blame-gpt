@@ -97,3 +97,7 @@ class State(TypedDict):
 
 class CodeDiffSummary(BaseModel):
     pull_request_description: str
+
+
+class TestStepsGeneration(BaseModel):
+    steps: str
