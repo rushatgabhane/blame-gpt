@@ -111,14 +111,10 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
         return state
 
     for doc in docs_above_threshold:
-        logger.info(
-            f"{state['pull_request_id']}: doc: {doc.doc.path}, score: {doc.score:.4f}"
-        )
+        logger.info(f"{state['pull_request_id']}: doc: {doc.doc.path}, score: {doc.score:.4f}")
 
     top_n = 5
-    top_n_docs = docs_above_threshold[
-        : top_n if len(docs_above_threshold) > top_n else len(docs_above_threshold)
-    ]
+    top_n_docs = docs_above_threshold[: top_n if len(docs_above_threshold) > top_n else len(docs_above_threshold)]
 
     state["relevant_docs"] = [doc.doc for doc in top_n_docs]
     return state
@@ -143,9 +139,7 @@ def doc_edit_suggestions_node(state: State) -> State:
         output = llmReasoningCheap.invoke(input)
         p = doc_edit_parser.invoke(output)
         if not p or not p.edits:
-            logger.info(
-                f"{state['pull_request_id']}: doc {doc.path}: edit suggestions is empty"
-            )
+            logger.info(f"{state['pull_request_id']}: doc {doc.path}: edit suggestions is empty")
             continue
 
         suggestion = DocUpdateDiff(
@@ -160,9 +154,7 @@ def doc_edit_suggestions_node(state: State) -> State:
 def doc_edit_evaluation_node(state: State) -> State:
     suggestions = state["doc_edit_suggestions"]
     if not suggestions:
-        logger.error(
-            f"{state['pull_request_id']}: no article update suggestions found in state"
-        )
+        logger.error(f"{state['pull_request_id']}: no article update suggestions found in state")
         return state
 
     input = doc_edit_evaluation_prompt.format(
@@ -177,9 +169,7 @@ def doc_edit_evaluation_node(state: State) -> State:
     state["update_reason"] = p.update_reason
 
     if not p.should_docs_update:
-        logger.info(
-            f"{state['pull_request_id']}: doc edit evaluation: no updates needed for PR "
-        )
+        logger.info(f"{state['pull_request_id']}: doc edit evaluation: no updates needed for PR ")
         return state
 
     i = 0
@@ -189,9 +179,7 @@ def doc_edit_evaluation_node(state: State) -> State:
     for i, e in enumerate(p.edits_to_apply, start=1):
         path = e.path.replace(".md", "")
         comment += "\n---\n\n"
-        comment += (
-            f"#### Article: [{path}](https://help.expensify.com/articles/{path})\n\n"
-        )
+        comment += f"#### Article: [{path}](https://help.expensify.com/articles/{path})\n\n"
         comment += f"**Edit {i}:**\n"
 
         for edit in e.edits:
