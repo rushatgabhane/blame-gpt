@@ -77,7 +77,7 @@ WHERE id = ?;
 """
 
 GET_PULL_REQUEST_TEST_STEPS = """
-SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, pe.embedding
+SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, prts.test_steps
 FROM pull_requests pr
 LEFT JOIN pull_request_test_steps prts ON prts.pull_request_id = pr.id
 WHERE pr.id = ?;

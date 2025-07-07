@@ -230,8 +230,7 @@ class Database:
             explaination=row[3],
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
-            embedding=json.loads(row[6]) if row[6] else None,
-            test_steps=row[7] if row[7] else None,
+            test_steps=row[6] if row[6] else None,
         )
 
     @require_connection
