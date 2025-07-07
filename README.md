@@ -32,7 +32,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
 
 - **QA test steps generation**
-  - [ ] For a PR, authors can generate test steps to start with.
+  - [ ] For a PR, authors can generate test steps to start with. ([@kevinam99](https://github.com/kevinam99))
 
 - **Analytics**
   - [ ] Build dashboards  
