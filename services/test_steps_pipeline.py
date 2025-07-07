@@ -34,7 +34,11 @@ async def run(pull_request_id: int, db: Database):
         yield f"test steps generated for PR #{pull_request_id}"
 
         # add comment to PR with the test steps
-        comment = "## Steps to test the PR: \n" + test_steps.steps + "\n\n ### Powered by BlameGPT"
+        comment = f"""
+### Suggested steps
+{test_steps.steps}
+        
+<sub>AI generated these steps. Your quick sanity check makes them solid.</sub>
 
         comment_service.add_comment_to_pull_request(pull_request_id, comment)
         yield "added comment to the PR."
