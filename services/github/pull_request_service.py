@@ -173,14 +173,3 @@ def add_pull_request(pull_request_id: int, db: Database) -> PullRequest | None:
 
     db.add_pull_request(pull_request)
     return pull_request
-
-
-def get_pull_request(pull_request_id: int) -> PullRequest | None:
-    pr = repo.get_pull(pull_request_id)
-    if not pr:
-        logging.error(f"pull request {pull_request_id} not found")
-        return None
-
-    return PullRequest(
-        id=pr.number, title=pr.title, test=None, explaination=None, files=[], embedding=None, code_diff_summary=None
-    )

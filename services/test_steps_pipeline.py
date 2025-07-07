@@ -13,7 +13,8 @@ async def run(pull_request_id: int, db: Database):
 
         # 1. get PR, need to add to DB and track whethere processed or not
         # if processed, skip else, process
-        pull_request: PullRequest = pull_request_service.get_pull_request(pull_request_id)
+
+        # db.add_pull_request fetches the PR from GitHub by calling _get_pr_with_embeddings
         pull_request: PullRequest = db.add_pull_request(pull_request_id)
 
         # now that we have the PR, the diff summary and the explanation
