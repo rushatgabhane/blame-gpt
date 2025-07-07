@@ -34,10 +34,16 @@ def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     return comment
 
 
-def add_comment_to_pull_request(pull_request_id: int, comment: str) -> None:
+def add_comment_to_pull_request(pull_request_id: int, comment: str) -> str:
     try:
-        pull_request = repo.get_pull(pull_request_id)
-        pull_request.create_issue_comment(comment)
+        if os.getenv("ENVIRONMENT") == "production":
+            pull_request = repo.get_pull(pull_request_id)
+            pull_request.create_issue_comment(comment)
+            return comment
+
+        logger.info("skipping comment creation to PR in non-production environment")
+        return comment
+
     except Exception as e:
         logger.error(f"error adding comment to pull request #{pull_request_id}: {e}")
         raise

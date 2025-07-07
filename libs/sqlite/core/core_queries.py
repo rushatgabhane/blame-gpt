@@ -75,3 +75,21 @@ UPDATE issues
 SET actual_pull_request_id = ?
 WHERE id = ?;
 """
+
+GET_PULL_REQUEST_TEST_STEPS = """
+SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, prts.test_steps
+FROM pull_requests pr
+LEFT JOIN pull_request_test_steps prts ON prts.pull_request_id = pr.id
+WHERE pr.id = ?;
+"""
+
+ADD_PULL_REQUEST_TEST_STEPS = """
+INSERT OR REPLACE INTO pull_request_test_steps (pull_request_id, test_steps)
+VALUES (?, ?);
+"""
+
+UPDATE_PULL_REQUEST_TEST_STEPS = """
+UPDATE pull_request_test_steps
+SET test_steps = ?
+WHERE pull_request_id = ?;
+"""
