@@ -35,11 +35,11 @@ async def run(pull_request_id: int, db: Database):
 
         # add comment to PR with the test steps
         comment = f"""
-### Suggested steps
-{test_steps.steps}
-        
-<sub>AI generated these steps. Your quick sanity check makes them solid.</sub>
-
+            ### Suggested steps
+            {test_steps.steps}
+                    
+            <sub>AI generated these steps. Your quick sanity check makes them solid.</sub>
+        """
         comment_service.add_comment_to_pull_request(pull_request_id, comment)
         yield "added comment to the PR."
 
