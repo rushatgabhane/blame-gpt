@@ -13,6 +13,8 @@ from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
 from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
+from services import blame_pipeline, test_steps_pipeline
+from services.docs_service import run_graph
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase):
 
         command_name = _classify_command(comment.body)
 
-        _run_command(command_name, n, core_db, docs_db)
+        await _run_command(command_name, n, core_db, docs_db)
 
         _add_usage_log(core_db)
         logger.info(f"user: {comment.user.email}")
@@ -100,20 +102,44 @@ def _get_comment(comment_url: str) -> IssueComment | None:
 
 
 def _classify_command(comment_body: str) -> CommandName:
+    # Trim to prevent abuse
+    comment_trimmed = " ".join(comment_body.split()[:100])
     try:
         input = command_classifier_prompt.format(
-            comment=comment_body,
+            comment=comment_trimmed,
         )
         response = llmNano.invoke(input)
         classification: CommandClassification = command_classification_parser.invoke(response)
         return CommandName(classification.command_name)
     except Exception as e:
-        logger.error(f"failed to classify command for comment {comment_body}: {e}")
+        logger.error(f"failed to classify command for comment {comment_trimmed}: {e}")
         return CommandName.UNKNOWN
 
 
-def _run_command(command_name: CommandName, notification: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
-    logger.info(f"running command {command_name.value} for notification {notification}")
+async def _run_command(
+    command_name: CommandName, notification: Notification, core_db: CoreDatabase, docs_db: DocsDatabase
+):
+    if command_name == CommandName.BLAME:
+        async for step in blame_pipeline.run(issue_id=1, db=core_db):
+            logger.info(f"1: {step}")
+
+        return
+
+    if command_name == CommandName.OHMYDOCS:
+        await run_graph.docs(pull_request_id=1, db=core_db, docs_db=docs_db)
+
+        return
+
+    if command_name == CommandName.TEST_STEPS:
+        async for step in test_steps_pipeline.run(pull_request_id=1, db=core_db):
+            logger.info(f"1: {step}")
+
+        return
+
+    if command_name == CommandName.UNKNOWN:
+        logger.info(f"unknown command {command_name} for notification {notification.id}, skipping")
+
+        return
 
 
 def _add_usage_log(core_db: CoreDatabase):
