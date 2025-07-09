@@ -2,6 +2,8 @@ from typing import TypedDict
 
 from pydantic import BaseModel, Field
 
+from models.enums import CommandName
+
 
 class PullRequest(BaseModel):
     id: int
@@ -103,3 +105,7 @@ class CodeDiffSummary(BaseModel):
 
 class TestStepsGeneration(BaseModel):
     steps: str
+
+
+class CommandClassification(BaseModel):
+    command_name: CommandName

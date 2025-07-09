@@ -7,13 +7,19 @@ from github.Notification import Notification
 
 from libs import constants
 from libs.github import gh_user
+from libs.llm import llmNano
+from libs.prompt_templates.command_classification import command_classification_parser, command_classifier_prompt
+from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
+from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
+from models.enums import CommandName
+from models.models import CommandClassification
 
 logger = logging.getLogger(__name__)
 
 last_checked = datetime.now(UTC)
 
 
-async def listen_notifications():
+async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase):
     global last_checked
     previous_last_checked = last_checked
 
@@ -35,6 +41,12 @@ async def listen_notifications():
             logger.warning(f"could not fetch comment for notification {n.id}, skipping")
             continue
 
+        command_name = _classify_command(comment.body)
+
+        _run_command(command_name, n, core_db, docs_db)
+
+        _add_usage_log(core_db)
+        logger.info(f"user: {comment.user.email}")
         logger.info(f"comment: {comment.body}")
 
         logger.info(f"notification: {n.subject}")
@@ -85,3 +97,24 @@ def _get_comment(comment_url: str) -> IssueComment | None:
     except Exception as e:
         logger.error(f"failed to get comment {comment_url}: {e}")
         return None
+
+
+def _classify_command(comment_body: str) -> CommandName:
+    try:
+        input = command_classifier_prompt.format(
+            comment=comment_body,
+        )
+        response = llmNano.invoke(input)
+        classification: CommandClassification = command_classification_parser.invoke(response)
+        return CommandName(classification.command_name)
+    except Exception as e:
+        logger.error(f"failed to classify command for comment {comment_body}: {e}")
+        return CommandName.UNKNOWN
+
+
+def _run_command(command_name: CommandName, notification: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
+    logger.info(f"running command {command_name.value} for notification {notification}")
+
+
+def _add_usage_log(core_db: CoreDatabase):
+    logger.info("saving user usage")

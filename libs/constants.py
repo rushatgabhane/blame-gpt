@@ -9,3 +9,5 @@ LABELS = {
 }
 
 EN_TS = "en.ts"
+
+SUPPORTED_COMMANDS = {"blame": "blame", "ohmydocs": "ohmydocs", "test_steps": "test_steps"}

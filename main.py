@@ -41,14 +41,19 @@ async def lifespan(app: FastAPI):
 
     sync_docs(docs_db)
     scheduler.add_job(
-        lambda: sync_docs(docs_db), trigger=CronTrigger(hour=8, minute=0), name="daily docs sync", id="daily_docs_sync"
+        func=sync_docs,
+        args=(docs_db,),
+        trigger=CronTrigger(hour=8, minute=0),
+        id="daily_docs_sync",
+        name="daily docs sync",
     )
 
     scheduler.add_job(
-        lambda: listen_notifications(),
-        trigger=IntervalTrigger(seconds=15),
-        name="listen to github notifications",
+        func=listen_notifications,
+        args=(db, docs_db),
+        trigger=IntervalTrigger(seconds=5),
         id="listen_notifications",
+        name="listen to github notifications",
     )
 
     scheduler.start()
