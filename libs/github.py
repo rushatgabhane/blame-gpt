@@ -1,7 +1,9 @@
 import logging
 import os
+from typing import cast
 
 from github import Github
+from github.AuthenticatedUser import AuthenticatedUser
 
 from libs import constants
 
@@ -14,6 +16,8 @@ gh = Github(github_token)
 
 repo = gh.get_repo(f"{constants.REPO_OWNER}/{constants.REPO_NAME}")
 rate = gh.get_rate_limit()
+gh_user: AuthenticatedUser = cast(AuthenticatedUser, gh.get_user())
 
-logging.info("secondary repo initialized as %s", repo.full_name)
-logging.info("secondary rate limit information: %s", rate)
+logging.info("repo initialized as %s", repo.full_name)
+logging.info("rate limit information: %s", rate)
+logging.info("user information: %s", gh_user)
