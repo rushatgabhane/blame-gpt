@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 
 from controllers.blame_controller import blame_router
@@ -19,9 +20,13 @@ from libs import constants
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from services.docs_service.sync import sync_docs
+from services.github.notification_service import listen_notifications
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
+
+# Supress APScheduler logs to WARNING to reduce noise
+logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 
 @asynccontextmanager
@@ -38,6 +43,14 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         lambda: sync_docs(docs_db), trigger=CronTrigger(hour=8, minute=0), name="daily docs sync", id="daily_docs_sync"
     )
+
+    scheduler.add_job(
+        lambda: listen_notifications(),
+        trigger=IntervalTrigger(seconds=15),
+        name="listen to github notifications",
+        id="listen_notifications",
+    )
+
     scheduler.start()
 
     yield
