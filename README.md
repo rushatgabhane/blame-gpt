@@ -15,6 +15,9 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 ## Product roadmap
 This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
 
+- **Documentation update on PR**
+  - [x] update help docs if it changes UI
+ 
 - **Culprit detection**
   - [x] Find a culprit pull request for a given deploy blocker
   - [ ] Generalise to *any* issue, not just deploy blockers
