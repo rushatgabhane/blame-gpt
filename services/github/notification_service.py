@@ -27,55 +27,61 @@ async def listen_notifications():
         if not _is_valid_notification(n):
             continue
 
-        commentID = int(n.subject.latest_comment_url.split("/")[-1])
-        commentURL = n.subject.latest_comment_url
-        asyncio.create_task(asyncio.to_thread(_react_with_eyes, commentID))
+        latest_comment_url = n.subject.latest_comment_url
+        asyncio.create_task(asyncio.to_thread(_react_with_eyes, latest_comment_url))
 
-        comment = _get_comment(commentURL)
-        logger.info(f"comment: {comment}")
+        comment = _get_comment(latest_comment_url)
+        if not comment:
+            logger.warning(f"could not fetch comment for notification {n.id}, skipping")
+            continue
+
+        logger.info(f"comment: {comment.body}")
 
         logger.info(f"notification: {n.subject}")
-        logger.info(f"notification url: {commentURL}")
+        logger.info(f"notification url: {latest_comment_url}")
 
 
 def _is_valid_notification(notification: Notification) -> bool:
     if notification.reason != "mention":
         return False
 
-    if notification.subject.type != "Issue":
+    if notification.subject.type != "Issue" and notification.subject.type != "PullRequest":
         return False
 
     if (
         notification.repository.name != constants.REPO_NAME
         and notification.repository.owner.login != constants.REPO_OWNER
     ):
+        logger.warning(f"notification {notification.id} is from {notification.repository}, skipping")
         return False
 
     if not notification.subject.latest_comment_url:
         logger.warning(f"notification {notification.id} has no latest comment URL, skipping")
         return False
 
+    logger.info(f"notification {notification.id} is for {notification.subject.type} {notification.subject.title}")
+
     return True
 
 
-def _react_with_eyes(commentID: int):
+def _react_with_eyes(comment_url: str):
     try:
         gh_user._requester.requestJsonAndCheck(
             verb="POST",
-            url=f"https://api.github.com/repos/{constants.REPO_OWNER}/{constants.REPO_NAME}/issues/comments/{commentID}/reactions",
+            url=f"{comment_url}/reactions",
             input={"content": "eyes"},
         )
     except Exception as e:
-        logger.error(f"failed to react with eyes on comment {commentID}: {e}")
+        logger.error(f"failed to react with eyes on comment {comment_url}/reactions: {e}")
 
 
-def _get_comment(commentURL: str) -> IssueComment | None:
+def _get_comment(comment_url: str) -> IssueComment | None:
     try:
         _headers, data = gh_user._requester.requestJsonAndCheck(
             verb="GET",
-            url=commentURL,
+            url=comment_url,
         )
         return IssueComment(requester=gh_user._requester, headers=_headers, attributes=data, completed=True)
     except Exception as e:
-        logger.error(f"failed to get comment {commentURL}: {e}")
+        logger.error(f"failed to get comment {comment_url}: {e}")
         return None
