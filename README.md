@@ -16,7 +16,7 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
 
 - **Documentation update on PR**
-  - [x] update help docs if it changes UI
+  - [x] Update user docs if a PR changes UI
  
 - **Culprit detection**
   - [x] Find a culprit pull request for a given deploy blocker
@@ -26,6 +26,9 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
   - [ ] Q&A / “Chat with the codebase”
   - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
+
+- **Auto revert**
+  - [ ] Revert a PR, resolve conflicts and add them to the body.
       
 - **Test generator for evaluating agent**
   - [ ] For a given issue, we won't know if solution is correct. So write tests (similar to [swe-lancer](https://github.com/openai/SWELancer-Benchmark/blob/6fee3b0200d90f5b24aab36de6c787ec849e76aa/issues/102/test.py#L97) for frontend), and figure out for backend too.
