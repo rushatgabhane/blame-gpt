@@ -4,27 +4,12 @@ import logging
 from libs import constants
 from libs.helpers import blockquote, cosine_similarity
 from libs.llm import embedding_model, llmReasoningCheap
-from libs.prompt_templates.doc_edit_evaluation import (
-    doc_edit_evaluation_parser,
-    doc_edit_evaluation_prompt,
-)
-from libs.prompt_templates.doc_edit_suggestion import (
-    doc_edit_parser,
-    doc_edit_suggestions_prompt,
-)
-from libs.prompt_templates.pull_request_intent import (
-    pull_request_intent_parser,
-    pull_request_intent_prompt,
-)
+from libs.prompt_templates.doc_edit_evaluation import doc_edit_evaluation_parser, doc_edit_evaluation_prompt
+from libs.prompt_templates.doc_edit_suggestion import doc_edit_parser, doc_edit_suggestions_prompt
+from libs.prompt_templates.pull_request_intent import pull_request_intent_parser, pull_request_intent_prompt
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
-from models.models import (
-    DocEditEvaluation,
-    DocUpdateDiff,
-    DocWithScore,
-    PullRequestIntent,
-    State,
-)
+from models.models import DocEditEvaluation, DocUpdateDiff, DocWithScore, PullRequestIntent, State
 from services.github import pull_request_service
 from services.github.comment_service import add_comment_to_pull_request
 
@@ -126,7 +111,7 @@ def doc_edit_suggestions_node(state: State) -> State:
         logger.error(f"{state['pull_request_id']}: no relevant docs found in state")
         return state
 
-    state["doc_edit_suggestions"] = []
+    suggestions: list[DocUpdateDiff] = []
 
     for doc in relevant_docs:
         content = doc.raw_content or ""
@@ -146,8 +131,9 @@ def doc_edit_suggestions_node(state: State) -> State:
             path=doc.path,
             edits=p.edits,
         )
-        state["doc_edit_suggestions"].append(suggestion)
+        suggestions.append(suggestion)
 
+    state["doc_edit_suggestions"] = suggestions
     return state
 
 

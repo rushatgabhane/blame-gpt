@@ -22,7 +22,11 @@ async def run(pull_request_id: int, db: Database):
             return
 
         # db.add_pull_request fetches the PR from GitHub by calling _get_pr_with_embeddings
-        pull_request: PullRequest = pull_request_service.add_pull_request(pull_request_id)
+        pull_request = pull_request_service.add_pull_request(pull_request_id, db)
+        if not pull_request:
+            yield f"PR #{pull_request_id} not found or failed to fetch."
+            logger.error(f"PR #{pull_request_id}: not found or failed to fetch.")
+            return
 
         # now that we have the PR, the diff summary and the explanation
         # let's feed it to the LLM to get the steps to test the PR

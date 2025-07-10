@@ -6,9 +6,8 @@ from pathlib import Path
 
 from yoyo import get_backend, read_migrations
 
+from libs.sqlite.core import core_queries
 from models.models import CulpritPullRequest, Issue, PullRequest
-
-from . import core_queries
 
 
 def require_connection(method):

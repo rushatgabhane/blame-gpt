@@ -6,3 +6,8 @@ exclude = ["**/*.ipynb", "**venv/"]
 [tool.ruff.lint]
 select = ["F", "I", "UP", "B", "TID", "SIM"]
 ignore = []
+
+[tool.mypy]
+python_version = "3.13"
+explicit_package_bases = true
+files = ["libs"]

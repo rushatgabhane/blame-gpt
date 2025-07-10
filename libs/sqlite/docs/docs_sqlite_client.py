@@ -7,9 +7,8 @@ from pathlib import Path
 
 from yoyo import get_backend, read_migrations
 
+from libs.sqlite.docs import docs_queries as q
 from models.models import Doc
-
-from . import docs_queries as q
 
 
 def require_connection(method):
