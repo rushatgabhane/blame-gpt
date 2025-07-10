@@ -1,5 +1,5 @@
-REPO_OWNER = "Blame-GPT"
-REPO_NAME = "action"
+REPO_OWNER = "Expensify"
+REPO_NAME = "App"
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 
