@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from datetime import UTC, datetime
 
 from github.IssueComment import IssueComment
@@ -13,8 +14,7 @@ from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
 from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
-from services import blame_pipeline, test_steps_pipeline
-from services.docs_service import run_graph
+from services import blame_pipeline, user_service
 
 logger = logging.getLogger(__name__)
 
@@ -34,25 +34,40 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase):
     for n in notifications:
         if not _is_valid_notification(n):
             continue
+        asyncio.create_task(process_notification(n, core_db, docs_db))
 
+
+async def process_notification(n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
+    try:
         latest_comment_url = n.subject.latest_comment_url
         asyncio.create_task(asyncio.to_thread(_react_with_eyes, latest_comment_url))
 
         comment = _get_comment(latest_comment_url)
         if not comment:
             logger.warning(f"could not fetch comment for notification {n.id}, skipping")
-            continue
+            return
 
         command_name = _classify_command(comment.body)
-
         await _run_command(command_name, n, core_db, docs_db)
 
-        _add_usage_log(core_db)
-        logger.info(f"user: {comment.user.email}")
-        logger.info(f"comment: {comment.body}")
+        userID = user_service.add_user_if_not_exists(
+            username=comment.user.login,
+            email=comment.user.email or "",
+            name=comment.user.name or comment.user.login,
+            avatar_url=comment.user.avatar_url,
+            core_db=core_db,
+        )
 
-        logger.info(f"notification: {n.subject}")
-        logger.info(f"notification url: {latest_comment_url}")
+        user_service.add_user_usage_log(
+            userID=userID,
+            command_name=command_name,
+            comment_url=latest_comment_url,
+            output="default output",  # Placeholder, replace later.
+            issue_or_pull_request_url=n.subject.url,
+            core_db=core_db,
+        )
+    except Exception as e:
+        logger.error(f"error processing notification : {n} : {e}")
 
 
 def _is_valid_notification(notification: Notification) -> bool:
@@ -73,12 +88,14 @@ def _is_valid_notification(notification: Notification) -> bool:
         logger.warning(f"notification {notification.id} has no latest comment URL, skipping")
         return False
 
-    logger.info(f"notification {notification.id} is for {notification.subject.type} {notification.subject.title}")
-
     return True
 
 
 def _react_with_eyes(comment_url: str):
+    if os.getenv("ENVIRONMENT") != "production":
+        logger.info(f"skipping reaction to comment {comment_url} in non production environment")
+        return
+
     try:
         gh_user._requester.requestJsonAndCheck(
             verb="POST",
@@ -119,28 +136,25 @@ def _classify_command(comment_body: str) -> CommandName:
 async def _run_command(
     command_name: CommandName, notification: Notification, core_db: CoreDatabase, docs_db: DocsDatabase
 ):
-    if command_name == CommandName.BLAME:
-        async for step in blame_pipeline.run(issue_id=1, db=core_db):
-            logger.info(f"1: {step}")
+    issue_or_pull_request_url = notification.subject.url
+    issue_or_pull_request_id = int(issue_or_pull_request_url.split("/")[-1])
 
+    if command_name == CommandName.BLAME and notification.subject.type == "Issue":
+        async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db):
+            logger.info(f"#{issue_or_pull_request_id} {step}")
         return
 
     if command_name == CommandName.OHMYDOCS:
-        await run_graph.docs(pull_request_id=1, db=core_db, docs_db=docs_db)
-
+        # Disable until it works well.
+        # await run_graph.docs(pull_request_id=issue_or_pull_request_id, db=core_db, docs_db=docs_db)
         return
 
     if command_name == CommandName.TEST_STEPS:
-        async for step in test_steps_pipeline.run(pull_request_id=1, db=core_db):
-            logger.info(f"1: {step}")
-
+        # Disable until it works well.
+        # async for step in test_steps_pipeline.run(pull_request_id=issue_or_pull_request_id, db=core_db):
+        #     logger.info(f"#{issue_or_pull_request_id}: {step}")
         return
 
     if command_name == CommandName.UNKNOWN:
-        logger.info(f"unknown command {command_name} for notification {notification.id}, skipping")
-
+        logger.info(f"unknown command for notification {notification.id}, skipping")
         return
-
-
-def _add_usage_log(core_db: CoreDatabase):
-    logger.info("saving user usage")
