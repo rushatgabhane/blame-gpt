@@ -1,5 +1,5 @@
-REPO_OWNER = "Expensify"
-REPO_NAME = "App"
+REPO_OWNER = "Blame-GPT"
+REPO_NAME = "action"
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 
@@ -9,5 +9,3 @@ LABELS = {
 }
 
 EN_TS = "en.ts"
-
-SUPPORTED_COMMANDS = {"blame": "blame", "ohmydocs": "ohmydocs", "test_steps": "test_steps"}
