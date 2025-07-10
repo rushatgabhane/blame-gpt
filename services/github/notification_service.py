@@ -18,11 +18,8 @@ from services import blame_pipeline, user_service
 
 logger = logging.getLogger(__name__)
 
-last_checked = datetime.now(UTC)
 
-
-async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase):
-    global last_checked
+async def listen_notifications(last_checked: datetime, core_db: CoreDatabase, docs_db: DocsDatabase):
     previous_last_checked = last_checked
 
     last_checked = datetime.now(UTC)

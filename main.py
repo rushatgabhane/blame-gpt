@@ -1,8 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 from dotenv import load_dotenv
 
+# Load before importing any other modules to ensure environment variables are set
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
@@ -48,9 +50,11 @@ async def lifespan(app: FastAPI):
         name="daily docs sync",
     )
 
+    app.state.last_checked = datetime.now(UTC)  # thread safe across multiple fastapi workers
+
     scheduler.add_job(
         func=listen_notifications,
-        args=(db, docs_db),
+        args=(app.state.last_checked, app.state.db, docs_db),
         trigger=IntervalTrigger(seconds=5),
         id="listen_notifications",
         name="listen to github notifications",
