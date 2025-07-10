@@ -8,7 +8,7 @@ on:
     paths: ['**/*.py']
 
 jobs:
-  lint:
+  type-check:
     runs-on: ubuntu-latest
 
     steps:
