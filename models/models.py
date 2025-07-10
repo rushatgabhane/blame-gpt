@@ -109,3 +109,12 @@ class TestStepsGeneration(BaseModel):
 
 class CommandClassification(BaseModel):
     command_name: CommandName
+
+
+class User(BaseModel):
+    id: int
+    name: str
+    username: str
+    email: str
+    avatar_url: str
+    is_active: bool
