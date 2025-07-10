@@ -7,7 +7,7 @@ from pathlib import Path
 from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
-from models.models import CulpritPullRequest, Issue, PullRequest
+from models.models import CulpritPullRequest, Issue, PullRequest, User
 
 
 def require_connection(method):
@@ -259,3 +259,57 @@ class Database:
         except Exception as e:
             self.connection.rollback()
             raise e
+
+    @require_connection
+    def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int:
+        assert self.connection is not None
+        cursor = self.connection.execute(
+            core_queries.ADD_USER,
+            (username, email, name, avatar_url),
+        )
+        self.connection.commit()
+        row = cursor.fetchone()
+        if not row:
+            raise ValueError("failed to add user, no ID returned.")
+        return row[0]
+
+    @require_connection
+    def get_user_by_username(self, username: str) -> User | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_USER_BY_USERNAME, (username,)).fetchone()
+        if not row:
+            return None
+
+        return User(
+            id=row[0],
+            username=row[1],
+            email=row[2],
+            name=row[3],
+            avatar_url=row[4],
+            is_active=row[5],
+        )
+
+    @require_connection
+    def get_user_id_by_username(self, username: str) -> int | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_USER_ID_BY_USERNAME, (username,)).fetchone()
+        if not row:
+            return None
+        return row[0]
+
+    @require_connection
+    def add_usage_log(
+        self,
+        user_id: int,
+        command_name: str,
+        comment_url: str,
+        output: str,
+        issue_or_pull_request_url: str | None = None,
+    ):
+        assert self.connection is not None
+        self.connection.execute(
+            core_queries.ADD_USAGE_LOG,
+            (user_id, command_name, comment_url, output, issue_or_pull_request_url),
+        )
+        # TODO: add usage to LLM call table
+        self.connection.commit()
