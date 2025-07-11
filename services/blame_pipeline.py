@@ -69,19 +69,11 @@ async def run(issue_id: int, db: Database):
             asyncio.create_task(
                 _culprit_task(
                     page=0,
-                    culprits_to_find=2,
+                    culprits_to_find=3,
                     issue=issue,
                     prs_with_scores=prs_with_scores,
                 )
-            ),  # Top PRs
-            asyncio.create_task(
-                _culprit_task(
-                    page=1,
-                    culprits_to_find=1,
-                    issue=issue,
-                    prs_with_scores=prs_with_scores,
-                )
-            ),  # Exploratory PRs
+            )
         ]
 
         # heartbeat until both tasks are done to avoid thread being killed by timeout
@@ -89,8 +81,8 @@ async def run(issue_id: int, db: Database):
             await asyncio.sleep(10)
             yield "this might take a minute. ranking pull requests..."
 
-        top_prs, exploratory_prs = [t.result() for t in tasks_culprit_pull_requests]
-        culprit_pull_requests = [pr for batch in (top_prs, exploratory_prs) if batch for pr in batch.pull_requests]
+        top_prs = [t.result() for t in tasks_culprit_pull_requests]
+        culprit_pull_requests = [pr for batch in (top_prs) if batch for pr in batch.pull_requests]
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
             yield "no culprit pull requests found"
@@ -145,7 +137,7 @@ def _find_culprit_pull_requests(
 ) -> CulpritPullRequests | None:
     pull_requests_sorted_by_score = sorted(pull_requests, key=lambda x: x.score, reverse=True)
 
-    max_items = 20
+    max_items = 25
     start_index = page * max_items
 
     selected_pull_requests = pull_requests_sorted_by_score[start_index : start_index + max_items]

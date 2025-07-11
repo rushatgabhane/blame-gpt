@@ -12,6 +12,7 @@ issue_url_pattern = re.compile(r"- \[x\] https://github\.com/Expensify/App/issue
 
 
 async def run():
+    """Do not use. This pipeline is used only for analysis purposes."""
     deploy_checklist = repo.get_issues(state="closed", labels=["StagingDeployCash"])
     deploy_blockers_data = []
 

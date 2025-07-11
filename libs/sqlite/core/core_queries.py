@@ -93,3 +93,47 @@ UPDATE pull_request_test_steps
 SET test_steps = ?
 WHERE pull_request_id = ?;
 """
+
+ADD_USER = """
+INSERT OR IGNORE INTO users (username, email, name, avatar_url)
+VALUES (?, ?, ?, ?)
+RETURNING id;
+"""
+
+GET_USER_BY_USERNAME = """
+SELECT id, username, email, name, avatar_url, is_active
+FROM users
+WHERE username = ?;
+"""
+
+GET_USER_ID_BY_USERNAME = """
+SELECT id FROM users WHERE username = ?;
+"""
+
+GET_ALL_USERS = """
+SELECT id, username, email, name, avatar_url, is_active FROM users;
+"""
+
+ADD_USAGE_LOG = """
+INSERT INTO usage_logs (user_id, command_name, comment_url, output, issue_or_pull_request_url)
+VALUES (?, ?, ?, ?, ?);
+"""
+
+GET_ALL_USAGE_LOGS_FOR_ALL_USERS = """
+SELECT ul.id, ul.command_name, ul.comment_url, ul.output, ul.issue_or_pull_request_url, ul.created_at, 
+u.id, u.username, u.email, u.name, u.avatar_url, u.is_active
+FROM usage_logs ul
+JOIN users u ON u.id = ul.user_id
+ORDER BY ul.created_at DESC;
+"""
+
+GET_USAGE_LOGS_BY_USER_ID = """
+SELECT ul.id, ul.command_name, ul.comment_url, ul.output, ul.issue_or_pull_request_url, ul.created_at
+FROM usage_logs ul
+WHERE ul.user_id = ?;
+"""
+
+ADD_LLM_CALL = """
+INSERT INTO llm_calls (usage_log_id, llm_model, tokens_used, cost_usd_cents)
+VALUES (?, ?, ?, ?);
+"""

@@ -6,9 +6,9 @@ from pathlib import Path
 
 from yoyo import get_backend, read_migrations
 
-from models.models import CulpritPullRequest, Issue, PullRequest
-
-from . import core_queries
+from libs.sqlite.core import core_queries
+from models.enums import CommandName
+from models.models import CulpritPullRequest, Issue, PullRequest, UsageLog, User, UserUsageLog
 
 
 def require_connection(method):
@@ -260,3 +260,116 @@ class Database:
         except Exception as e:
             self.connection.rollback()
             raise e
+
+    @require_connection
+    def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int | None:
+        assert self.connection is not None
+        try:
+            row = self.connection.execute(
+                core_queries.ADD_USER,
+                (username, email, name, avatar_url),
+            ).fetchone()
+            self.connection.commit()
+            return row[0] if row else None
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+
+    @require_connection
+    def get_user_by_username(self, username: str) -> User | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_USER_BY_USERNAME, (username,)).fetchone()
+        if not row:
+            return None
+
+        return User(
+            id=row[0],
+            username=row[1],
+            email=row[2],
+            name=row[3],
+            avatar_url=row[4],
+            is_active=row[5],
+        )
+
+    @require_connection
+    def get_user_id_by_username(self, username: str) -> int | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_USER_ID_BY_USERNAME, (username,)).fetchone()
+        if not row:
+            return None
+        return row[0]
+
+    @require_connection
+    def add_usage_log(
+        self,
+        user_id: int,
+        command_name: CommandName,
+        comment_url: str,
+        output: str,
+        issue_or_pull_request_url: str | None = None,
+    ):
+        assert self.connection is not None
+        self.connection.execute("BEGIN;")
+        self.connection.execute(
+            core_queries.ADD_USAGE_LOG,
+            (user_id, command_name.value, comment_url, output, issue_or_pull_request_url),
+        )
+        # TODO: add usage to LLM call table
+        self.connection.commit()
+
+    @require_connection
+    def get_all_users(self) -> list[User]:
+        assert self.connection is not None
+        rows = self.connection.execute(core_queries.GET_ALL_USERS).fetchall()
+        return [
+            User(
+                id=row[0],
+                username=row[1],
+                email=row[2],
+                name=row[3],
+                avatar_url=row[4],
+                is_active=row[5],
+            )
+            for row in rows
+        ]
+
+    @require_connection
+    def get_all_usage_logs_for_all_users(self) -> list[UserUsageLog]:
+        assert self.connection is not None
+        rows = self.connection.execute(core_queries.GET_ALL_USAGE_LOGS_FOR_ALL_USERS).fetchall()
+        return [
+            UserUsageLog(
+                id=row[0],
+                command_name=CommandName(row[1]),
+                comment_url=row[2],
+                output=row[3],
+                issue_or_pull_request_url=row[4],
+                created_at=row[5],
+                user=User(
+                    id=row[6],
+                    username=row[7],
+                    email=row[8],
+                    name=row[9],
+                    avatar_url=row[10],
+                    is_active=row[11],
+                ),
+            )
+            for row in rows
+        ]
+
+    @require_connection
+    def get_usage_logs_by_user_id(self, user_id: int) -> list[UsageLog]:
+        assert self.connection is not None
+        rows = self.connection.execute(core_queries.GET_USAGE_LOGS_BY_USER_ID, (user_id,)).fetchall()
+        return [
+            UsageLog(
+                id=row[0],
+                user_id=row[1],
+                command_name=CommandName(row[2]),
+                comment_url=row[3],
+                output=row[4],
+                issue_or_pull_request_url=row[5],
+                created_at=row[6],
+            )
+            for row in rows
+        ]
