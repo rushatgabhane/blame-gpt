@@ -68,6 +68,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
   - [ ] Sell to DB
   - [ ] Sell to more companies
+  - [ ] Apply for seed funding
   - [ ] 💰💰💰
 
 ### How to run locally?
