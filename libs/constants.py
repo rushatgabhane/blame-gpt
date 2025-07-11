@@ -9,3 +9,4 @@ LABELS = {
 }
 
 EN_TS = "en.ts"
+USER_TAG = "@blamegpt"
