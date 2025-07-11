@@ -115,7 +115,7 @@ class User(BaseModel):
     id: int
     name: str
     username: str
-    email: str
+    email: str | None = None
     avatar_url: str
     is_active: bool
 
@@ -128,6 +128,7 @@ class UserUsageLog(BaseModel):
     output: str
     issue_or_pull_request_url: str
     created_at: str
+
 
 class UsageLog(BaseModel):
     id: int
