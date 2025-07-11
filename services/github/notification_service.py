@@ -34,7 +34,7 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
     }
     params = {
         "since": previous_since,
-        "participating": True,
+        "participating": "true",
     }
 
     try:
