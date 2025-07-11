@@ -59,6 +59,7 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
         for data in notifications:
             n = _create_notification(data)
             if not _is_valid_notification(n):
+                await _unsubscribe_notification(n)
                 continue
 
             asyncio.create_task(_process_notification(n, core_db, docs_db))
