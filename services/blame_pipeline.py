@@ -99,7 +99,7 @@ async def run(issue_id: int, db: Database):
         logger.info(f"{issue_id}: blame pipeline completed successfully")
         yield "blame pipeline completed successfully!"
     except Exception as e:
-        logger.error(f"{issue_id}: error in blame pipeline {e}")
+        logger.exception(f"{issue_id}: error in blame pipeline {e}")
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"
 
 
