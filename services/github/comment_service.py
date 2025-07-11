@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 
 import httpx
 from github.IssueComment import IssueComment
@@ -9,6 +10,20 @@ from models.models import CulpritPullRequest
 
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
+
+sassy_culprit_titles = [
+    "Possible culprit PRs for this issue",
+    "Sus PRs on the scene",
+    "Who let the bugs out? 🐛",
+    "The eye is watching these PRs",
+    "Lowkey sus PRs fr fr",
+    "No cap, these PRs acting up",
+    "Vibe check failed for these PRs",
+    "Sheesh! Look at these PRs",
+    "No cap, these PRs acting up",
+    "Suspects on the loose",
+    "Needs a vibe check ASAP",
+]
 
 
 async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
@@ -30,7 +45,7 @@ def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
-    comment = "### Possible culprit PRs for this issue\n"
+    comment = f"### {random.choice(sassy_culprit_titles)}\n"
     for i, pr in enumerate(culprit_pull_requests):
         if i == 2:
             comment += "\n#### If not above, check these\n"
