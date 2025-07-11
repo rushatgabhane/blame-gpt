@@ -118,3 +118,22 @@ class User(BaseModel):
     email: str
     avatar_url: str
     is_active: bool
+
+
+class UserUsageLog(BaseModel):
+    user: User
+    id: int
+    command_name: CommandName
+    comment_url: str
+    output: str
+    issue_or_pull_request_url: str
+    created_at: str
+
+class UsageLog(BaseModel):
+    id: int
+    user_id: int
+    command_name: CommandName
+    comment_url: str
+    output: str
+    issue_or_pull_request_url: str
+    created_at: str
