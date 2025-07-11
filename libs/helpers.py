@@ -4,6 +4,8 @@ import hmac
 import html
 import logging
 import re
+from datetime import datetime
+from email.utils import format_datetime
 
 import numpy as np
 
@@ -62,3 +64,13 @@ def highlight_diff_markdown(before: str, after: str) -> str:
 def blockquote(text: str) -> str:
     lines = text.strip().splitlines()
     return "\n".join([f"> {line}" for line in lines])
+
+
+def now_rfc1123(nowUTC: datetime) -> str:
+    """Example: 'Wed, 25 Oct 2023 19:17:59 GMT'"""
+    return format_datetime(nowUTC)
+
+
+def now_8601(nowUTC: datetime) -> str:
+    """Example: '2023-10-25T19:17:59Z'"""
+    return nowUTC.isoformat().replace("+00:00", "Z")
