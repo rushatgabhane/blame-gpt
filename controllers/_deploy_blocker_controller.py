@@ -1,9 +1,18 @@
+"""
+@@@@
+
+This module is not intended for production use.
+It is used for analysis purposes only.
+
+@@@
+"""
+
 import logging
 
 from fastapi import APIRouter, Depends, Response
 
 from middlewares import auth_middleware
-from services import historical_deploy_blocker_pipeline
+from services import _historical_deploy_blocker_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +26,7 @@ async def get_deploy_blockers():
 
 
 async def run_historical_deploy_blocker_pipeline():
-    """
-    Run the historical deploy blocker pipeline.
-    """
-    async for step in historical_deploy_blocker_pipeline.run():
+    async for step in _historical_deploy_blocker_pipeline.run():
         logger.info(step)
 
 
@@ -29,7 +35,7 @@ async def run_historical_deploy_blocker_pipeline():
     dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_historical_prs_api():
-    await historical_deploy_blocker_pipeline.get_historical_prs()
+    await _historical_deploy_blocker_pipeline.get_historical_prs()
     return Response(status_code=200, content="historical PRs pipeline started.")
 
 
@@ -38,5 +44,5 @@ async def get_historical_prs_api():
     dependencies=[Depends(auth_middleware.verify_internal_auth_token)],
 )
 async def get_all_merged_prs_api():
-    await historical_deploy_blocker_pipeline.get_all_merged_prs()
+    await _historical_deploy_blocker_pipeline.get_all_merged_prs()
     return Response(status_code=200, content="All merged PRs pipeline started.")
