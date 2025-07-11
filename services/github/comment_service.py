@@ -45,6 +45,7 @@ def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
+    random.seed(str(culprit_pull_requests))
     comment = f"### {random.choice(sassy_culprit_titles)}\n"
     for i, pr in enumerate(culprit_pull_requests):
         if i == 2:
