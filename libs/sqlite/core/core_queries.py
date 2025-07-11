@@ -115,12 +115,12 @@ SELECT id, username, email, name, avatar_url, is_active FROM users;
 """
 
 ADD_USAGE_LOG = """
-INSERT INTO usage_logs (user_id, command_name, comment_url, output, issue_or_pull_request_url)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO usage_logs (user_id, command_name, comment_url, output, issue_or_pull_request_url, comment_text)
+VALUES (?, ?, ?, ?, ?, ?);
 """
 
 GET_ALL_USAGE_LOGS_FOR_ALL_USERS = """
-SELECT ul.id, ul.command_name, ul.comment_url, ul.output, ul.issue_or_pull_request_url, ul.created_at, 
+SELECT ul.id, ul.command_name, ul.comment_url, ul.output, ul.issue_or_pull_request_url, ul.created_at, ul.comment_text, 
 u.id, u.username, u.email, u.name, u.avatar_url, u.is_active
 FROM usage_logs ul
 JOIN users u ON u.id = ul.user_id

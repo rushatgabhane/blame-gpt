@@ -37,6 +37,7 @@ def add_user_usage_log(
     output: str,
     issue_or_pull_request_url: str,
     core_db: CoreDatabase,
+    comment_text: str,
 ) -> None:
     try:
         core_db.add_usage_log(
@@ -45,6 +46,7 @@ def add_user_usage_log(
             comment_url=comment_url,
             output=output,
             issue_or_pull_request_url=issue_or_pull_request_url,
+            comment_text=comment_text,
         )
     except Exception as e:
         logger.error(f"error adding usage log for user {userID} and command {command_name}: {e}")
