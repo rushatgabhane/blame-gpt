@@ -120,16 +120,6 @@ class User(BaseModel):
     is_active: bool
 
 
-class UserUsageLog(BaseModel):
-    user: User
-    id: int
-    command_name: CommandName
-    comment_url: str
-    output: str
-    issue_or_pull_request_url: str
-    created_at: str
-
-
 class UsageLog(BaseModel):
     id: int
     user_id: int
@@ -138,3 +128,9 @@ class UsageLog(BaseModel):
     output: str
     issue_or_pull_request_url: str
     created_at: str
+    comment_text: str | None = None
+
+
+class UserUsageLog(BaseModel):
+    user: User
+    usage_log: UsageLog

@@ -307,14 +307,14 @@ class Database:
         comment_url: str,
         output: str,
         issue_or_pull_request_url: str | None = None,
+        comment_text: str | None = None,
     ):
         assert self.connection is not None
         self.connection.execute("BEGIN;")
         self.connection.execute(
             core_queries.ADD_USAGE_LOG,
-            (user_id, command_name.value, comment_url, output, issue_or_pull_request_url),
+            (user_id, command_name.value, comment_url, output, issue_or_pull_request_url, comment_text),
         )
-        # TODO: add usage to LLM call table
         self.connection.commit()
 
     @require_connection
@@ -339,19 +339,23 @@ class Database:
         rows = self.connection.execute(core_queries.GET_ALL_USAGE_LOGS_FOR_ALL_USERS).fetchall()
         return [
             UserUsageLog(
-                id=row[0],
-                command_name=CommandName(row[1]),
-                comment_url=row[2],
-                output=row[3],
-                issue_or_pull_request_url=row[4],
-                created_at=row[5],
+                usage_log=UsageLog(
+                    id=row[0],
+                    user_id=row[7],
+                    command_name=CommandName(row[1]),
+                    comment_url=row[2],
+                    output=row[3],
+                    issue_or_pull_request_url=row[4],
+                    created_at=row[5],
+                    comment_text=row[6] if row[6] else None,
+                ),
                 user=User(
-                    id=row[6],
-                    username=row[7],
-                    email=row[8],
-                    name=row[9],
-                    avatar_url=row[10],
-                    is_active=row[11],
+                    id=row[7],
+                    username=row[8],
+                    email=row[9],
+                    name=row[10],
+                    avatar_url=row[11],
+                    is_active=row[12],
                 ),
             )
             for row in rows

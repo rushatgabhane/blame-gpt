@@ -105,6 +105,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
             output="default output",  # Placeholder, replace later.
             issue_or_pull_request_url=n.subject.url,
             core_db=core_db,
+            comment_text=comment.body,
         )
     except Exception as e:
         logger.error(f"#{issue_or_pull_request_id} {n.id}: error processing notification : {n} : {e}")
