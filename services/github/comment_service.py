@@ -15,14 +15,11 @@ sassy_culprit_titles = [
     "Possible culprit PRs for this issue",
     "Sus PRs on the scene",
     "Who let the bugs out? 🐛",
-    "The eye is watching these PRs",
     "Lowkey sus PRs fr fr",
-    "No cap, these PRs acting up",
-    "Vibe check failed for these PRs",
-    "Sheesh! Look at these PRs",
-    "No cap, these PRs acting up",
-    "Suspects on the loose",
+    "Vibe check failed for these PRs 💅",
+    "Suspects on the loose 🕵",
     "Needs a vibe check ASAP",
+    "No cap, these PRs acting up",
 ]
 
 
@@ -45,7 +42,7 @@ def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
-    random.seed(str(culprit_pull_requests))
+    random.seed()
     comment = f"### {random.choice(sassy_culprit_titles)}\n"
     for i, pr in enumerate(culprit_pull_requests):
         if i == 2:

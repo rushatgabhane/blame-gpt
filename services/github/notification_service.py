@@ -74,8 +74,12 @@ def _create_notification(n_dict: dict) -> Notification:
     return n
 
 
+def _get_issue_or_pr_id(n: Notification) -> int:
+    return int(n.subject.url.split("/")[-1])
+
+
 async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
-    issue_or_pull_request_id = int(n.subject.url.split("/")[-1])
+    issue_or_pull_request_id = _get_issue_or_pr_id(n)
     logger.info(f"processing notification {n.id} for #{issue_or_pull_request_id}")
     try:
         latest_comment_url = n.subject.latest_comment_url
@@ -119,11 +123,12 @@ async def _unsubscribe_notification(n: Notification):
     async with httpx.AsyncClient() as client:
         res = await client.delete(url=n.subscription_url, headers=headers)
 
-    logger.info(f"{n.id}: unsubscribing from notification {n.subscription_url}")
     if res.status_code == 204:
-        logger.info(f"{n.id}: successfully unsubscribed from notification")
+        logger.info(f"{_get_issue_or_pr_id(n)}: {n.id}: unsubscribed from notification")
     else:
-        logger.error(f"{n.id}: failed to unsubscribe from notification, status code: {res.status_code}")
+        logger.error(
+            f"{_get_issue_or_pr_id(n)}: {n.id}: failed to unsubscribe from notification, status code: {res.status_code}"
+        )
 
 
 def _is_valid_notification(notification: Notification) -> bool:
@@ -163,7 +168,7 @@ def _classify_command(comment_body: str) -> CommandName:
 
 
 async def _run_command(command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
-    issue_or_pull_request_id = int(n.subject.url.split("/")[-1])
+    issue_or_pull_request_id = _get_issue_or_pr_id(n)
     if command_name == CommandName.BLAME and n.subject.type == "Issue":
         async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db):
             logger.info(f"{n.id}: #{issue_or_pull_request_id} {step}")
