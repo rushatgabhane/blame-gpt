@@ -52,7 +52,6 @@ class Database:
     def add_pull_request(self, pr: PullRequest):
         assert self.connection is not None
         try:
-            self.connection.execute("BEGIN;")
             self.connection.execute(
                 core_queries.INSERT_PULL_REQUEST,
                 (
@@ -98,7 +97,6 @@ class Database:
     def add_issue(self, issue: Issue):
         assert self.connection is not None
         try:
-            self.connection.execute("BEGIN;")
             self.connection.execute(
                 core_queries.INSERT_ISSUE,
                 (
@@ -237,7 +235,6 @@ class Database:
     def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
         assert self.connection is not None
         try:
-            self.connection.execute("BEGIN;")
             self.connection.execute(
                 core_queries.ADD_PULL_REQUEST_TEST_STEPS,
                 (pull_request_id, test_steps),
@@ -251,7 +248,6 @@ class Database:
     def update_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
         assert self.connection is not None
         try:
-            self.connection.execute("BEGIN;")
             self.connection.execute(
                 core_queries.UPDATE_PULL_REQUEST_TEST_STEPS,
                 (test_steps, pull_request_id),
@@ -310,7 +306,6 @@ class Database:
         comment_text: str | None = None,
     ):
         assert self.connection is not None
-        self.connection.execute("BEGIN;")
         self.connection.execute(
             core_queries.ADD_USAGE_LOG,
             (user_id, command_name.value, comment_url, output, issue_or_pull_request_url, comment_text),
