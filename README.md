@@ -25,7 +25,6 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - **Code understanding**
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
   - [ ] Q&A / “Chat with the codebase”
-  - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
 
 - **Auto revert**
   - [ ] Revert a PR, resolve conflicts and add them to the body.
@@ -64,8 +63,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Make the tool-suite work for *any* repository
   - [ ] Enterprise tier  
         - Jira integration  
-        - Self-hosting / BYO-LLM  
-        - Auditable code paths
+        - Self-hosting / BYO-LLM
   - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
   - [ ] Sell to DB
   - [ ] Sell to more companies
