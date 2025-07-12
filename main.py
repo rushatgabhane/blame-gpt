@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         func=listen_notifications,
         args=(app.state.db, app.state.docs_db, app),
-        trigger=IntervalTrigger(seconds=5),
+        trigger=IntervalTrigger(seconds=2),
         id="listen_notifications",
         name="listen to github notifications",
         max_instances=100,
