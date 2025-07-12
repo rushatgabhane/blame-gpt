@@ -27,7 +27,7 @@ async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPull
     try:
         comment = format_comment(culprit_pull_requests)
         if os.getenv("ENVIRONMENT") != "production":
-            logger.info("skipping comment creation in non production environment {comment}")
+            logger.info(f"skipping comment creation in non production environment {comment}")
             return comment
 
         repo.get_issue(number=issue_number).create_comment(comment)
