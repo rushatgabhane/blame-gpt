@@ -64,6 +64,10 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
 
             asyncio.create_task(_process_notification(n, core_db, docs_db))
 
+    except httpx.RemoteProtocolError as e:
+        logger.error(f"expected sometimes: remote protocol error while fetching notifications: {e}")
+        return
+
     except Exception as e:
         logger.exception(f"error fetching notifications: {e}")
 
