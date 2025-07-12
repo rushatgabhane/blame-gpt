@@ -1,6 +1,7 @@
 import logging
 import re
 import sqlite3
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
@@ -14,11 +15,25 @@ from models.models import CodeDiffSummary, FilePatch, PullRequest
 logger = logging.getLogger(__name__)
 
 
+_pr_locks = {}
+_pr_locks_lock = threading.Lock()
+
+
+def _get_pr_lock(pr_id):
+    with _pr_locks_lock:
+        if pr_id not in _pr_locks:
+            _pr_locks[pr_id] = threading.Lock()
+        return _pr_locks[pr_id]
+
+
 def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
     comparison = repo.compare(base=base, head=head)
 
     pr_numbers = set()
     for commit in comparison.commits:
+        if commit.author == "OSBotify":  # Skip bot commits
+            continue
+
         match = re.search(r"Merge pull request #(\d+)", commit.commit.message)
         if match:
             pr_numbers.add(int(match.group(1)))
@@ -37,11 +52,16 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
     logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
+        futures = {executor.submit(add_pull_request, pr_id, db): pr_id for pr_id in new_ids_to_process}
         for future in as_completed(futures):
-            pull_request = future.result()
-            if pull_request:
-                db.add_pull_request(pull_request)
+            try:
+                pull_request = future.result()
+                if pull_request:
+                    pass
+            except Exception as e:
+                pr_id = futures[future]
+                logging.error(f"#{issue_id} failed to process pull request {pr_id}: {e}")
+                continue
 
     # link all pull requests to the issue, even if they are not new
     for pr_id in new_ids:
@@ -163,14 +183,27 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
 
 
 def add_pull_request(pull_request_id: int, db: Database) -> PullRequest | None:
-    existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
-    if existing_pr:
-        return existing_pr
+    """
+    Adds a pull request to the database if it does not already exist, using a per-PR lock for concurrency safety.
+    Returns the PullRequest object if successful, or None if fetching fails.
+    Cleans up the per-PR lock after use to prevent memory leaks.
+    """
+    lock = _get_pr_lock(pull_request_id)
+    try:
+        with lock:
+            existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
+            if existing_pr:
+                return existing_pr
 
-    pull_request = _get_pr_with_embeddings(pull_request_id)
-    if not pull_request:
-        logging.error(f"failed to fetch pull request {pull_request_id}")
-        return None
+            pull_request = _get_pr_with_embeddings(pull_request_id)
+            if not pull_request:
+                logging.error(f"Failed to fetch pull request {pull_request_id}")
+                return None
 
-    db.add_pull_request(pull_request)
-    return pull_request
+            db.add_pull_request(pull_request)
+            return pull_request
+    finally:
+        with _pr_locks_lock:
+            pr_lock = _pr_locks.get(pull_request_id)
+            if pr_lock and not pr_lock.locked():
+                del _pr_locks[pull_request_id]

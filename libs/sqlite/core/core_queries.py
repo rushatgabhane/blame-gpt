@@ -1,5 +1,5 @@
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, code_diff_summary)
+INSERT OR IGNORE INTO pull_requests (id, title, test, explaination, files, code_diff_summary)
 VALUES (?, ?, ?, ?, ?, ?);
 """
 
