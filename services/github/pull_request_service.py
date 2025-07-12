@@ -39,7 +39,7 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
         new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
         logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=10) as executor:
             futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
             for future in as_completed(futures):
                 pull_request = future.result()
