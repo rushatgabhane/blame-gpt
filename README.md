@@ -35,6 +35,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] The solver can then use these tests to see if solution is correct, and run in a loop.
 
 - **Review bot**
+  - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements.
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
 
 - **QA test steps generation**
