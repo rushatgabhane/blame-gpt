@@ -26,13 +26,12 @@ sassy_culprit_titles = [
 async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
     try:
         comment = format_comment(culprit_pull_requests)
-        if os.getenv("ENVIRONMENT") == "production":
-            repo.get_issue(number=issue_number).create_comment(comment)
+        if os.getenv("ENVIRONMENT") != "production":
+            logger.info(f"skipping comment creation in non production environment {comment}")
             return comment
 
-        logger.info("skipping comment creation in non-production environment")
+        repo.get_issue(number=issue_number).create_comment(comment)
         return comment
-
     except Exception as e:
         logger.error(f"error adding comment to issue #{issue_number}: {e}")
         raise
