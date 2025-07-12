@@ -1,6 +1,7 @@
 import logging
 import re
 import sqlite3
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
@@ -12,6 +13,7 @@ from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CodeDiffSummary, FilePatch, PullRequest
 
 logger = logging.getLogger(__name__)
+_add_new_prs_lock = threading.Lock()
 
 
 def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
@@ -27,28 +29,29 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
 
 
 def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> None:
-    new_ids = _get_pull_requests_between(base, head)
-    if not new_ids:
-        return
+    with _add_new_prs_lock:
+        new_ids = _get_pull_requests_between(base, head)
+        if not new_ids:
+            return
 
-    logging.info(f"{issue_id}: found {len(new_ids)} new pull requests {new_ids}")
-    existing_ids = db.get_existing_pr_ids()
-    new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
-    logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
+        logging.info(f"{issue_id}: found {len(new_ids)} new pull requests {new_ids}")
+        existing_ids = db.get_existing_pr_ids()
+        new_ids_to_process = [pr_id for pr_id in new_ids if pr_id not in existing_ids]
+        logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
-        for future in as_completed(futures):
-            pull_request = future.result()
-            if pull_request:
-                db.add_pull_request(pull_request)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
+            for future in as_completed(futures):
+                pull_request = future.result()
+                if pull_request:
+                    db.add_pull_request(pull_request)
 
-    # link all pull requests to the issue, even if they are not new
-    for pr_id in new_ids:
-        try:
-            db.add_issue_pull_request(issue_id, pr_id)
-        except sqlite3.IntegrityError as e:
-            logging.warning(f"#{issue_id} failed to add issue pull request - {pr_id}: {e}")
+        # link all pull requests to the issue, even if they are not new
+        for pr_id in new_ids:
+            try:
+                db.add_issue_pull_request(issue_id, pr_id)
+            except sqlite3.IntegrityError as e:
+                logging.warning(f"#{issue_id} failed to add issue pull request - {pr_id}: {e}")
 
 
 def _get_code_diff(diff_url: str) -> str:
