@@ -6,8 +6,8 @@ Focus on manual, labor intensive tasks in the early stages, even though they wou
 BlameGPT finds the PR causing a deploy blocker so you can go back to shipping.
 
 ## Vision
-Be obsessed with developer experience. Beat cursor, greptile etc by building AI tools that integrate into existing processes of engineers working in a company.
-Make the repository public once the roadmap is shipped. Use SaaS model.
+Be obsessed with developer experience. Beat cursor etc by building AI tools that integrate into existing processes of engineers working in a company.
+Make the repository public once the roadmap is shipped. Use SaaS model or provide private fork to companies for self hosting at a flat fee.
 
 ## How it started?
 See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__Ff9Z-xIFyyEpIt9GkBQ). 
