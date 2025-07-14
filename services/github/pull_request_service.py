@@ -139,9 +139,13 @@ def _parse_test_steps(body: str) -> str:
 
 
 def _parse_linked_issue_ids(body: str) -> list[int] | None:
-    pattern = rf"\$\s*#(\d+)|\$\s*https://[^\s]*/{constants.REPO_NAME}/issues/(\d+)"
+    pattern = (
+        rf"\$\s*#(\d+)"  # $ #1234
+        rf"|\$\s*https://[^\s]*/{constants.REPO_NAME}/issues/(\d+)"  # $ https://.../issues/1234
+        rf"|\$\s*\[#(\d+)\]\(https://[^\s]*/{constants.REPO_NAME}/issues/\d+\)"  # $ [#1234](https://.../issues/1234)
+    )
     matches = re.findall(pattern, body)
-    return [int(m[0] or m[1]) for m in matches] if matches else None
+    return [int(m[0] or m[1] or m[2]) for m in matches] if matches else None
 
 
 def _parse_explaination(body: str) -> str:
