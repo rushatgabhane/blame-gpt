@@ -24,6 +24,7 @@ You are tasked with writing test **steps** for a pull request, so that QA engine
 6. Use arrows (→) for navigation between screens/sections to make it visually appealing.
 7. Generate separate test steps for multiple cases that need verification.
 8. If a single test would be very long (>8 steps), consider breaking it into focused sub-tests.
+9. Don't give steps to use any dev tools or console.
 
 # Linked issue test steps (This is most important):
 {linked_issue_test_steps}
