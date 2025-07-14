@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from datetime import UTC, datetime
 
 import httpx
@@ -8,7 +7,7 @@ from fastapi import FastAPI
 from github.Notification import Notification
 
 from libs import constants
-from libs.github import gh_user
+from libs.github import gh_user, github_token
 from libs.helpers import now_8601, now_rfc1123
 from libs.llm import llmNano
 from libs.prompt_templates.command_classification import command_classification_parser, command_classifier_prompt
@@ -30,7 +29,7 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
     headers = {
         "If-Modified-Since": previous_last_checked,
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"Bearer {github_token.get_secret_value()}",
     }
     params = {
         "since": previous_since,
@@ -96,7 +95,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
         command_name = _classify_command(comment.body)
         await _run_command(command_name, n, core_db, docs_db)
 
-        asyncio.create_task(_unsubscribe_notification(n))
+        await _unsubscribe_notification(n)
 
         userID = user_service.add_user_if_not_exists(
             username=comment.user.login,
@@ -122,7 +121,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
 async def _unsubscribe_notification(n: Notification):
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"Bearer {github_token.get_secret_value()}",
     }
     async with httpx.AsyncClient() as client:
         res = await client.delete(url=n.subscription_url, headers=headers)
