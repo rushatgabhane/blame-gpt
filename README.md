@@ -16,11 +16,14 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
 
 - **Documentation update on PR**
-  - [x] Update user docs if a PR changes UI
+  - [x] Update user docs if a PR changes UI. (done for helpDot)
  
 - **Culprit detection**
   - [x] Find a culprit pull request for a given deploy blocker
   - [ ] Generalise to *any* issue, not just deploy blockers
+
+- **QA test steps generation**
+  - [x] For a PR, authors can generate test steps to start with. ([@kevinam99](https://github.com/kevinam99))
 
 - **Code understanding**
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
@@ -36,9 +39,6 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - **Review bot**
   - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements. (see [problem statement here](https://expensify.slack.com/archives/C05LX9D6E07/p1752231564356839))
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
-
-- **QA test steps generation**
-  - [x] For a PR, authors can generate test steps to start with. ([@kevinam99](https://github.com/kevinam99))
 
 - **Analytics**
   - [ ] Build dashboards  
