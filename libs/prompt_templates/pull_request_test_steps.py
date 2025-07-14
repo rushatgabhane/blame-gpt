@@ -21,7 +21,8 @@ You are tasked with writing test **steps** for a pull request, so that QA engine
 3. Use the given linked issue test steps, and similar test steps from the QA test suite as references.
 4. The test steps should be concise.
 5. Use numbered lists for the steps.
-6. Generate more than one test only if there are multiple cases to verify. Avoid repeating between test steps.
+6. Use arrows (→) for navigation between screens/sections to make it visually appealing.
+7. Generate more than one test only if there are multiple cases to verify. Avoid repeating between test steps.
 
 # Linked issue test steps (This is most important):
 {linked_issue_test_steps}

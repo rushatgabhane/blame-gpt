@@ -4,6 +4,7 @@ import random
 
 from libs.helpers import cosine_similarity
 from libs.llm import llm
+from libs.prompt_templates.consolidate_test_steps import consolidate_test_steps_parser, consolidate_test_steps_prompt
 from libs.prompt_templates.issue_test_steps_for_bug import issue_steps_for_bug_parser, issue_steps_for_bug_prompt
 from libs.prompt_templates.pull_request_test_steps import test_steps_generation_parser, test_steps_prompt
 from libs.sqlite.core.core_sqlite_client import Database
@@ -36,6 +37,13 @@ async def generate_test_steps_for_pull_request(pull_request_id: int, db: Databas
     if not test_steps or not test_steps.test or test_steps.test == []:
         logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
         return None
+
+    # Consolidate similar test steps to remove repetitive details
+    if len(test_steps.test) > 1:
+        consolidated_steps = await _consolidate_test_steps(test_steps)
+        if consolidated_steps:
+            test_steps = consolidated_steps
+            logger.info(f"PR #{pull_request_id}: consolidated test steps.")
 
     comment = _format_comment(test_steps=test_steps)
     comment_service.add_comment_to_pull_request(pull_request_id, comment)
@@ -135,6 +143,30 @@ _sassy_titles = [
     "Test steps, fresh out the oven",
     "Give it a whirl!",
 ]
+
+
+async def _consolidate_test_steps(test_steps: GeneratedTestStepsList) -> GeneratedTestStepsList | None:
+    """Consolidate similar test steps to remove repetitive details."""
+    try:
+        # Format the original test steps for the consolidation prompt
+        original_test_steps_str = "\n\n".join(
+            f"Test {i + 1}: {t.title}\n"
+            + (f"Precondition: {t.precondition}\n" if t.precondition else "")
+            + "\n".join(line for line in t.steps.splitlines() if line.strip())
+            for i, t in enumerate(test_steps.test)
+        )
+
+        prompt = consolidate_test_steps_prompt.format(original_test_steps=original_test_steps_str)
+
+        response = llm.invoke(prompt)
+        consolidated_steps = consolidate_test_steps_parser.invoke(response)
+        assert isinstance(consolidated_steps, GeneratedTestStepsList)
+
+        return consolidated_steps
+
+    except Exception as e:
+        logger.error(f"Error consolidating test steps: {e}")
+        return None
 
 
 def _format_comment(test_steps: GeneratedTestStepsList) -> str:

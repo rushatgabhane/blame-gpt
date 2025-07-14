@@ -16,18 +16,19 @@ A issue body may contain a precondition, action performed, actual outcome and ex
 2. The test steps should have "verify" statements that check the expected outcome.
 3. The test steps should be clear, concise, and easy to follow by a QA who will test the PR that fixes the issue.
 4. The test steps should be numbered list.
-5. Instead of staging.expensify.com use app.
+5. Use arrows (→) for navigation between screens/sections to make it visually appealing.
+6. Don't say staging.expensify.com. Say App only.
 
 ### Example test steps:
 
 Precondition: At least one workspace member is assigned a VISA card and WS is connected to QBO.
 Title: Verify that QBO export works for VISA card transactions. 
-1. Login to Expensify App.
-2. Go to workspace settings > Members.
-3. Click on the member with VISA card.
-4. Click on the card.
-5. Click QuickBooks Online credit card export.
-6. Verify that the export is successful and the VISA card transactions are exported to QBO.
+1. Login to App
+2. Go to workspace settings → Members
+3. Click on the member with VISA card
+4. Click on the card
+5. Click QuickBooks Online credit card export
+6. Verify that the export is successful and the VISA card transactions are exported to QBO
 
 
 # Issue details:
