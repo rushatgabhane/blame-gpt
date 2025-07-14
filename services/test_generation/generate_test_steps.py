@@ -48,6 +48,9 @@ async def generate_test_steps_for_pull_request(pull_request_id: int, db: Databas
 
 # Experiment with issue embedding for similar.
 def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[TestSuite]:
+    if not pr_embedding:
+        logger.warning("no PR embedding provided for finding similar test steps.")
+        return []
     existing_steps = db.get_all_test_suites()
     k = 5
     similar_steps = sorted(existing_steps, key=lambda x: cosine_similarity(x.embedding, pr_embedding), reverse=True)[:k]

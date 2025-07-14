@@ -222,7 +222,7 @@ class Database:
         assert self.connection is not None
 
         row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_BY_ID, (pull_request_id,)).fetchone()
-        return not (not row or not row[1])
+        return bool(row and row[1])
 
     @require_connection
     def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
