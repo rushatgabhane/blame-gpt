@@ -65,7 +65,6 @@ async def _get_test_steps_from_linked_issues(
 
 async def _generate_test_step_for_issue(issue: Issue, db: Database) -> GeneratedTestSteps | None:
     body = issue.steps if issue.steps != "" else issue.raw_body
-    logger.info(f"Generating test steps for issue #{issue.id} with body:\n{body}")
     prompt = issue_steps_for_bug_prompt.format(
         title=issue.title,
         body=body,
