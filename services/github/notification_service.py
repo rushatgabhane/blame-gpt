@@ -17,6 +17,7 @@ from models.enums import CommandName
 from models.models import CommandClassification
 from services import blame_pipeline, user_service
 from services.github.comment_service import get_comment, react_comment
+from services.test_generation import generate_test_steps
 
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -184,10 +185,13 @@ async def _run_command(command_name: CommandName, n: Notification, core_db: Core
         return
 
     if command_name == CommandName.TEST_STEPS:
-        logger.info(f"{n.id}: test steps command received for notification {n.id}, but not implemented yet.")
-        # Disable until it works well.
-        # async for step in test_steps_pipeline.run(pull_request_id=issue_or_pull_request_id, db=core_db):
-        #     logger.info(f"{notification.id}: #{issue_or_pull_request_id} {step}")
+        res = await generate_test_steps.generate_test_steps_for_pull_request(
+            pull_request_id=issue_or_pull_request_id,
+            db=core_db,
+        )
+        if res is None:
+            await react_comment(n.subject.latest_comment_url, "-1")
+
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")
