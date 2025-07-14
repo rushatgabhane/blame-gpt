@@ -19,7 +19,7 @@ def get_title_from_path(path: str) -> str:
 # We need to do this because we don't have github workflows setup on this repo
 def clone_or_pull_repo(repo_url: str, clone_path: Path):
     if not clone_path.exists():
-        logger.info(f"cloning repository to {clone_path}")
+        logger.info(f"this might take 5 minutes. cloning repository to {clone_path}")
         subprocess.run(
             ["git", "clone", repo_url, str(clone_path)],
             check=True,
@@ -27,7 +27,7 @@ def clone_or_pull_repo(repo_url: str, clone_path: Path):
             stderr=subprocess.DEVNULL,
         )
     else:
-        logger.info(f"pulling latest changes in {clone_path}")
+        logger.info(f"this might take a minute. pulling latest changes in {clone_path}")
         subprocess.run(
             ["git", "-C", str(clone_path), "pull"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
