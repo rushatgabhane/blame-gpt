@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import sqlite3
 from functools import wraps
 from pathlib import Path
@@ -66,7 +67,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_PULL_REQUEST_EMBEDDING,
-                (pr.id, json.dumps(pr.embedding)),
+                (pr.id, pickle.dumps(pr.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -110,7 +111,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_ISSUE_EMBEDDING,
-                (issue.id, json.dumps(issue.embedding)),
+                (issue.id, pickle.dumps(issue.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -173,7 +174,7 @@ class Database:
                 explaination=row[3],
                 files=json.loads(row[4]),
                 code_diff_summary=row[5] if row[5] else None,
-                embedding=json.loads(row[6]) if row[6] else None,
+                embedding=pickle.loads(row[6]) if row[6] else None,
             )
             for row in rows
         ]
@@ -199,7 +200,7 @@ class Database:
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
             linked_issue_ids=json.loads(row[6]) if row[6] else [],
-            embedding=json.loads(row[7]) if row[7] else None,
+            embedding=pickle.loads(row[7]) if row[7] else None,
         )
 
     @require_connection
@@ -313,12 +314,12 @@ class Database:
     def get_all_usage_logs_for_all_users(self) -> list[UserUsageLog]:
         assert self.connection is not None
         rows = self.connection.execute(core_queries.GET_ALL_USAGE_LOGS_FOR_ALL_USERS).fetchall()
-        
+
         # Group by usage_log_id to collect LLM calls
         usage_logs = {}
         for row in rows:
             usage_log_id = row[0]
-            
+
             if usage_log_id not in usage_logs:
                 usage_logs[usage_log_id] = UserUsageLog(
                     usage_log=UsageLog(
@@ -339,20 +340,21 @@ class Database:
                         avatar_url=row[11],
                         is_active=row[12],
                     ),
-                    llm_calls=[]
+                    llm_calls=[],
                 )
-            
-            # Add LLM call if it exists (row[13] is lc.id)
+
             if row[13] is not None:
-                usage_logs[usage_log_id].llm_calls.append(LLMCall(
-                    id=row[13],
-                    usage_log_id=row[14],
-                    llm_model=row[15],
-                    tokens_used=row[16],
-                    cost_usd_thousandths=row[17],
-                    created_at=row[18],
-                ))
-        
+                usage_logs[usage_log_id].llm_calls.append(
+                    LLMCall(
+                        id=row[13],
+                        usage_log_id=row[14],
+                        llm_model=row[15],
+                        tokens_used=row[16],
+                        cost_usd_thousandths=row[17],
+                        created_at=row[18],
+                    )
+                )
+
         return list(usage_logs.values())
 
     @require_connection
@@ -377,7 +379,7 @@ class Database:
         assert self.connection is not None
         self.connection.execute(
             core_queries.INSERT_TEST_SUITE,
-            (case_id, title, steps, hash, json.dumps(embedding)),
+            (case_id, title, steps, hash, pickle.dumps(embedding)),
         )
         self.connection.commit()
 
@@ -400,7 +402,7 @@ class Database:
                 title=row[2],
                 steps=row[3],
                 hash=row[4],
-                embedding=json.loads(row[5]) if row[5] else None,
+                embedding=pickle.loads(row[5]) if row[5] else None,
             )
             for row in rows
         ]

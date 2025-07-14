@@ -4,6 +4,6 @@ CREATE TABLE IF NOT EXISTS test_suite (
     title TEXT NOT NULL,
     steps TEXT NOT NULL,
     hash TEXT NOT NULL,
-    embedding TEXT NOT NULL,
+    embedding BLOB NOT NULL,      -- List of floats stored as a BLOB
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )

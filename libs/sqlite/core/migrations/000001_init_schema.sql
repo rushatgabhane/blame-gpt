@@ -10,14 +10,14 @@ CREATE TABLE IF NOT EXISTS pull_requests (
 
 CREATE TABLE IF NOT EXISTS pull_request_embeddings (
     pull_request_id INTEGER PRIMARY KEY,
-    embedding TEXT,              -- Stored as a JSON array
+    embedding BLOB,              -- List of floats stored as a BLOB
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (pull_request_id) REFERENCES pull_requests(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS issue_embeddings (
     issue_id INTEGER PRIMARY KEY,
-    embedding TEXT,              -- Stored as a JSON array
+    embedding BLOB,              -- List of floats stored as a BLOB
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
 );

@@ -1,6 +1,6 @@
 import datetime
-import json
 import os
+import pickle
 import sqlite3
 from functools import wraps
 from pathlib import Path
@@ -50,13 +50,13 @@ class Database:
         return row["content_hash"] if row else None
 
     @require_connection
-    def upsert_doc(self, path: str, title: str, content_hash: str, embedding: str, content: str):
+    def upsert_doc(self, path: str, title: str, content_hash: str, embedding: list[float], content: str):
         assert self.connection is not None
         now = datetime.datetime.now().isoformat()
 
         self.connection.execute(
             q.UPSERT_DOC,
-            (path, title, content_hash, embedding, content, now),
+            (path, title, content_hash, pickle.dumps(embedding), content, now),
         )
         self.connection.commit()
 
@@ -84,7 +84,7 @@ class Database:
                 path=row["path"],
                 title=row["title"],
                 content_hash=row["content_hash"],
-                embedding=json.loads(row["embedding"]),
+                embedding=pickle.loads(row["embedding"]),
                 raw_content=row["content"],
             )
             for row in rows

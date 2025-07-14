@@ -1,4 +1,3 @@
-import json
 import logging
 import subprocess
 from pathlib import Path
@@ -59,7 +58,7 @@ def update_docs_embedding(docs_db: Database):
         title = get_title_from_path(rel_path)
         embedding = embedding_model.embed_query(f"Path: {rel_path}\n\n Content:{content}")
 
-        docs_db.upsert_doc(rel_path, title, content_hash, json.dumps(embedding), content)
+        docs_db.upsert_doc(rel_path, title, content_hash, embedding, content)
     logger.info("docs embeddings updated successfully")
 
 
