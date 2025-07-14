@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 
+from libs import constants
 from libs.github import repo
 from libs.llm import embedding_model, llmReasoningCheap
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
@@ -89,6 +90,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
         files = [f.filename for f in all_files]
 
         pr_test = _parse_test_steps(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
         pr_explaination = _parse_explaination(pr.body or "")
 
         code_diff = _get_code_diff(pr.diff_url)
@@ -114,6 +116,7 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             embedding=pr_embedding,
             code_diff_summary=code_diff_summary.pull_request_description,
             code_diff=code_diff,
+            linked_issue_ids=linked_issue_ids,
         )
     except Exception as e:
         logging.error(f"failed to process PR {pull_request_id}: {e}")
@@ -133,6 +136,12 @@ def _parse_test_steps(body: str) -> str:
     normalized_spacing = re.sub(r"\n{3,}", "\n\n", without_comments)
 
     return normalized_spacing.strip()
+
+
+def _parse_linked_issue_ids(body: str) -> list[int] | None:
+    pattern = rf"\$\s*#(\d+)|\$\s*https://[^\s]*/{constants.REPO_NAME}/issues/(\d+)"
+    matches = re.findall(pattern, body)
+    return [int(m[0] or m[1]) for m in matches] if matches else None
 
 
 def _parse_explaination(body: str) -> str:
@@ -165,7 +174,7 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
     return patches
 
 
-def add_pull_request(pull_request_id: int, db: Database) -> PullRequest | None:
+def add_pull_request_if_not_exist(pull_request_id: int, db: Database) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr
