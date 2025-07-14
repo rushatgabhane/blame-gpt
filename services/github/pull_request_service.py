@@ -8,10 +8,11 @@ import requests
 
 from libs import constants
 from libs.github import repo
-from libs.llm import embedding_model, llmReasoningCheap
+from libs.llm import ModelNames, embedding_model, llmReasoningCheap
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CodeDiffSummary, FilePatch, PullRequest
+from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
 _add_new_prs_lock = threading.Lock()
@@ -29,7 +30,7 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
     return sorted(list(pr_numbers)) if pr_numbers else None
 
 
-def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database) -> None:
+def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None) -> None:
     with _add_new_prs_lock:
         new_ids = _get_pull_requests_between(base, head)
         if not new_ids:
@@ -41,7 +42,7 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
         logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {executor.submit(_get_pr_with_embeddings, pr_id): pr_id for pr_id in new_ids_to_process}
+            futures = {executor.submit(_get_pr_with_embeddings, pr_id, db, usage_log_id): pr_id for pr_id in new_ids_to_process}
             for future in as_completed(futures):
                 pull_request = future.result()
                 if pull_request:
@@ -82,7 +83,7 @@ def _get_code_diff(diff_url: str) -> str:
         return ""
 
 
-def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
+def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
     try:
         pr = repo.get_pull(pull_request_id)
         all_files = pr.get_files()
@@ -101,6 +102,8 @@ def _get_pr_with_embeddings(pull_request_id: int) -> PullRequest | None:
             code_diff=code_diff,
         )
         response = llmReasoningCheap.invoke(code_diff_summary_input)
+        track_llm_usage(db, usage_log_id, response, ModelNames.O3_MINI)
+        
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
@@ -178,12 +181,12 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
     return patches
 
 
-def add_pull_request_if_not_exist(pull_request_id: int, db: Database) -> PullRequest | None:
+def add_pull_request_if_not_exist(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr
 
-    pull_request = _get_pr_with_embeddings(pull_request_id)
+    pull_request = _get_pr_with_embeddings(pull_request_id, db, usage_log_id)
     if not pull_request:
         logging.error(f"failed to fetch pull request {pull_request_id}")
         return None
