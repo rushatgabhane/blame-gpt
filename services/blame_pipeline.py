@@ -37,6 +37,7 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
                 head="staging",
                 issue_id=issue_id,
                 db=db,
+                usage_log_id=usage_log_id,
             )
         )
 

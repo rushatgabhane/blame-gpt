@@ -33,7 +33,7 @@ async def generate_test_steps_for_pull_request(
         logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
         return None
 
-    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db)
+    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, usage_log_id)
     if not pull_request:
         logger.error(f"PR #{pull_request_id}: failed to fetch.")
         return None
