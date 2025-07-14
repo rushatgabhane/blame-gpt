@@ -27,6 +27,8 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 
 - **Code understanding**
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
+    - [x] Phase 1 done ([Niteeq](https://github.com/nitee-13)) for EXFY
+    - [ ]  
   - [ ] Q&A / “Chat with the codebase”
 
 - **Auto revert**
