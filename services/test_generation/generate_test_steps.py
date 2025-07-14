@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 async def generate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> GeneratedTestStepsList | None:
+    if db.has_generated_test_steps(pull_request_id):
+        logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
+        return
+
     pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db)
     if not pull_request:
         logger.error(f"PR #{pull_request_id}: failed to fetch.")
