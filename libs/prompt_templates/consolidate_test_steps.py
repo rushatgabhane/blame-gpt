@@ -17,33 +17,38 @@ You are given a list of test steps that may have repetitive setup or similar ini
 5. Use arrows (→) for navigation between screens/sections to make it visually appealing.
 6. Make steps concise while maintaining clarity.
 7. Focus on the unique verification parts of each subsequent test.
+8. If multiple tests have identical preconditions, only include the precondition in the first test.
+9. For subsequent tests with similar precondition, omit the precondition field entirely.
 
 # Original test steps:
 {original_test_steps}
 
 # Example of good consolidation:
 Instead of:
-Test 1: 
+Test 1: Feature A verification
+Precondition: User has admin access and Feature A is available
 1. Login to app
 2. Go to Settings
 3. Enable Feature A
 4. Verify Feature A works
 
-Test 2:
+Test 2: Feature B verification  
+Precondition: User has admin access and Feature A is available
 1. Login to app
 2. Go to Settings
 3. Enable Feature B
 4. Verify Feature B works
 
 Consolidate to:
-Test 1: Verify Feature A works
+Test 1: Feature A verification
+Precondition: User has admin access and Feature A is available
 1. Login to app
 2. Go to Settings
 3. Enable Feature A
 4. Verify Feature A works
 
-Test 2: Verify Feature B works
-1. Enable Feature B
+Test 2: Feature B verification
+1. Enable Feature B from Settings
 2. Verify Feature B works
 
 Return the consolidated test steps in the following format:
