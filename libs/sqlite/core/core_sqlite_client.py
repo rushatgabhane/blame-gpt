@@ -8,7 +8,7 @@ from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
 from models.enums import CommandName
-from models.models import CulpritPullRequest, Issue, PullRequest, UsageLog, User, UserUsageLog
+from models.models import CulpritPullRequest, Issue, PullRequest, TestSuite, UsageLog, User, UserUsageLog
 
 
 def require_connection(method):
@@ -61,6 +61,7 @@ class Database:
                     pr.explaination,
                     json.dumps(pr.files),
                     pr.code_diff_summary if pr.code_diff_summary else None,
+                    json.dumps(pr.linked_issue_ids) if pr.linked_issue_ids else None,
                 ),
             )
             self.connection.execute(
@@ -143,6 +144,7 @@ class Database:
             labels=json.loads(row[4]),
             is_processed=row[5],
             culprit_pull_requests=cullprit_pull_requests,
+            actual_pull_request_id=row[7] if row[7] else None,
         )
 
     @require_connection
@@ -196,7 +198,8 @@ class Database:
             explaination=row[3],
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
-            embedding=json.loads(row[6]) if row[6] else None,
+            linked_issue_ids=json.loads(row[6]) if row[6] else [],
+            embedding=json.loads(row[7]) if row[7] else None,
         )
 
     @require_connection
@@ -215,21 +218,11 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def get_pull_request_test_steps(self, pull_request_id: int) -> PullRequest | None:
+    def has_generated_test_steps(self, pull_request_id: int) -> bool:
         assert self.connection is not None
-        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS, (pull_request_id,)).fetchone()
-        if not row:
-            return None
 
-        return PullRequest(
-            id=row[0],
-            title=row[1],
-            test=row[2],
-            explaination=row[3],
-            files=json.loads(row[4]),
-            code_diff_summary=row[5] if row[5] else None,
-            test_steps=row[6] if row[6] else None,
-        )
+        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_BY_ID, (pull_request_id,)).fetchone()
+        return not (not row or not row[1])
 
     @require_connection
     def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
@@ -238,19 +231,6 @@ class Database:
             self.connection.execute(
                 core_queries.ADD_PULL_REQUEST_TEST_STEPS,
                 (pull_request_id, test_steps),
-            )
-            self.connection.commit()
-        except Exception as e:
-            self.connection.rollback()
-            raise e
-
-    @require_connection
-    def update_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
-        assert self.connection is not None
-        try:
-            self.connection.execute(
-                core_queries.UPDATE_PULL_REQUEST_TEST_STEPS,
-                (test_steps, pull_request_id),
             )
             self.connection.commit()
         except Exception as e:
@@ -369,6 +349,39 @@ class Database:
                 output=row[4],
                 issue_or_pull_request_url=row[5],
                 created_at=row[6],
+            )
+            for row in rows
+        ]
+
+    @require_connection
+    def add_test_suite(self, case_id: int, title: str, steps: str, hash: str, embedding: list[float]):
+        assert self.connection is not None
+        self.connection.execute(
+            core_queries.INSERT_TEST_SUITE,
+            (case_id, title, steps, hash, json.dumps(embedding)),
+        )
+        self.connection.commit()
+
+    @require_connection
+    def get_hash_by_case_id(self, case_id: int) -> str | None:
+        assert self.connection is not None
+        row = self.connection.execute(core_queries.GET_TEST_SUITE_HASH_BY_CASE_ID, (case_id,)).fetchone()
+        if not row:
+            return None
+        return row[0]
+
+    @require_connection
+    def get_all_test_suites(self) -> list[TestSuite]:
+        assert self.connection is not None
+        rows = self.connection.execute(core_queries.GET_ALL_TEST_SUITE).fetchall()
+        return [
+            TestSuite(
+                id=row[0],
+                case_id=row[1],
+                title=row[2],
+                steps=row[3],
+                hash=row[4],
+                embedding=json.loads(row[5]) if row[5] else None,
             )
             for row in rows
         ]
