@@ -81,6 +81,8 @@ blame-gpt/
 5. Copy environment file: `cp .env.example .env`
 6. Set GitHub token and OpenAI API key in `.env`
 
+Store embedding as blob
+
 ### Key Workflows
 
 **Issue Processing**: When GitHub Action triggers `/api/blame`:
