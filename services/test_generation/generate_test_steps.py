@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 async def generate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> GeneratedTestStepsList | None:
     if db.has_generated_test_steps(pull_request_id):
         logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
-        return
+        return None
 
     pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db)
     if not pull_request:
         logger.error(f"PR #{pull_request_id}: failed to fetch.")
-        return
+        return None
 
     if not pull_request.linked_issue_ids:
         logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
-        return
+        return None
 
     linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db)
     logger.info(f"PR #{pull_request_id}: fetched linked issue tests {len(linked_issue_test_steps or [])}")
@@ -35,7 +35,7 @@ async def generate_test_steps_for_pull_request(pull_request_id: int, db: Databas
     test_steps = await _generate_test_steps(pull_request, linked_issue_test_steps, similar_existing_steps)
     if not test_steps or not test_steps.test or test_steps.test == []:
         logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
-        return
+        return None
 
     comment = _format_comment(test_steps=test_steps)
     comment_service.add_comment_to_pull_request(pull_request_id, comment)
@@ -120,6 +120,7 @@ async def _generate_test_steps(
         return steps
     except Exception as e:
         logger.error(f"Error generating test steps for PR #{pull_request.id}: {e}")
+        return None
 
 
 _sassy_titles = [
