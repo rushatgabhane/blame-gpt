@@ -13,8 +13,9 @@ class PullRequest(BaseModel):
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
-    test_steps: str | None = None
+    generated_test_steps: str | None = None
     code_diff: str | None = None
+    linked_issue_ids: list[int] | None = None
 
 
 class CulpritPullRequest(BaseModel):
@@ -103,8 +104,22 @@ class CodeDiffSummary(BaseModel):
     pull_request_description: str
 
 
-class TestStepsGeneration(BaseModel):
-    steps: str
+class GeneratedTestSteps(BaseModel):
+    title: str = Field(
+        ..., description="a really short title for what to verify. For example: you can remove a workspace member"
+    )
+    precondition: str | None = Field(
+        ...,
+        description="a precondition is usually setup like workspace settings that you need to enable.",
+    )
+    steps: str = Field(
+        ...,
+        description="a numbered list of steps to verify the PR. For example: 1. Login to Expensify App. 2. Go to workspace settings > Members. 3. Click on the member with VISA card. 4. Click on the card. 5. Click QuickBooks Online credit card export. 6. Verify that the export is successful and the VISA card transactions are exported to QBO.",
+    )
+
+
+class GeneratedTestStepsList(BaseModel):
+    test: list[GeneratedTestSteps]
 
 
 class CommandClassification(BaseModel):
@@ -134,3 +149,12 @@ class UsageLog(BaseModel):
 class UserUsageLog(BaseModel):
     user: User
     usage_log: UsageLog
+
+
+class TestSuite(BaseModel):
+    id: int
+    case_id: int
+    title: str
+    steps: str
+    hash: str
+    embedding: list[float] | None = None
