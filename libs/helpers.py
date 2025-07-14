@@ -3,12 +3,15 @@ import hashlib
 import hmac
 import html
 import logging
+import os
 import re
 from datetime import datetime
 from email.utils import format_datetime
 from hashlib import sha256
 
 import numpy as np
+
+from libs.constants import ENVIRONMENT_PRODUCTION
 
 logger = logging.getLogger(__name__)
 
@@ -79,3 +82,11 @@ def now_8601(nowUTC: datetime) -> str:
 
 def hash_256(string: str) -> str:
     return sha256(string.encode()).hexdigest()
+
+
+def is_production_environment() -> bool:
+    """
+    Check if the current environment is production.
+    We want to avoid adding comments to repositories in non-production environments.
+    """
+    return os.getenv("ENVIRONMENT") == ENVIRONMENT_PRODUCTION
