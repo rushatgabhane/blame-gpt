@@ -8,7 +8,7 @@ from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
 from models.enums import CommandName
-from models.models import CulpritPullRequest, Issue, PullRequest, TestSuite, UsageLog, User, UserUsageLog
+from models.models import CulpritPullRequest, Issue, LLMCall, PullRequest, TestSuite, UsageLog, User, UserUsageLog
 
 
 def require_connection(method):
@@ -284,13 +284,14 @@ class Database:
         output: str,
         issue_or_pull_request_url: str | None = None,
         comment_text: str | None = None,
-    ):
+    ) -> int | None:
         assert self.connection is not None
-        self.connection.execute(
+        cursor = self.connection.execute(
             core_queries.ADD_USAGE_LOG,
             (user_id, command_name.value, comment_url, output, issue_or_pull_request_url, comment_text),
         )
         self.connection.commit()
+        return cursor.lastrowid
 
     @require_connection
     def get_all_users(self) -> list[User]:
@@ -312,29 +313,47 @@ class Database:
     def get_all_usage_logs_for_all_users(self) -> list[UserUsageLog]:
         assert self.connection is not None
         rows = self.connection.execute(core_queries.GET_ALL_USAGE_LOGS_FOR_ALL_USERS).fetchall()
-        return [
-            UserUsageLog(
-                usage_log=UsageLog(
-                    id=row[0],
-                    user_id=row[7],
-                    command_name=CommandName(row[1]),
-                    comment_url=row[2],
-                    output=row[3],
-                    issue_or_pull_request_url=row[4],
-                    created_at=row[5],
-                    comment_text=row[6] if row[6] else None,
-                ),
-                user=User(
-                    id=row[7],
-                    username=row[8],
-                    email=row[9],
-                    name=row[10],
-                    avatar_url=row[11],
-                    is_active=row[12],
-                ),
-            )
-            for row in rows
-        ]
+        
+        # Group by usage_log_id to collect LLM calls
+        usage_logs = {}
+        for row in rows:
+            usage_log_id = row[0]
+            
+            if usage_log_id not in usage_logs:
+                usage_logs[usage_log_id] = UserUsageLog(
+                    usage_log=UsageLog(
+                        id=row[0],
+                        user_id=row[7],
+                        command_name=CommandName(row[1]),
+                        comment_url=row[2],
+                        output=row[3],
+                        issue_or_pull_request_url=row[4],
+                        created_at=row[5],
+                        comment_text=row[6] if row[6] else None,
+                    ),
+                    user=User(
+                        id=row[7],
+                        username=row[8],
+                        email=row[9],
+                        name=row[10],
+                        avatar_url=row[11],
+                        is_active=row[12],
+                    ),
+                    llm_calls=[]
+                )
+            
+            # Add LLM call if it exists (row[13] is lc.id)
+            if row[13] is not None:
+                usage_logs[usage_log_id].llm_calls.append(LLMCall(
+                    id=row[13],
+                    usage_log_id=row[14],
+                    llm_model=row[15],
+                    tokens_used=row[16],
+                    cost_usd_thousandths=row[17],
+                    created_at=row[18],
+                ))
+        
+        return list(usage_logs.values())
 
     @require_connection
     def get_usage_logs_by_user_id(self, user_id: int) -> list[UsageLog]:
@@ -385,3 +404,12 @@ class Database:
             )
             for row in rows
         ]
+
+    @require_connection
+    def add_llm_call(self, usage_log_id: int, llm_model: str, tokens_used: int, cost_usd_thousandths: int):
+        assert self.connection is not None
+        self.connection.execute(
+            core_queries.ADD_LLM_CALL,
+            (usage_log_id, llm_model, tokens_used, cost_usd_thousandths),
+        )
+        self.connection.commit()

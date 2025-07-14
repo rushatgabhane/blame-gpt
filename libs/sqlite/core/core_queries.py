@@ -116,9 +116,11 @@ VALUES (?, ?, ?, ?, ?, ?);
 
 GET_ALL_USAGE_LOGS_FOR_ALL_USERS = """
 SELECT ul.id, ul.command_name, ul.comment_url, ul.output, ul.issue_or_pull_request_url, ul.created_at, ul.comment_text, 
-u.id, u.username, u.email, u.name, u.avatar_url, u.is_active
+u.id, u.username, u.email, u.name, u.avatar_url, u.is_active,
+lc.id, lc.usage_log_id, lc.llm_model, lc.tokens_used, lc.cost_usd_thousandths, lc.created_at
 FROM usage_logs ul
 JOIN users u ON u.id = ul.user_id
+LEFT JOIN llm_calls lc ON lc.usage_log_id = ul.id
 ORDER BY ul.created_at DESC;
 """
 
@@ -129,7 +131,7 @@ WHERE ul.user_id = ?;
 """
 
 ADD_LLM_CALL = """
-INSERT INTO llm_calls (usage_log_id, llm_model, tokens_used, cost_usd_cents)
+INSERT INTO llm_calls (usage_log_id, llm_model, tokens_used, cost_usd_thousandths)
 VALUES (?, ?, ?, ?);
 """
 
