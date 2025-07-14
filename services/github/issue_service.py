@@ -47,7 +47,7 @@ def _extract_steps_from_description(description: str) -> str:
     if match:
         return match.group(0).strip()
     else:
-        logging.warning("no steps found in the description: {description}")
+        logging.warning(f"no steps found in the description: {description}")
         return ""
 
 
@@ -56,8 +56,11 @@ def get_all_issues(db: Database) -> list[Issue]:
 
 
 async def add_issue_if_not_exists(issue_id: int, db: Database) -> Issue | None:
-    existing_issue = db.get_issue_by_id(issue_id)
-    if existing_issue:
-        return existing_issue
-
-    return await add_issue(issue_id, db)
+    try:
+        existing_issue = db.get_issue_by_id(issue_id)
+        if existing_issue:
+            return existing_issue
+        return await add_issue(issue_id, db)
+    except Exception as e:
+        logger.error(f"error fetching issue #{issue_id} from db: {e}")
+        raise
