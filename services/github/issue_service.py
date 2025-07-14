@@ -13,7 +13,7 @@ async def add_issue(issue_id: int, db: Database) -> Issue:
     try:
         gh_issue = repo.get_issue(number=issue_id)
         labels = [label.name for label in gh_issue.labels] or []
-        steps = extract_steps_from_description(gh_issue.body or "")
+        steps = _extract_steps_from_description(gh_issue.body or "")
         title = gh_issue.title or ""
         issue_embedding = embedding_model.embed_query(f"{title}\n {steps}")
 
@@ -32,7 +32,7 @@ async def add_issue(issue_id: int, db: Database) -> Issue:
         raise
 
 
-def extract_steps_from_description(description: str) -> str:
+def _extract_steps_from_description(description: str) -> str:
     pattern = r"""
         \#\#\s*Action\s*Performed:\s*
         .*?
@@ -47,9 +47,20 @@ def extract_steps_from_description(description: str) -> str:
     if match:
         return match.group(0).strip()
     else:
-        logging.warning("No steps found in the description: {description}")
+        logging.warning(f"no steps found in the description: {description}")
         return ""
 
 
 def get_all_issues(db: Database) -> list[Issue]:
     return db.get_all_issues()
+
+
+async def add_issue_if_not_exists(issue_id: int, db: Database) -> Issue | None:
+    try:
+        existing_issue = db.get_issue_by_id(issue_id)
+        if existing_issue:
+            return existing_issue
+        return await add_issue(issue_id, db)
+    except Exception as e:
+        logger.error(f"error fetching issue #{issue_id} from db: {e}")
+        raise

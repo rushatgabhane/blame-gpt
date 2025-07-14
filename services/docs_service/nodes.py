@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
     pull_request_id = state["pull_request_id"]
-    pull_request = pull_request_service.add_pull_request(pull_request_id, db)
+    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db)
     if not pull_request:
         state["should_docs_update"] = False
         return state

@@ -3,11 +3,14 @@ import hashlib
 import hmac
 import html
 import logging
+import os
 import re
 from datetime import datetime
 from email.utils import format_datetime
 
 import numpy as np
+
+from libs.constants import ENVIRONMENT_PRODUCTION
 
 logger = logging.getLogger(__name__)
 
@@ -74,3 +77,11 @@ def now_rfc1123(nowUTC: datetime) -> str:
 def now_8601(nowUTC: datetime) -> str:
     """Example: '2023-10-25T19:17:59Z'"""
     return nowUTC.isoformat().replace("+00:00", "Z")
+
+
+def is_production_environment() -> bool:
+    """
+    Check if the current environment is production.
+    We want to avoid adding comments to repositories in non-production environments.
+    """
+    return os.getenv("ENVIRONMENT") == ENVIRONMENT_PRODUCTION

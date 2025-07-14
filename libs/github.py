@@ -4,15 +4,12 @@ from typing import cast
 
 from github import Github
 from github.AuthenticatedUser import AuthenticatedUser
+from pydantic import SecretStr
 
 from libs import constants
 
-github_token = os.getenv("GITHUB_TOKEN")
-
-if not github_token:
-    raise Exception("GitHub token not found. Make sure to set the `GITHUB_TOKEN` environment variable")
-
-gh = Github(github_token)
+github_token = SecretStr(os.getenv("GITHUB_TOKEN") or "")
+gh = Github(github_token.get_secret_value())
 
 repo = gh.get_repo(f"{constants.REPO_OWNER}/{constants.REPO_NAME}")
 rate = gh.get_rate_limit()

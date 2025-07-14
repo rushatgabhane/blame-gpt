@@ -10,3 +10,6 @@ LABELS = {
 
 EN_TS = "en.ts"
 USER_TAG = "@blamegpt"
+
+ENVIRONMENT_PRODUCTION = "production"
+ENVIRONMENT_DEVELOPMENT = "development"

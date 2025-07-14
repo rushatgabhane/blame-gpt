@@ -1,10 +1,10 @@
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, code_diff_summary)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, code_diff_summary, linked_issue_ids)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
 GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING = """
-SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, pe.embedding
+SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, pr.linked_issue_ids, pe.embedding
 FROM pull_requests pr
 LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
 WHERE pr.id = ?;
@@ -13,6 +13,12 @@ WHERE pr.id = ?;
 INSERT_ISSUE = """
 INSERT OR REPLACE INTO issues (id, title, steps, raw_body, labels)
 VALUES (?, ?, ?, ?, ?);
+"""
+
+GET_ISSUE_BY_ID = """
+SELECT id, title, steps, raw_body, labels, is_processed, culprit_pull_requests, actual_pull_request_id
+FROM issues
+WHERE id = ?;
 """
 
 GET_ALL_ISSUES = """
@@ -40,10 +46,6 @@ UPDATE_ISSUE_PROCESSED_AND_CULPRITS = """
 UPDATE issues
 SET is_processed = ?, culprit_pull_requests = ?
 WHERE id = ?;
-"""
-
-GET_ISSUE_BY_ID = """
-SELECT * FROM issues WHERE id = ?;
 """
 
 GET_ISSUE_IS_PROCESSED = """
@@ -76,22 +78,15 @@ SET actual_pull_request_id = ?
 WHERE id = ?;
 """
 
-GET_PULL_REQUEST_TEST_STEPS = """
-SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, prts.test_steps
-FROM pull_requests pr
-LEFT JOIN pull_request_test_steps prts ON prts.pull_request_id = pr.id
-WHERE pr.id = ?;
+GET_PULL_REQUEST_TEST_STEPS_BY_ID = """
+SELECT pull_request_id, test_steps
+FROM pull_request_test_steps
+WHERE pull_request_id = ?;
 """
 
 ADD_PULL_REQUEST_TEST_STEPS = """
-INSERT OR REPLACE INTO pull_request_test_steps (pull_request_id, test_steps)
+INSERT OR IGNORE INTO pull_request_test_steps (pull_request_id, test_steps)
 VALUES (?, ?);
-"""
-
-UPDATE_PULL_REQUEST_TEST_STEPS = """
-UPDATE pull_request_test_steps
-SET test_steps = ?
-WHERE pull_request_id = ?;
 """
 
 ADD_USER = """
@@ -136,4 +131,17 @@ WHERE ul.user_id = ?;
 ADD_LLM_CALL = """
 INSERT INTO llm_calls (usage_log_id, llm_model, tokens_used, cost_usd_cents)
 VALUES (?, ?, ?, ?);
+"""
+
+INSERT_TEST_SUITE = """
+INSERT OR REPLACE INTO test_suite (case_id, title, steps, hash, embedding)
+VALUES (?, ?, ?, ?, ?);
+"""
+
+GET_TEST_SUITE_HASH_BY_CASE_ID = """
+SELECT hash FROM test_suite WHERE case_id = ?;
+"""
+
+GET_ALL_TEST_SUITE = """
+SELECT id, case_id, title, steps, hash, embedding FROM test_suite;
 """
