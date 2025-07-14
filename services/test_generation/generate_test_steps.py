@@ -14,6 +14,17 @@ from services.github import comment_service, issue_service, pull_request_service
 logger = logging.getLogger(__name__)
 
 
+_sassy_titles = [
+    "Ready for your test drive 🏎️",
+    "Time to break it (gently)",
+    "Checklist for the brave",
+    "Let's see if it holds up!",
+    "Reviewers, do your thing!",
+    "Test steps, fresh out the oven",
+    "Give it a whirl!",
+]
+
+
 async def generate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> GeneratedTestStepsList | None:
     if db.has_generated_test_steps(pull_request_id):
         logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
@@ -132,17 +143,6 @@ async def _generate_test_steps(
     except Exception as e:
         logger.error(f"Error generating test steps for PR #{pull_request.id}: {e}")
         return None
-
-
-_sassy_titles = [
-    "Ready for your test drive 🏎️",
-    "Time to break it (gently)",
-    "Checklist for the brave",
-    "Let's see if it holds up!",
-    "Reviewers, do your thing!",
-    "Test steps, fresh out the oven",
-    "Give it a whirl!",
-]
 
 
 async def _consolidate_test_steps(test_steps: GeneratedTestStepsList) -> GeneratedTestStepsList | None:
