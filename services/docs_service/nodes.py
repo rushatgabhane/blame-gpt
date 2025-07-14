@@ -17,6 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
+    """
+    Retrieves a pull request by ID, extracts English patch diffs, and updates the state with pull request and patch information.
+    
+    If the pull request does not exist, sets `should_docs_update` to False in the state.
+    Returns the updated state dictionary.
+    """
     pull_request_id = state["pull_request_id"]
     pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, None)
     if not pull_request:

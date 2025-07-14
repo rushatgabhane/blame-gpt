@@ -19,6 +19,16 @@ _add_new_prs_lock = threading.Lock()
 
 
 def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
+    """
+    Retrieve the list of pull request numbers merged between two Git references.
+    
+    Parameters:
+    	base (str): The base Git reference (e.g., branch or commit SHA).
+    	head (str): The head Git reference (e.g., branch or commit SHA).
+    
+    Returns:
+    	list[int] | None: Sorted list of unique pull request numbers merged between base and head, or None if none are found.
+    """
     comparison = repo.compare(base=base, head=head)
 
     pr_numbers = set()
@@ -31,6 +41,17 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
 
 
 def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None) -> None:
+    """
+    Adds all pull requests merged between two Git references to the database and links them to a specified issue.
+    
+    This function identifies PRs merged between the given `base` and `head` references, processes any new PRs by fetching their data and embeddings, stores them in the database, and associates all found PRs with the provided issue ID. Processing is performed concurrently for efficiency. Existing PRs are not duplicated, and database integrity errors during linking are logged as warnings.
+    
+    Parameters:
+        base (str): The base Git reference.
+        head (str): The head Git reference.
+        issue_id (int): The ID of the issue to link PRs to.
+        usage_log_id (int, optional): An identifier for tracking LLM usage, if provided.
+    """
     with _add_new_prs_lock:
         new_ids = _get_pull_requests_between(base, head)
         if not new_ids:
@@ -57,6 +78,15 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
 
 
 def _get_code_diff(diff_url: str) -> str:
+    """
+    Fetches and filters the raw diff text from a GitHub diff URL, returning only changes to files under `src/` excluding those in `src/languages`.
+    
+    Parameters:
+        diff_url (str): The URL to the GitHub diff resource.
+    
+    Returns:
+        str: The filtered diff text, or an empty string if fetching fails or no relevant changes are found.
+    """
     try:
         headers = {"Accept": "application/vnd.github.v3.diff"}
         response = requests.get(diff_url, headers=headers, timeout=30)
@@ -84,6 +114,15 @@ def _get_code_diff(diff_url: str) -> str:
 
 
 def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
+    """
+    Fetches a GitHub pull request by ID, summarizes its code diff using an LLM, generates an embedding, and returns a populated PullRequest object.
+    
+    Parameters:
+        pull_request_id (int): The numeric ID of the pull request to fetch and process.
+    
+    Returns:
+        PullRequest | None: A PullRequest object containing extracted metadata, code diff summary, and embedding, or None if processing fails.
+    """
     try:
         pr = repo.get_pull(pull_request_id)
         all_files = pr.get_files()
@@ -165,6 +204,12 @@ def _parse_explaination(body: str) -> str:
 
 
 def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
+    """
+    Retrieve the list of file patches for a given pull request.
+    
+    Returns:
+        A list of FilePatch objects, each containing the filename and patch text for files changed in the pull request that have non-empty patch data.
+    """
     patches: list[FilePatch] = []
 
     pr = repo.get_pull(pull_request_id)
@@ -182,6 +227,18 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
 
 
 def add_pull_request_if_not_exist(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
+    """
+    Fetches and stores a pull request with embeddings if it does not already exist in the database.
+    
+    If the pull request is already present with embeddings, returns it immediately. Otherwise, retrieves the pull request, processes it to generate embeddings, stores it in the database, and returns the stored object.
+    
+    Parameters:
+        pull_request_id (int): The ID of the pull request to fetch and store.
+        usage_log_id (int | None): Optional ID for tracking LLM usage.
+    
+    Returns:
+        PullRequest | None: The pull request object with embeddings, or None if fetching fails.
+    """
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr

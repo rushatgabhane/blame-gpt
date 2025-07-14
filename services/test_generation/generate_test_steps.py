@@ -29,6 +29,14 @@ _sassy_titles = [
 async def generate_test_steps_for_pull_request(
     pull_request_id: int, db: Database, usage_log_id: int | None = None
 ) -> GeneratedTestStepsList | None:
+    """
+    Asynchronously generates, consolidates, and posts AI-generated test steps for a given GitHub pull request.
+    
+    If test steps have already been generated for the pull request, the function skips processing. Otherwise, it fetches the pull request and its linked issues, retrieves or generates test steps for those issues, and finds similar existing test suites. It then uses a large language model to generate new test steps for the pull request, consolidates them if necessary to remove redundancy, formats the result as a comment, posts it to the pull request, and stores the comment in the database.
+    
+    Returns:
+        GeneratedTestStepsList: The generated and consolidated test steps, or None if generation fails at any stage.
+    """
     if db.has_generated_test_steps(pull_request_id):
         logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
         return None

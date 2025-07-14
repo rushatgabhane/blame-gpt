@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
+    """
+    Asynchronously orchestrates the blame pipeline to identify and comment on culprit pull requests for a given issue.
+    
+    This generator yields status updates throughout the process, including early exits if the issue is already processed, lacks the required label, or has no relevant pull requests. It fetches and scores pull requests, identifies likely culprits using a language model, comments on the issue with the results, and updates the database accordingly. If an error occurs, yields an error message containing the issue ID.
+    """
     try:
         yield "starting blame pipeline"
         is_processed = db.get_issue_processed_status(issue_id)
