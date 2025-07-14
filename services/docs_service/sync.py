@@ -20,7 +20,12 @@ def get_title_from_path(path: str) -> str:
 def clone_or_pull_repo(repo_url: str, clone_path: Path):
     if not clone_path.exists():
         logger.info(f"cloning repository to {clone_path}")
-        subprocess.run(["git", "clone", repo_url, str(clone_path)], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            ["git", "clone", repo_url, str(clone_path)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
     else:
         logger.info(f"pulling latest changes in {clone_path}")
         subprocess.run(
