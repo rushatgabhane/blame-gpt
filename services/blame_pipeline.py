@@ -3,16 +3,17 @@ import logging
 
 from libs import constants
 from libs.helpers import cosine_similarity
-from libs.llm import llmReasoning
+from libs.llm import ModelNames, llmReasoning
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CulpritPullRequests, Issue, PullRequest, PullRequestWithScore
 from services.github import comment_service, issue_service, pull_request_service
+from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
 
 
-async def run(issue_id: int, db: Database):
+async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
     try:
         yield "starting blame pipeline"
         is_processed = db.get_issue_processed_status(issue_id)
@@ -72,6 +73,8 @@ async def run(issue_id: int, db: Database):
                     culprits_to_find=3,
                     issue=issue,
                     prs_with_scores=prs_with_scores,
+                    db=db,
+                    usage_log_id=usage_log_id,
                 )
             )
         ]
@@ -102,13 +105,15 @@ async def run(issue_id: int, db: Database):
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"
 
 
-async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
+async def _culprit_task(page, culprits_to_find, issue, prs_with_scores, db, usage_log_id):
     return await asyncio.to_thread(
         _find_culprit_pull_requests,
         page=page,
         culprits_to_find=culprits_to_find,
         issue=issue,
         pull_requests=prs_with_scores,
+        db=db,
+        usage_log_id=usage_log_id,
     )
 
 
@@ -126,13 +131,15 @@ def _add_pull_request_semantic_score(
     return scored_prs if scored_prs else []
 
 
-# Page is a zero-based index, so page 0 means the first 20 items.
+# Page is a zero-based index, so page 0 means the first N items.
 # culprits_to_find is the number of pull requests to return.
 def _find_culprit_pull_requests(
     page: int,
     culprits_to_find: int,
     issue: Issue,
     pull_requests: list[PullRequestWithScore],
+    db: Database,
+    usage_log_id: int | None = None,
 ) -> CulpritPullRequests | None:
     pull_requests_sorted_by_score = sorted(pull_requests, key=lambda x: x.score, reverse=True)
 
@@ -153,6 +160,7 @@ def _find_culprit_pull_requests(
         pull_requests_block=pr_block,
     )
     response = llmReasoning.invoke(input)
+    track_llm_usage(db, usage_log_id, response, ModelNames.O3)
     return culprit_parser.invoke(response)
 
 

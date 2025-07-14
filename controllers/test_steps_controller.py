@@ -1,3 +1,4 @@
+import asyncio
 from typing import cast
 
 from fastapi import APIRouter, Depends, Request
@@ -21,5 +22,9 @@ class TestStepRequest(BaseModel):
 async def generate_test_steps(request: Request, d: TestStepRequest):
     db = cast(Database, request.app.state.db)
 
-    t = await generate_test_steps_for_pull_request(d.pull_request_id, db)
+    # Run in thread pool to avoid blocking the event loop
+    def sync_wrapper():
+        return asyncio.run(generate_test_steps_for_pull_request(d.pull_request_id, db))
+
+    t = await asyncio.to_thread(sync_wrapper)
     return {"test_steps": t}

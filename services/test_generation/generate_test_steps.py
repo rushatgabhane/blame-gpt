@@ -3,13 +3,14 @@ import logging
 import random
 
 from libs.helpers import cosine_similarity
-from libs.llm import llm
+from libs.llm import ModelNames, llm
 from libs.prompt_templates.consolidate_test_steps import consolidate_test_steps_parser, consolidate_test_steps_prompt
 from libs.prompt_templates.issue_test_steps_for_bug import issue_steps_for_bug_parser, issue_steps_for_bug_prompt
 from libs.prompt_templates.pull_request_test_steps import test_steps_generation_parser, test_steps_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import GeneratedTestSteps, GeneratedTestStepsList, Issue, PullRequest, TestSuite
 from services.github import comment_service, issue_service, pull_request_service
+from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,9 @@ _sassy_titles = [
 ]
 
 
-async def generate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> GeneratedTestStepsList | None:
+async def generate_test_steps_for_pull_request(
+    pull_request_id: int, db: Database, usage_log_id: int | None = None
+) -> GeneratedTestStepsList | None:
     if db.has_generated_test_steps(pull_request_id):
         logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
         return None
@@ -39,29 +42,30 @@ async def generate_test_steps_for_pull_request(pull_request_id: int, db: Databas
         logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
         return None
 
-    linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db)
+    linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
     logger.info(f"PR #{pull_request_id}: fetched linked issue tests {len(linked_issue_test_steps or [])}")
 
     similar_existing_steps = _find_similar_test_steps(pull_request.embedding or [], db)
 
-    test_steps = await _generate_test_steps(pull_request, linked_issue_test_steps, similar_existing_steps)
+    test_steps = await _generate_test_steps(
+        pull_request, linked_issue_test_steps, similar_existing_steps, db, usage_log_id
+    )
     if not test_steps or not test_steps.test or test_steps.test == []:
         logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
         return None
 
     # Consolidate similar test steps to remove repetitive details
     if len(test_steps.test) > 1:
-        consolidated_steps = await _consolidate_test_steps(test_steps)
+        consolidated_steps = await _consolidate_test_steps(test_steps, db, usage_log_id)
         if consolidated_steps:
             test_steps = consolidated_steps
-            logger.info(f"PR #{pull_request_id}: consolidated test steps.")
 
     comment = _format_comment(test_steps=test_steps)
     comment_service.add_comment_to_pull_request(pull_request_id, comment)
 
     db.add_pull_request_test_steps(pull_request_id, comment)
 
-    logger.info(f"PR #{pull_request_id}: generated test steps and added comment.")
+    logger.info(f"PR #{pull_request_id}: generated test steps successfully.")
     return test_steps
 
 
@@ -77,19 +81,21 @@ def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[Te
 
 
 async def _get_test_steps_from_linked_issues(
-    linked_issue_ids: list[int], db: Database
+    linked_issue_ids: list[int], db: Database, usage_log_id: int | None = None
 ) -> list[GeneratedTestSteps] | None:
     issue_tasks = [issue_service.add_issue_if_not_exists(issue_id, db=db) for issue_id in linked_issue_ids]
     issues = await asyncio.gather(*issue_tasks)
     linked_issues = [issue for issue in issues if issue]
 
-    tasks = [_generate_test_step_for_issue(issue, db) for issue in linked_issues]
+    tasks = [_generate_test_step_for_issue(issue, db, usage_log_id) for issue in linked_issues]
     results = await asyncio.gather(*tasks)
     tests_for_all_linked_issues = [r for r in results if r]
     return tests_for_all_linked_issues
 
 
-async def _generate_test_step_for_issue(issue: Issue, db: Database) -> GeneratedTestSteps | None:
+async def _generate_test_step_for_issue(
+    issue: Issue, db: Database, usage_log_id: int | None = None
+) -> GeneratedTestSteps | None:
     body = issue.steps if issue.steps != "" else issue.raw_body
     prompt = issue_steps_for_bug_prompt.format(
         title=issue.title,
@@ -98,6 +104,7 @@ async def _generate_test_step_for_issue(issue: Issue, db: Database) -> Generated
 
     try:
         response = llm.invoke(prompt)
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_4_1)
         generated_steps = issue_steps_for_bug_parser.invoke(response)
         assert isinstance(generated_steps, GeneratedTestSteps)
         return generated_steps
@@ -111,6 +118,8 @@ async def _generate_test_steps(
     pull_request: PullRequest,
     linked_issue_test_steps: list[GeneratedTestSteps] | None,
     similar_test_steps: list[TestSuite],
+    db: Database,
+    usage_log_id: int | None = None,
 ) -> GeneratedTestStepsList | None:
     if not pull_request.code_diff_summary:
         return None
@@ -136,6 +145,7 @@ async def _generate_test_steps(
 
     try:
         response = llm.invoke(prompt)
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_4_1)
         steps = test_steps_generation_parser.invoke(response)
         assert isinstance(steps, GeneratedTestStepsList)
 
@@ -145,7 +155,9 @@ async def _generate_test_steps(
         return None
 
 
-async def _consolidate_test_steps(test_steps: GeneratedTestStepsList) -> GeneratedTestStepsList | None:
+async def _consolidate_test_steps(
+    test_steps: GeneratedTestStepsList, db: Database, usage_log_id: int | None = None
+) -> GeneratedTestStepsList | None:
     """Consolidate similar test steps to remove repetitive details."""
     try:
         # Format the original test steps for the consolidation prompt
@@ -159,6 +171,7 @@ async def _consolidate_test_steps(test_steps: GeneratedTestStepsList) -> Generat
         prompt = consolidate_test_steps_prompt.format(original_test_steps=original_test_steps_str)
 
         response = llm.invoke(prompt)
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_4_1)
         consolidated_steps = consolidate_test_steps_parser.invoke(response)
         assert isinstance(consolidated_steps, GeneratedTestStepsList)
 

@@ -94,9 +94,6 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
         asyncio.create_task(react_comment(latest_comment_url, "eyes"))
 
         command_name = _classify_command(comment.body)
-        await _run_command(command_name, n, core_db, docs_db)
-
-        await _unsubscribe_notification(n)
 
         userID = user_service.add_user_if_not_exists(
             username=comment.user.login,
@@ -106,7 +103,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
             core_db=core_db,
         )
 
-        user_service.add_user_usage_log(
+        usage_log_id = user_service.add_user_usage_log(
             userID=userID,
             command_name=command_name,
             comment_url=latest_comment_url,
@@ -115,6 +112,10 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
             core_db=core_db,
             comment_text=comment.body,
         )
+
+        await _run_command(command_name, n, core_db, docs_db, usage_log_id)
+
+        await _unsubscribe_notification(n)
     except Exception as e:
         logger.error(f"#{issue_or_pull_request_id} {n.id}: error processing notification : {n} : {e}")
 
@@ -171,10 +172,10 @@ def _classify_command(comment_body: str) -> CommandName:
         return CommandName.UNKNOWN
 
 
-async def _run_command(command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase):
+async def _run_command(command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None):
     issue_or_pull_request_id = _get_issue_or_pr_id(n)
     if command_name == CommandName.BLAME and n.subject.type == "Issue":
-        async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db):
+        async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id):
             logger.info(f"{n.id}: #{issue_or_pull_request_id} {step}")
         return
 
@@ -188,6 +189,7 @@ async def _run_command(command_name: CommandName, n: Notification, core_db: Core
         res = await generate_test_steps.generate_test_steps_for_pull_request(
             pull_request_id=issue_or_pull_request_id,
             db=core_db,
+            usage_log_id=usage_log_id,
         )
         if res is None:
             await react_comment(n.subject.latest_comment_url, "-1")

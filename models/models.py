@@ -146,9 +146,19 @@ class UsageLog(BaseModel):
     comment_text: str | None = None
 
 
+class LLMCall(BaseModel):
+    id: int
+    usage_log_id: int
+    llm_model: str
+    tokens_used: int
+    cost_usd_thousandths: int  # Stores cost in 0.001 USD units (1 = 0.001 USD)
+    created_at: str
+
+
 class UserUsageLog(BaseModel):
     user: User
     usage_log: UsageLog
+    llm_calls: list[LLMCall] = []
 
 
 class TestSuite(BaseModel):
