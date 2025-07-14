@@ -25,7 +25,6 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
 - **Code understanding**
   - [ ] Index a codebase (graph, RAG, hybrid, or better)
   - [ ] Q&A / “Chat with the codebase”
-  - [ ] Auditing tool – “show everything that changed for feature X in the last N months”
 
 - **Auto revert**
   - [ ] Revert a PR, resolve conflicts and add them to the body.
@@ -35,6 +34,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] The solver can then use these tests to see if solution is correct, and run in a loop.
 
 - **Review bot**
+  - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements. (see [problem statement here](https://expensify.slack.com/archives/C05LX9D6E07/p1752231564356839))
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
 
 - **QA test steps generation**
@@ -63,8 +63,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Make the tool-suite work for *any* repository
   - [ ] Enterprise tier  
         - Jira integration  
-        - Self-hosting / BYO-LLM  
-        - Auditable code paths
+        - Self-hosting / BYO-LLM
   - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
   - [ ] Sell to DB
   - [ ] Sell to more companies
