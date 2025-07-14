@@ -43,7 +43,7 @@ async def generate_test_steps_for_pull_request(
         return None
 
     linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
-    logger.info(f"PR #{pull_request_id}: fetched linked issue tests {len(linked_issue_test_steps or [])}")
+    logger.info(f"PR #{pull_request_id}: fetched {len(linked_issue_test_steps or [])} linked issue tests")
 
     similar_existing_steps = _find_similar_test_steps(pull_request.embedding or [], db)
 

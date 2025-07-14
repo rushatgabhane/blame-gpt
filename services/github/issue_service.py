@@ -47,7 +47,7 @@ def _extract_steps_from_description(description: str) -> str:
     if match:
         return match.group(0).strip()
     else:
-        logging.warning(f"no steps found in the description: {description}")
+        logging.warning("no steps found in the description")
         return ""
 
 
