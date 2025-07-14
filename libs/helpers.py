@@ -7,7 +7,6 @@ import os
 import re
 from datetime import datetime
 from email.utils import format_datetime
-from hashlib import sha256
 
 import numpy as np
 
@@ -78,10 +77,6 @@ def now_rfc1123(nowUTC: datetime) -> str:
 def now_8601(nowUTC: datetime) -> str:
     """Example: '2023-10-25T19:17:59Z'"""
     return nowUTC.isoformat().replace("+00:00", "Z")
-
-
-def hash_256(string: str) -> str:
-    return sha256(string.encode()).hexdigest()
 
 
 def is_production_environment() -> bool:

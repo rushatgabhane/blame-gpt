@@ -27,7 +27,7 @@ async def ingest_test_steps(core_db: CoreDatabase):
             if not steps or not title or not case_id:
                 continue
 
-            hash = helpers.hash_256(title + "\n\n" + steps)
+            hash = helpers.compute_sha256(title + "\n\n" + steps)
             if core_db.get_hash_by_case_id(case_id) == hash:
                 continue
 
