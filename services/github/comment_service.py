@@ -1,17 +1,32 @@
 import logging
-import os
 import random
 
 import httpx
 from github.IssueComment import IssueComment
 
-from libs.github import gh_user, repo
+from libs.github import gh_user, github_token, repo
+from libs.helpers import is_production_environment
 from models.models import CulpritPullRequest
 
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-sassy_culprit_titles = [
+
+async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
+    try:
+        comment = _format_comment(culprit_pull_requests)
+        if not is_production_environment():
+            logger.info(f"skipping comment creation in non production environment {comment}")
+            return comment
+
+        repo.get_issue(number=issue_number).create_comment(comment)
+        return comment
+    except Exception as e:
+        logger.error(f"error adding comment to issue #{issue_number}: {e}")
+        raise
+
+
+_sassy_culprit_titles = [
     "Possible culprit PRs for this issue",
     "Sus PRs on the scene",
     "Who let the bugs out? 🐛",
@@ -23,26 +38,12 @@ sassy_culprit_titles = [
 ]
 
 
-async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
-    try:
-        comment = format_comment(culprit_pull_requests)
-        if os.getenv("ENVIRONMENT") != "production":
-            logger.info(f"skipping comment creation in non production environment {comment}")
-            return comment
-
-        repo.get_issue(number=issue_number).create_comment(comment)
-        return comment
-    except Exception as e:
-        logger.error(f"error adding comment to issue #{issue_number}: {e}")
-        raise
-
-
-def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
+def _format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
     random.seed()
-    comment = f"### {random.choice(sassy_culprit_titles)}\n"
+    comment = f"### {random.choice(_sassy_culprit_titles)}\n"
     for i, pr in enumerate(culprit_pull_requests):
         if i == 2:
             comment += "\n#### If not above, check these\n"
@@ -52,12 +53,11 @@ def format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
 
 def add_comment_to_pull_request(pull_request_id: int, comment: str) -> str:
     try:
-        if os.getenv("ENVIRONMENT") == "production":
-            pull_request = repo.get_pull(pull_request_id)
-            pull_request.create_issue_comment(comment)
+        if is_production_environment():
+            repo.get_pull(pull_request_id).create_issue_comment(comment)
             return comment
 
-        logger.info("skipping comment creation to PR in non-production environment")
+        logger.info("skipping comment creation to PR in non production environment")
         return comment
 
     except Exception as e:
@@ -66,13 +66,13 @@ def add_comment_to_pull_request(pull_request_id: int, comment: str) -> str:
 
 
 async def react_comment(comment_url: str, emoji: str):
-    if os.getenv("ENVIRONMENT") != "production":
+    if not is_production_environment():
         logger.info(f"skipping reaction to comment {comment_url} in non production environment")
         return
 
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"Bearer {github_token.get_secret_value()}",
     }
     async with httpx.AsyncClient() as client:
         res = await client.post(
