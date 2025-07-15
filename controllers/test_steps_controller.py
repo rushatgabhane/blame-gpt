@@ -1,12 +1,12 @@
-import asyncio
 from typing import cast
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from libs.sqlite.core.core_sqlite_client import Database
 from middlewares import auth_middleware
-from services.test_generation.generate_test_steps import generate_test_steps_for_pull_request
+from services.test_step import test_step_pipeline
 
 test_steps_router = APIRouter()
 
@@ -22,9 +22,8 @@ class TestStepRequest(BaseModel):
 async def generate_test_steps(request: Request, d: TestStepRequest):
     db = cast(Database, request.app.state.db)
 
-    # Run in thread pool to avoid blocking the event loop
-    def sync_wrapper():
-        return asyncio.run(generate_test_steps_for_pull_request(d.pull_request_id, db))
+    async def stream_logs():
+        async for step in test_step_pipeline.run(d.pull_request_id, db):
+            yield f"#{d.pull_request_id}: {step}\n"
 
-    t = await asyncio.to_thread(sync_wrapper)
-    return {"test_steps": t}
+    return StreamingResponse(stream_logs(), media_type="text/plain")
