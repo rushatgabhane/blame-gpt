@@ -27,10 +27,53 @@ def parse_issue_url(issue_url: str) -> tuple[str, str, int] | None:
 
 
 def cosine_similarity(vec1, vec2) -> float:
+    vec1 = np.asarray(vec1, dtype=np.float32)
+    vec2 = np.asarray(vec2, dtype=np.float32)
+
     dot_product = np.dot(vec1, vec2)
-    norm_vec1 = np.linalg.norm(vec1)
-    norm_vec2 = np.linalg.norm(vec2)
-    return dot_product / (norm_vec1 * norm_vec2)
+    norm_product = np.linalg.norm(vec1) * np.linalg.norm(vec2)
+
+    if norm_product == 0:
+        return 0.0
+
+    return float(dot_product / norm_product)
+
+
+def batch_cosine_similarity(query_vec, vectors) -> np.ndarray:
+    """
+    Compute cosine similarity for one query vector against multiple vectors efficiently.
+
+    Args:
+        query_vec: Single query vector (1D array-like)
+        vectors: Multiple vectors to compare against (2D array-like, shape: [num_vectors, vector_dim])
+
+    Returns:
+        Array of similarity scores, same length as number of vectors
+    """
+    query_vec = np.asarray(query_vec, dtype=np.float32)
+    vectors = np.asarray(vectors, dtype=np.float32)
+
+    # Handle empty inputs
+    if len(vectors) == 0:
+        return np.array([], dtype=np.float32)
+
+
+    query_norm = np.linalg.norm(query_vec)
+    if query_norm == 0:
+        return np.zeros(len(vectors), dtype=np.float32)
+
+    query_normalized = query_vec / query_norm
+
+
+    vector_norms = np.linalg.norm(vectors, axis=1)
+    non_zero_mask = vector_norms != 0
+
+    similarities = np.zeros(len(vectors), dtype=np.float32)
+    if np.any(non_zero_mask):
+        vectors_normalized = vectors[non_zero_mask] / vector_norms[non_zero_mask][:, np.newaxis]
+        similarities[non_zero_mask] = np.dot(vectors_normalized, query_normalized)
+
+    return similarities
 
 
 def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:

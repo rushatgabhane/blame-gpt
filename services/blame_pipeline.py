@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from libs import constants
-from libs.helpers import cosine_similarity
+from libs.helpers import batch_cosine_similarity
 from libs.llm import llmReasoning
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -115,15 +115,38 @@ async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
 def _add_pull_request_semantic_score(
     issue: Issue, pull_requests: list[PullRequest], db: Database
 ) -> list[PullRequestWithScore]:
+    if not pull_requests or not issue.embedding:
+        return []
+
+    # Extract embeddings for batch processing
+    pr_embeddings = []
+    valid_prs = []
+
+    for pr in pull_requests:
+        if pr.embedding:
+            pr_embeddings.append(pr.embedding)
+            valid_prs.append(pr)
+
+    if not pr_embeddings:
+        return []
+
+    logger.info(f"Computing similarities for {len(pr_embeddings)} PRs using batch processing")
+
+    similarities = batch_cosine_similarity(issue.embedding, pr_embeddings)
+
+    # Create scored PRs
     scored_prs: list[PullRequestWithScore] = [
-        PullRequestWithScore(pull_request=pr, score=cosine_similarity(issue.embedding, pr.embedding))
-        for pr in pull_requests
+        PullRequestWithScore(pull_request=pr, score=float(score))
+        for pr, score in zip(valid_prs, similarities, strict=False)
     ]
 
-    for _, pr in enumerate(scored_prs):
-        db.update_issue_pull_request_score(issue_id=issue.id, pull_request_id=pr.pull_request.id, score=pr.score)
+    # Update database scores (could be optimized further with batch DB operations)
+    for pr_score in scored_prs:
+        db.update_issue_pull_request_score(
+            issue_id=issue.id, pull_request_id=pr_score.pull_request.id, score=pr_score.score
+        )
 
-    return scored_prs if scored_prs else []
+    return scored_prs
 
 
 # Page is a zero-based index, so page 0 means the first 20 items.
