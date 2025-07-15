@@ -27,6 +27,11 @@ def parse_issue_url(issue_url: str) -> tuple[str, str, int] | None:
 
 
 def cosine_similarity(vec1, vec2) -> float:
+    """
+    Calculate the cosine similarity between two vectors.
+    
+    Both input vectors are converted to NumPy float32 arrays before computation. Returns 0.0 if either vector has zero norm; otherwise, returns the cosine similarity as a float.
+    """
     vec1 = np.asarray(vec1, dtype=np.float32)
     vec2 = np.asarray(vec2, dtype=np.float32)
 
@@ -41,14 +46,14 @@ def cosine_similarity(vec1, vec2) -> float:
 
 def batch_cosine_similarity(query_vec, vectors) -> np.ndarray:
     """
-    Compute cosine similarity for one query vector against multiple vectors efficiently.
-
-    Args:
-        query_vec: Single query vector (1D array-like)
-        vectors: Multiple vectors to compare against (2D array-like, shape: [num_vectors, vector_dim])
-
+    Compute cosine similarity scores between a single query vector and a batch of vectors.
+    
+    Parameters:
+        query_vec: The vector to compare against the batch (1D array-like).
+        vectors: The batch of vectors to compare (2D array-like, shape [num_vectors, vector_dim]).
+    
     Returns:
-        Array of similarity scores, same length as number of vectors
+        np.ndarray: An array of cosine similarity scores, one for each vector in the batch. Returns zeros for vectors with zero norm or if the query vector has zero norm.
     """
     query_vec = np.asarray(query_vec, dtype=np.float32)
     vectors = np.asarray(vectors, dtype=np.float32)
@@ -77,6 +82,11 @@ def batch_cosine_similarity(query_vec, vectors) -> np.ndarray:
 
 
 def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
+    """
+    Validates an HMAC SHA-256 signature for a given message body and secret key.
+    
+    Returns True if the provided signature matches the expected HMAC signature; otherwise, returns False.
+    """
     if not secret:
         return False
     if signature is None:

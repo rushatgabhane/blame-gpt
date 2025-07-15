@@ -115,6 +115,14 @@ async def _culprit_task(page, culprits_to_find, issue, prs_with_scores):
 def _add_pull_request_semantic_score(
     issue: Issue, pull_requests: list[PullRequest], db: Database
 ) -> list[PullRequestWithScore]:
+    """
+    Compute and assign semantic similarity scores between an issue and a list of pull requests using batch processing.
+    
+    Filters pull requests to those with available embeddings, computes their similarity to the issue embedding, updates the database with the resulting scores, and returns a list of pull requests paired with their similarity scores.
+    
+    Returns:
+        A list of PullRequestWithScore objects containing each pull request and its computed similarity score. Returns an empty list if no valid embeddings are found.
+    """
     if not pull_requests or not issue.embedding:
         return []
 
