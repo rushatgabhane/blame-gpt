@@ -14,8 +14,14 @@ Your task is to classify the comment into one of the following commands:
 
 {available_commands}
 
+The comment may contain additional content like PR descriptions, or other discussions. 
+Look for specific command keywords that match the available commands above.
+Pay attention to text near "{user_tag}" mentions.
+
 The comment is as follows:
 {comment}
+
+The type (issue or pull request) is: {type}
 
 Return the output as JSON matching this schema:
 {format_instructions}
@@ -23,7 +29,7 @@ Return the output as JSON matching this schema:
 
 command_classifier_prompt = PromptTemplate(
     template=template,
-    input_variables=["comment"],
+    input_variables=["comment", "type", "user_tag"],
     partial_variables={
         "available_commands": available_commands,
         "format_instructions": command_classification_parser.get_format_instructions(),
