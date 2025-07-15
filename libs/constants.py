@@ -96,6 +96,5 @@ THINKING_VERBS = [
     "Reticulating",
     "Frolicking",
     "Finessing",
-    "Celebrating",
     "Sizzling",
 ]
