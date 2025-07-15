@@ -29,7 +29,7 @@ from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from services.docs_service.sync import sync_docs
 from services.github.notification_service import listen_notifications
-from services.test_generation import test_ingestion
+from services.test_step import test_ingestion
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(
         func=listen_notifications,
         args=(app.state.db, app.state.docs_db, app),
-        trigger=IntervalTrigger(seconds=7),
+        trigger=IntervalTrigger(seconds=5),
         id="listen_notifications",
         name="listen to github notifications",
         max_instances=25,

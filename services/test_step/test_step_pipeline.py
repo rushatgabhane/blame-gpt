@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import random
+from collections.abc import AsyncGenerator
 
-from libs.helpers import cosine_similarity
+from libs.helpers import cosine_similarity, thinking_verb
 from libs.llm import ModelNames, llm
 from libs.prompt_templates.consolidate_test_steps import consolidate_test_steps_parser, consolidate_test_steps_prompt
 from libs.prompt_templates.issue_test_steps_for_bug import issue_steps_for_bug_parser, issue_steps_for_bug_prompt
@@ -26,47 +27,87 @@ _sassy_titles = [
 ]
 
 
-async def generate_test_steps_for_pull_request(
-    pull_request_id: int, db: Database, usage_log_id: int | None = None
-) -> GeneratedTestStepsList | None:
-    if db.has_generated_test_steps(pull_request_id):
-        logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
-        return None
+async def run(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
+    try:
+        yield f"{thinking_verb()} test step generation - let's create some quality test steps!"
 
-    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, usage_log_id)
-    if not pull_request:
-        logger.error(f"PR #{pull_request_id}: failed to fetch.")
-        return None
+        if db.has_generated_test_steps(pull_request_id):
+            logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
+            yield "Test steps already exist - no need to regenerate."
+            return
 
-    if not pull_request.linked_issue_ids:
-        logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
-        return None
+        yield f"{thinking_verb()} pull request details and context..."
+        pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, usage_log_id)
+        if not pull_request:
+            logger.error(f"PR #{pull_request_id}: failed to fetch.")
+            yield "Couldn't fetch pull request details - this PR might not exist or be accessible."
+            return
 
-    linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
-    logger.info(f"PR #{pull_request_id}: fetched {len(linked_issue_test_steps or [])} linked issue tests")
+        if not pull_request.linked_issue_ids:
+            logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
+            yield "No linked issues found - test steps work best when PRs are connected to issues."
+            return
 
-    similar_existing_steps = _find_similar_test_steps(pull_request.embedding or [], db)
+        yield f"{thinking_verb()} context from linked issues to inform test creation..."
 
-    test_steps = await _generate_test_steps(
-        pull_request, linked_issue_test_steps, similar_existing_steps, db, usage_log_id
-    )
-    if not test_steps or not test_steps.test or test_steps.test == []:
-        logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
-        return None
+        task_linked_issues = asyncio.create_task(
+            _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
+        )
 
-    # Consolidate similar test steps to remove repetitive details
-    if len(test_steps.test) > 1:
-        consolidated_steps = await _consolidate_test_steps(test_steps, db, usage_log_id)
-        if consolidated_steps:
-            test_steps = consolidated_steps
+        # Heartbeat until task is done to keep the connection alive
+        while not task_linked_issues.done():
+            await asyncio.sleep(5)
+            yield f"{thinking_verb()} linked issues to understand the requirements..."
 
-    comment = _format_comment(test_steps=test_steps)
-    comment_service.add_comment_to_pull_request(pull_request_id, comment)
+        linked_issue_test_steps = await task_linked_issues
+        logger.info(f"PR #{pull_request_id}: fetched {len(linked_issue_test_steps or [])} linked issue tests")
 
-    db.add_pull_request_test_steps(pull_request_id, comment)
+        yield f"{thinking_verb()} similar test patterns from past PRs..."
+        similar_existing_steps = _find_similar_test_steps(pull_request.embedding or [], db)
 
-    logger.info(f"PR #{pull_request_id}: generated test steps successfully.")
-    return test_steps
+        yield f"{thinking_verb()} comprehensive test steps based on the changes..."
+
+        # Create task for generating test steps
+        task_generate_steps = asyncio.create_task(
+            _generate_test_steps(pull_request, linked_issue_test_steps, similar_existing_steps, db, usage_log_id)
+        )
+
+        # Heartbeat until task is done
+        while not task_generate_steps.done():
+            await asyncio.sleep(5)
+            yield f"{thinking_verb()} edge cases and user scenarios..."
+
+        test_steps = await task_generate_steps
+        if not test_steps or not test_steps.test or test_steps.test == []:
+            logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
+            yield "Couldn't generate test steps - the code changes might be too complex or unclear."
+            return
+
+        # Consolidate similar test steps to remove repetitive details
+        if len(test_steps.test) > 1:
+            # Create task for consolidating test steps
+            task_consolidate = asyncio.create_task(_consolidate_test_steps(test_steps, db, usage_log_id))
+
+            # Heartbeat until task is done
+            while not task_consolidate.done():
+                await asyncio.sleep(5)
+                yield f"{thinking_verb()} and consolidating test steps for clarity..."
+
+            consolidated_steps = await task_consolidate
+            if consolidated_steps:
+                test_steps = consolidated_steps
+
+        yield f"{thinking_verb()} test steps and adding them to the PR..."
+        comment = _format_comment(test_steps=test_steps)
+        comment_service.add_comment_to_pull_request(pull_request_id, comment)
+
+        db.add_pull_request_test_steps(pull_request_id, comment)
+
+        logger.info(f"PR #{pull_request_id}: generated test steps successfully.")
+        yield "Test steps generated successfully! Ready for review."
+    except Exception as e:
+        logger.exception(f"PR #{pull_request_id}: error in test step generation {e}")
+        yield f"Oops! Something went wrong during test step generation. Please report this with PR #{pull_request_id}"
 
 
 # Experiment with issue embedding for similar.

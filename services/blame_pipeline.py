@@ -1,8 +1,9 @@
 import asyncio
 import logging
+from collections.abc import AsyncGenerator
 
 from libs import constants
-from libs.helpers import cosine_similarity
+from libs.helpers import cosine_similarity, thinking_verb
 from libs.llm import ModelNames, llmReasoning
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -13,12 +14,12 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
-async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
+async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
     try:
-        yield "starting blame pipeline"
+        yield f"{thinking_verb()} the blame pipeline..."
         is_processed = db.get_issue_processed_status(issue_id)
         if is_processed:
-            yield "issue is already processed. skipping blame pipeline."
+            yield "this issue is already processed. Skipping blame pipeline."
             logger.info(f"{issue_id}: already processed.")
             return
 
@@ -26,7 +27,7 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
         logger.info(f"{issue_id}: added to database")
 
         if constants.LABELS["DeployBlockerCash"] not in issue.labels:
-            yield f"issue is not labeled with {constants.LABELS['DeployBlockerCash']}. skipping blame pipeline."
+            yield f"this issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame pipeline."
             logger.info(f"{issue_id}: not labeled with {constants.LABELS['DeployBlockerCash']}.")
             return
 
@@ -43,14 +44,14 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
 
         while not task_add_pulls.done():
             await asyncio.sleep(10)
-            yield "this might take a minute. fetching pull requests..."  # heartbeat to avoid closing the thread
+            yield f"{thinking_verb()} pull requests... this might take a minute."  # heartbeat to avoid closing the connection
 
         await task_add_pulls
 
         pull_requests = db.get_pull_requests_for_issue(issue_id)
         if not pull_requests or len(pull_requests) == 0:
             logger.info(f"{issue_id}: no pull requests found to process")
-            yield "no pull requests found to process."
+            yield "no pull requests were found to process."
             return
 
         logger.info(f"{issue_id}: found {len(pull_requests)} pull requests in staging")
@@ -61,11 +62,11 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
         prs_with_scores = _add_pull_request_semantic_score(issue, pull_requests_without_cp, db=db)
         if not prs_with_scores or len(prs_with_scores) == 0:
             logger.info(f"{issue_id}: no pull requests with semantic scores found")
-            yield "no culprit pull requests found."
+            yield "no culprit pull requests were found."
             return
 
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
-        yield "finding culprit pull requests"
+        yield f"{thinking_verb()} culprit pull requests..."
 
         tasks_culprit_pull_requests = [
             asyncio.create_task(
@@ -83,24 +84,24 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None):
         # heartbeat until both tasks are done to avoid thread being killed by timeout
         while any(not t.done() for t in tasks_culprit_pull_requests):
             await asyncio.sleep(10)
-            yield "this might take a minute. ranking pull requests..."
+            yield f"{thinking_verb()} pull request ranks... this might take a minute."
 
         top_prs = [t.result() for t in tasks_culprit_pull_requests]
         culprit_pull_requests = [pr for batch in (top_prs) if batch for pr in batch.pull_requests]
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
-            yield "no culprit pull requests found"
+            yield "no culprit pull requests were found. unfortunately."
             return
 
         logger.info(f"{issue_id}: found {len(culprit_pull_requests)} culprit pull requests")
 
-        yield "found culprit pull requests for the issue."
+        yield f"{thinking_verb()} culprit pull requests for this issue."
         await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
-        yield "added comment to the issue."
+        yield "Added a comment on the issue."
 
         db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
-        yield "blame pipeline completed successfully!"
+        yield "Celebrating! Blame pipeline completed."
     except Exception as e:
         logger.exception(f"{issue_id}: error in blame pipeline {e}")
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"

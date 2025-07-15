@@ -17,7 +17,7 @@ from models.enums import CommandName
 from models.models import CommandClassification
 from services import blame_pipeline, user_service
 from services.github.comment_service import get_comment, react_comment
-from services.test_generation import generate_test_steps
+from services.test_step import test_step_pipeline
 
 logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -200,30 +200,9 @@ async def _run_command(
         return
 
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
-        asyncio.create_task(
-            _generate_test_steps_task(issue_or_pull_request_id, core_db, usage_log_id, n.subject.latest_comment_url)
-        )
+        async for step in test_step_pipeline.run(issue_or_pull_request_id, core_db, usage_log_id):
+            logger.info(f"PR #{issue_or_pull_request_id}: {step}")
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")
     logger.info(f"{n.id}: unknown command for notification {n.id}, skipping")
-
-
-async def _generate_test_steps_task(
-    pull_request_id: int, core_db: CoreDatabase, usage_log_id: int | None, comment_url: str
-):
-    """Run test steps generation in background to avoid worker timeout."""
-    try:
-        res = await asyncio.wait_for(
-            generate_test_steps.generate_test_steps_for_pull_request(
-                pull_request_id=pull_request_id,
-                db=core_db,
-                usage_log_id=usage_log_id,
-            ),
-            timeout=300.0,  # 5 minutes
-        )
-        if res is None:
-            await react_comment(comment_url, "-1")
-    except Exception as e:
-        logger.error(f"error generating test steps for PR #{pull_request_id}: {e}")
-        await react_comment(comment_url, "-1")

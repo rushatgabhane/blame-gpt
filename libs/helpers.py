@@ -4,13 +4,14 @@ import hmac
 import html
 import logging
 import os
+import random
 import re
 from datetime import datetime
 from email.utils import format_datetime
 
 import numpy as np
 
-from libs.constants import ENVIRONMENT_PRODUCTION
+from libs.constants import ENVIRONMENT_PRODUCTION, THINKING_VERBS
 
 logger = logging.getLogger(__name__)
 
@@ -85,3 +86,11 @@ def is_production_environment() -> bool:
     We want to avoid adding comments to repositories in non-production environments.
     """
     return os.getenv("ENVIRONMENT") == ENVIRONMENT_PRODUCTION
+
+
+def thinking_verb() -> str:
+    """
+    Get a random verb from the THINKING_VERBS list to use as a prefix for yield statements.
+    Example: "Manifesting", "Contemplating", "Wizarding", etc.
+    """
+    return random.choice(THINKING_VERBS)
