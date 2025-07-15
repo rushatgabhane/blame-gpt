@@ -93,7 +93,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
 
         asyncio.create_task(react_comment(latest_comment_url, "eyes"))
 
-        command_name = _classify_command(comment.body)
+        command_name = _classify_command(comment.body, n.subject.type)
 
         userID = user_service.add_user_if_not_exists(
             username=comment.user.login,
@@ -157,12 +157,24 @@ def _is_valid_notification(notification: Notification) -> bool:
     return True
 
 
-def _classify_command(comment_body: str) -> CommandName:
-    # Trim to prevent abuse
-    comment_trimmed = " ".join(comment_body.split()[:100])
+def _classify_command(comment_body: str, subject_type: str) -> CommandName:
+    words = comment_body.split()
+    user_tag_pos = next((i for i, word in enumerate(words) if constants.USER_TAG.lower() in word.lower()), None)
+
+    if user_tag_pos:
+        start = max(0, user_tag_pos - 10)
+        end = min(len(words), user_tag_pos + 20)
+        relevant_words = words[start:end]
+    else:
+        relevant_words = words[:50]
+
+    comment_trimmed = " ".join(relevant_words)
+
     try:
         input = command_classifier_prompt.format(
             comment=comment_trimmed,
+            type=subject_type,
+            user_tag=constants.USER_TAG,
         )
         response = llmNano.invoke(input)
         classification: CommandClassification = command_classification_parser.invoke(response)
@@ -172,7 +184,9 @@ def _classify_command(comment_body: str) -> CommandName:
         return CommandName.UNKNOWN
 
 
-async def _run_command(command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None):
+async def _run_command(
+    command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None
+):
     issue_or_pull_request_id = _get_issue_or_pr_id(n)
     if command_name == CommandName.BLAME and n.subject.type == "Issue":
         async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id):
@@ -185,16 +199,31 @@ async def _run_command(command_name: CommandName, n: Notification, core_db: Core
         # await run_graph.docs(pull_request_id=issue_or_pull_request_id, db=core_db, docs_db=docs_db)
         return
 
-    if command_name == CommandName.TEST_STEPS:
-        res = await generate_test_steps.generate_test_steps_for_pull_request(
-            pull_request_id=issue_or_pull_request_id,
-            db=core_db,
-            usage_log_id=usage_log_id,
+    if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
+        asyncio.create_task(
+            _generate_test_steps_task(issue_or_pull_request_id, core_db, usage_log_id, n.subject.latest_comment_url)
         )
-        if res is None:
-            await react_comment(n.subject.latest_comment_url, "-1")
-
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")
     logger.info(f"{n.id}: unknown command for notification {n.id}, skipping")
+
+
+async def _generate_test_steps_task(
+    pull_request_id: int, core_db: CoreDatabase, usage_log_id: int | None, comment_url: str
+):
+    """Run test steps generation in background to avoid worker timeout."""
+    try:
+        res = await asyncio.wait_for(
+            generate_test_steps.generate_test_steps_for_pull_request(
+                pull_request_id=pull_request_id,
+                db=core_db,
+                usage_log_id=usage_log_id,
+            ),
+            timeout=300.0,  # 5 minutes
+        )
+        if res is None:
+            await react_comment(comment_url, "-1")
+    except Exception as e:
+        logger.error(f"error generating test steps for PR #{pull_request_id}: {e}")
+        await react_comment(comment_url, "-1")
