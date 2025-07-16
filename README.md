@@ -118,11 +118,6 @@ Pipeline:
 - Consolidates similar test steps to remove repetition
 - Posts formatted test steps as a comment on the PR for authors to refine
 
-  
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=rushatgabhane/blame-gpt&type=Date)](https://www.star-history.com/#rushatgabhane/blame-gpt&Date)
-
 
 ## Product roadmap
 This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
