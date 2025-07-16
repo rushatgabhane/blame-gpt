@@ -35,11 +35,10 @@ async def run(
         if constants.LABELS["DeployBlockerCash"] not in issue.labels:
             yield f"this issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame pipeline."
             logger.info(f"{issue_id}: not labeled with {constants.LABELS['DeployBlockerCash']}.")
-            if thinking_comment:
-                comment_service.edit_comment(
-                    thinking_comment,
-                    f"This issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame.",
-                )
+            comment_service.edit_comment(
+                thinking_comment,
+                f"This issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame.",
+            )
             return
 
         task_add_pulls = asyncio.create_task(
@@ -63,8 +62,7 @@ async def run(
         if not pull_requests or len(pull_requests) == 0:
             logger.info(f"{issue_id}: no pull requests found to process")
             yield "no pull requests were found to process."
-            if thinking_comment:
-                comment_service.edit_comment(thinking_comment, "❌ No pull requests were found to process.")
+            comment_service.edit_comment(thinking_comment, "❌ No pull requests were found to process.")
             return
 
         logger.info(f"{issue_id}: found {len(pull_requests)} pull requests in staging")
@@ -76,8 +74,7 @@ async def run(
         if not prs_with_scores or len(prs_with_scores) == 0:
             logger.info(f"{issue_id}: no pull requests with semantic scores found")
             yield "no culprit pull requests were found."
-            if thinking_comment:
-                comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found.")
+            comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found.")
             return
 
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
@@ -106,8 +103,7 @@ async def run(
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
             yield "no culprit pull requests were found. unfortunately."
-            if thinking_comment:
-                comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found. Unfortunately.")
+            comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found. Unfortunately.")
             return
 
         logger.info(f"{issue_id}: found {len(culprit_pull_requests)} culprit pull requests")
@@ -116,11 +112,12 @@ async def run(
 
         # Update thinking comment with result, or add new comment if no thinking comment
         if thinking_comment:
-            result_comment = comment_service._format_comment(culprit_pull_requests)
+            result_comment = comment_service.format_blame_comment(culprit_pull_requests)
             comment_service.edit_comment(thinking_comment, result_comment)
         else:
             await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
-            yield "Added a comment on the issue."
+
+        yield "Added a comment on the issue."
 
         db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")

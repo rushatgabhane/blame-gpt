@@ -14,7 +14,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
     try:
-        comment = _format_comment(culprit_pull_requests)
+        comment = format_blame_comment(culprit_pull_requests)
         if not is_production_environment():
             logger.info(f"skipping comment creation in non production environment {comment}")
             return comment
@@ -38,7 +38,7 @@ _sassy_culprit_titles = [
 ]
 
 
-def _format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
+def format_blame_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
