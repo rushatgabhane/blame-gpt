@@ -62,13 +62,17 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
             logger.info(f"no new notifications found since {app.state.last_modified_notification}")
             return
 
+        tasks = []
         for data in notifications:
             n = _create_notification(data)
             if not _is_valid_notification(n):
                 await _unsubscribe_notification(n)
                 continue
 
-            asyncio.create_task(_process_notification(n, core_db, docs_db))
+            tasks.append(asyncio.create_task(_process_notification(n, core_db, docs_db)))
+        
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
     except httpx.RemoteProtocolError as e:
         logger.error(f"expected sometimes: remote protocol error while fetching notifications: {e}")
