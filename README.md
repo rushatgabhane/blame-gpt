@@ -12,66 +12,6 @@ Make the repository public once the roadmap is shipped. Use SaaS model or provid
 ## How it started?
 See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__Ff9Z-xIFyyEpIt9GkBQ). 
 
-## Product roadmap
-This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
-
-- **Documentation update on PR**
-  - [x] Update user docs if a PR changes UI. (done for helpDot)
- 
-- **Culprit detection**
-  - [x] Find a culprit pull request for a given deploy blocker
-  - [ ] Generalise to *any* issue, not just deploy blockers
-
-- **QA test steps generation**
-  - [x] For a PR, authors can generate test steps to start with. ([@kevinam99](https://github.com/kevinam99))
-
-- **Code understanding**
-  - [ ] Index a codebase (graph, RAG, hybrid, or better)
-    - [x] Phase 1 done ([Niteeq](https://github.com/nitee-13)) for EXFY
-    - [ ] Phase 2 ... 
-  - [ ] Q&A / “Chat with the codebase”
-
-- **Auto revert**
-  - [ ] Revert a PR, resolve conflicts and add them to the body.
-      
-- **Test generator for evaluating agent**
-  - [ ] For a given issue, we won't know if solution is correct. So write tests (similar to [swe-lancer](https://github.com/openai/SWELancer-Benchmark/blob/6fee3b0200d90f5b24aab36de6c787ec849e76aa/issues/102/test.py#L97) for frontend), and figure out for backend too.
-  - [ ] The solver can then use these tests to see if solution is correct, and run in a loop.
-
-- **Review bot**
-  - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements. (see [problem statement here](https://expensify.slack.com/archives/C05LX9D6E07/p1752231564356839))
-  - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
-
-- **Analytics**
-  - [ ] Build dashboards  
-- **Autonomous coding agents**
-  - [ ] Bug fixing agent powered by MCP connected to Claude-Code, using the code-index + Q&A features
-
-- **Issue improvements**
-  - [ ] Parse images & log attachments from issues (screenshots, stack traces, etc.)
-
-- **Internal dog-fooding**
-  - [ ] Install BlameGPT on **our own repo** and use it daily
-
-- **Design doc**
-  - [ ] Technical design doc, and diagramGPT
-  - [ ] Fit it in the product and cross sell it
-
-- **Monetisation & growth**
-  - [x] User acquisition using comment. Users can `@blamegpt` on any issue and we can invoke a tool, and auto create a freemium account.
-    - i.e. use bottom up approach to acquire users. Figure out bottom up approach for private repos too. 
-  - [ ] Post solution proposals on Expensify issues (earn revenue)
-  - [ ] Build more tools
-  - [ ] Make the tool-suite work for *any* repository
-  - [ ] Enterprise tier  
-        - Jira integration  
-        - Self-hosting / BYO-LLM
-  - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
-  - [ ] Sell to DB
-  - [ ] Sell to more companies
-  - [ ] Apply for seed funding
-  - [ ] 💰💰💰
-
 ### How to run locally?
 
 1. Use python version `3.13`
@@ -182,4 +122,65 @@ Pipeline:
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=rushatgabhane/blame-gpt&type=Date)](https://www.star-history.com/#rushatgabhane/blame-gpt&Date)
+
+
+## Product roadmap
+This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and everything by creating a new issue!
+
+- **Documentation update on PR**
+  - [x] Update user docs if a PR changes UI. (done for helpDot)
+ 
+- **Culprit detection**
+  - [x] Find a culprit pull request for a given deploy blocker
+  - [ ] Generalise to *any* issue, not just deploy blockers
+
+- **QA test steps generation**
+  - [x] For a PR, authors can generate test steps to start with. ([@kevinam99](https://github.com/kevinam99))
+
+- **Code understanding**
+  - [ ] Index a codebase (graph, RAG, hybrid, or better)
+    - [x] Phase 1 done ([Niteeq](https://github.com/nitee-13)) for EXFY
+    - [ ] Phase 2 ... 
+  - [ ] Q&A / “Chat with the codebase”
+
+- **Auto revert**
+  - [ ] Revert a PR, resolve conflicts and add them to the body.
+      
+- **Test generator for evaluating agent**
+  - [ ] For a given issue, we won't know if solution is correct. So write tests (similar to [swe-lancer](https://github.com/openai/SWELancer-Benchmark/blob/6fee3b0200d90f5b24aab36de6c787ec849e76aa/issues/102/test.py#L97) for frontend), and figure out for backend too.
+  - [ ] The solver can then use these tests to see if solution is correct, and run in a loop.
+
+- **Review bot**
+  - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements. (see [problem statement here](https://expensify.slack.com/archives/C05LX9D6E07/p1752231564356839))
+  - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
+
+- **Analytics**
+  - [ ] Build dashboards  
+- **Autonomous coding agents**
+  - [ ] Bug fixing agent powered by MCP connected to Claude-Code, using the code-index + Q&A features
+
+- **Issue improvements**
+  - [ ] Parse images & log attachments from issues (screenshots, stack traces, etc.)
+
+- **Internal dog-fooding**
+  - [ ] Install BlameGPT on **our own repo** and use it daily
+
+- **Design doc**
+  - [ ] Technical design doc, and diagramGPT
+  - [ ] Fit it in the product and cross sell it
+
+- **Monetisation & growth**
+  - [x] User acquisition using comment. Users can `@blamegpt` on any issue and we can invoke a tool, and auto create a freemium account.
+    - i.e. use bottom up approach to acquire users. Figure out bottom up approach for private repos too. 
+  - [ ] Post solution proposals on Expensify issues (earn revenue)
+  - [ ] Build more tools
+  - [ ] Make the tool-suite work for *any* repository
+  - [ ] Enterprise tier  
+        - Jira integration  
+        - Self-hosting / BYO-LLM
+  - [ ] Add memory https://github.com/GreatScottyMac/RooFlow
+  - [ ] Sell to DB
+  - [ ] Sell to more companies
+  - [ ] Apply for seed funding
+  - [ ] 💰💰💰
 
