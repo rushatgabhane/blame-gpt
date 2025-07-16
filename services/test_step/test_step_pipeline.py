@@ -260,8 +260,9 @@ def _format_comment(test_steps: GeneratedTestStepsList) -> str:
 
     return f"""
 ### {comment_title}
+<sub>These steps were crafted by AI. Please _**paste**_ them into the PR description and refine to taste.</sub>
+
 ```markdown
 {all_tests}
 ```
-<sub>These steps were crafted by AI. Please paste them into the PR description and refine to taste.</sub>
 """
