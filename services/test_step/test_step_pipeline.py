@@ -29,12 +29,16 @@ _sassy_titles = [
 
 
 async def run(
-    pull_request_id: int, db: Database, usage_log_id: int | None = None, thinking_comment: IssueComment | None = None
+    pull_request_id: int,
+    db: Database,
+    usage_log_id: int | None = None,
+    thinking_comment: IssueComment | None = None,
+    should_process_again: bool = False,
 ) -> AsyncGenerator[str]:
     try:
         yield f"{thinking_verb()} test step generation - let's create some quality test steps!"
 
-        if db.has_generated_test_steps(pull_request_id):
+        if db.has_generated_test_steps(pull_request_id) and not should_process_again:
             logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
             yield "Test steps already exist - no need to regenerate."
             comment_service.edit_comment(thinking_comment, "Test steps already created. no need to regenerate.")
