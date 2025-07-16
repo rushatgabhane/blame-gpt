@@ -78,14 +78,15 @@ SET actual_pull_request_id = ?
 WHERE id = ?;
 """
 
-GET_PULL_REQUEST_TEST_STEPS_BY_ID = """
-SELECT pull_request_id, test_steps
+
+GET_PULL_REQUEST_TEST_STEPS_ID_BY_ID = """
+SELECT pull_request_id
 FROM pull_request_test_steps
 WHERE pull_request_id = ?;
 """
 
 ADD_PULL_REQUEST_TEST_STEPS = """
-INSERT OR IGNORE INTO pull_request_test_steps (pull_request_id, test_steps)
+INSERT OR REPLACE INTO pull_request_test_steps (pull_request_id, test_steps)
 VALUES (?, ?);
 """
 
