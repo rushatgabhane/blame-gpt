@@ -97,4 +97,5 @@ THINKING_VERBS = [
     "Frolicking",
     "Finessing",
     "Sizzling",
+    "Flibbertigibbeting",
 ]
