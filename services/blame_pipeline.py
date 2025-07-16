@@ -2,6 +2,8 @@ import asyncio
 import logging
 from collections.abc import AsyncGenerator
 
+from github.IssueComment import IssueComment
+
 from libs import constants
 from libs.helpers import cosine_similarity, thinking_verb
 from libs.llm import ModelNames, llmReasoning
@@ -14,13 +16,17 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
-async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
+async def run(
+    issue_id: int, db: Database, usage_log_id: int | None = None, thinking_comment: IssueComment | None = None
+) -> AsyncGenerator[str]:
     try:
-        yield f"{thinking_verb()} the blame pipeline..."
+        yield "starting the blame pipeline..."
+
         is_processed = db.get_issue_processed_status(issue_id)
         if is_processed:
             yield "this issue is already processed. Skipping blame pipeline."
             logger.info(f"{issue_id}: already processed.")
+            comment_service.edit_comment(thinking_comment, "This issue is already processed. Skipping blame.")
             return
 
         issue = await issue_service.add_issue(issue_id, db)
@@ -29,6 +35,11 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
         if constants.LABELS["DeployBlockerCash"] not in issue.labels:
             yield f"this issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame pipeline."
             logger.info(f"{issue_id}: not labeled with {constants.LABELS['DeployBlockerCash']}.")
+            if thinking_comment:
+                comment_service.edit_comment(
+                    thinking_comment,
+                    f"This issue is not labeled with {constants.LABELS['DeployBlockerCash']}. Skipping blame.",
+                )
             return
 
         task_add_pulls = asyncio.create_task(
@@ -43,7 +54,7 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
         )
 
         while not task_add_pulls.done():
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
             yield f"{thinking_verb()} pull requests... this might take a minute."  # heartbeat to avoid closing the connection
 
         await task_add_pulls
@@ -52,6 +63,8 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
         if not pull_requests or len(pull_requests) == 0:
             logger.info(f"{issue_id}: no pull requests found to process")
             yield "no pull requests were found to process."
+            if thinking_comment:
+                comment_service.edit_comment(thinking_comment, "❌ No pull requests were found to process.")
             return
 
         logger.info(f"{issue_id}: found {len(pull_requests)} pull requests in staging")
@@ -63,10 +76,12 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
         if not prs_with_scores or len(prs_with_scores) == 0:
             logger.info(f"{issue_id}: no pull requests with semantic scores found")
             yield "no culprit pull requests were found."
+            if thinking_comment:
+                comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found.")
             return
 
         logger.info(f"{issue_id}: found {len(prs_with_scores)} pull requests with semantic scores")
-        yield f"{thinking_verb()} culprit pull requests..."
+        yield "finding culprit pull requests..."
 
         tasks_culprit_pull_requests = [
             asyncio.create_task(
@@ -83,21 +98,29 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
 
         # heartbeat until both tasks are done to avoid thread being killed by timeout
         while any(not t.done() for t in tasks_culprit_pull_requests):
-            await asyncio.sleep(10)
-            yield f"{thinking_verb()} pull request ranks... this might take a minute."
+            await asyncio.sleep(5)
+            yield "ranking pull requests... this might take a minute."
 
         top_prs = [t.result() for t in tasks_culprit_pull_requests]
         culprit_pull_requests = [pr for batch in (top_prs) if batch for pr in batch.pull_requests]
         if not culprit_pull_requests or len(culprit_pull_requests) == 0:
             logger.info(f"{issue_id}: no culprit pull requests found")
             yield "no culprit pull requests were found. unfortunately."
+            if thinking_comment:
+                comment_service.edit_comment(thinking_comment, "❌ No culprit pull requests were found. Unfortunately.")
             return
 
         logger.info(f"{issue_id}: found {len(culprit_pull_requests)} culprit pull requests")
 
         yield f"{thinking_verb()} culprit pull requests for this issue."
-        await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
-        yield "Added a comment on the issue."
+
+        # Update thinking comment with result, or add new comment if no thinking comment
+        if thinking_comment:
+            result_comment = comment_service._format_comment(culprit_pull_requests)
+            comment_service.edit_comment(thinking_comment, result_comment)
+        else:
+            await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
+            yield "Added a comment on the issue."
 
         db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
@@ -105,6 +128,11 @@ async def run(issue_id: int, db: Database, usage_log_id: int | None = None) -> A
     except Exception as e:
         logger.exception(f"{issue_id}: error in blame pipeline {e}")
         yield f"some error occurred in blame pipeline. please report this issue with the issue id: {issue_id}"
+        if thinking_comment:
+            comment_service.edit_comment(
+                thinking_comment,
+                f"❌ Error occurred in blame pipeline. Please report this issue with the issue id: {issue_id}",
+            )
 
 
 async def _culprit_task(page, culprits_to_find, issue, prs_with_scores, db, usage_log_id):

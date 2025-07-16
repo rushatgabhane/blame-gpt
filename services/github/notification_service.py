@@ -8,7 +8,7 @@ from github.Notification import Notification
 
 from libs import constants
 from libs.github import gh_user, github_token
-from libs.helpers import now_8601, now_rfc1123
+from libs.helpers import now_8601, now_rfc1123, thinking_verb
 from libs.llm import llmNano
 from libs.prompt_templates.command_classification import command_classification_parser, command_classifier_prompt
 from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
@@ -16,7 +16,12 @@ from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
 from services import blame_pipeline, user_service
-from services.github.comment_service import get_comment, react_comment
+from services.github.comment_service import (
+    create_thinking_comment,
+    create_thinking_comment_for_pr,
+    get_comment,
+    react_comment,
+)
 from services.test_step import test_step_pipeline
 
 logger = logging.getLogger(__name__)
@@ -189,8 +194,14 @@ async def _run_command(
 ):
     issue_or_pull_request_id = _get_issue_or_pr_id(n)
     if command_name == CommandName.BLAME and n.subject.type == "Issue":
-        async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id):
-            logger.info(f"{n.id}: #{issue_or_pull_request_id} {step}")
+        thinking_comment = create_thinking_comment(
+            issue_number=issue_or_pull_request_id, thinking_text=f"{thinking_verb()}..."
+        )
+        async for step in blame_pipeline.run(
+            issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id, thinking_comment=thinking_comment
+        ):
+            # we don't want the yield logs
+            logger.debug(f"{n.id}: #{issue_or_pull_request_id} {step}")
         return
 
     if command_name == CommandName.OHMYDOCS:
@@ -200,8 +211,13 @@ async def _run_command(
         return
 
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
-        async for step in test_step_pipeline.run(issue_or_pull_request_id, core_db, usage_log_id):
-            logger.info(f"PR #{issue_or_pull_request_id}: {step}")
+        thinking_comment = create_thinking_comment_for_pr(
+            pull_request_id=issue_or_pull_request_id,
+            thinking_text=f"{thinking_verb()}...",
+        )
+        async for step in test_step_pipeline.run(issue_or_pull_request_id, core_db, usage_log_id, thinking_comment):
+            # we dont want the yield logs
+            logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")

@@ -3,6 +3,8 @@ import logging
 import random
 from collections.abc import AsyncGenerator
 
+from github.IssueComment import IssueComment
+
 from libs.helpers import cosine_similarity, thinking_verb
 from libs.llm import ModelNames, llm
 from libs.prompt_templates.consolidate_test_steps import consolidate_test_steps_parser, consolidate_test_steps_prompt
@@ -19,7 +21,6 @@ logger = logging.getLogger(__name__)
 _sassy_titles = [
     "Ready for your test drive 🏎️",
     "Time to break it (gently)",
-    "Checklist for the brave",
     "Let's see if it holds up!",
     "Reviewers, do your thing!",
     "Test steps, fresh out the oven",
@@ -27,13 +28,16 @@ _sassy_titles = [
 ]
 
 
-async def run(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
+async def run(
+    pull_request_id: int, db: Database, usage_log_id: int | None = None, thinking_comment: IssueComment | None = None
+) -> AsyncGenerator[str]:
     try:
         yield f"{thinking_verb()} test step generation - let's create some quality test steps!"
 
         if db.has_generated_test_steps(pull_request_id):
             logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
             yield "Test steps already exist - no need to regenerate."
+            comment_service.edit_comment(thinking_comment, "Test steps already created. no need to regenerate.")
             return
 
         yield f"{thinking_verb()} pull request details and context..."
@@ -41,14 +45,17 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
         if not pull_request:
             logger.error(f"PR #{pull_request_id}: failed to fetch.")
             yield "Couldn't fetch pull request details - this PR might not exist or be accessible."
+            comment_service.edit_comment(thinking_comment, "❌ Couldn't fetch pull request details.")
             return
 
         if not pull_request.linked_issue_ids:
             logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
             yield "No linked issues found - test steps work best when PRs are connected to issues."
-            return
+            comment_service.edit_comment(
+                thinking_comment, "No linked issues found - test steps work best when PRs are connected to issues."
+            )
 
-        yield f"{thinking_verb()} context from linked issues to inform test creation..."
+        yield f"{thinking_verb()} context from linked issues..."
 
         task_linked_issues = asyncio.create_task(
             _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
@@ -74,13 +81,14 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
 
         # Heartbeat until task is done
         while not task_generate_steps.done():
-            await asyncio.sleep(5)
+            await asyncio.sleep(2)
             yield f"{thinking_verb()} edge cases and user scenarios..."
 
         test_steps = await task_generate_steps
         if not test_steps or not test_steps.test or test_steps.test == []:
             logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
-            yield "Couldn't generate test steps - the code changes might be too complex or unclear."
+            yield "failed to generate test steps."
+            comment_service.edit_comment(thinking_comment, "❌ failed to generate test steps.")
             return
 
         # Consolidate similar test steps to remove repetitive details
@@ -90,16 +98,21 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
 
             # Heartbeat until task is done
             while not task_consolidate.done():
-                await asyncio.sleep(5)
+                await asyncio.sleep(2)
                 yield f"{thinking_verb()} and consolidating test steps for clarity..."
 
             consolidated_steps = await task_consolidate
             if consolidated_steps:
                 test_steps = consolidated_steps
 
-        yield f"{thinking_verb()} test steps and adding them to the PR..."
+        yield "adding test steps to the PR..."
         comment = _format_comment(test_steps=test_steps)
-        comment_service.add_comment_to_pull_request(pull_request_id, comment)
+
+        # Update thinking comment with result, or add new comment if no thinking comment
+        if thinking_comment:
+            comment_service.edit_comment(thinking_comment, comment)
+        else:
+            comment_service.add_comment_to_pull_request(pull_request_id, comment)
 
         db.add_pull_request_test_steps(pull_request_id, comment)
 
@@ -108,6 +121,11 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
     except Exception as e:
         logger.exception(f"PR #{pull_request_id}: error in test step generation {e}")
         yield f"Oops! Something went wrong during test step generation. Please report this with PR #{pull_request_id}"
+        if thinking_comment:
+            comment_service.edit_comment(
+                thinking_comment,
+                f"❌ Error occurred during test step generation. Please report this with PR #{pull_request_id}",
+            )
 
 
 # Experiment with issue embedding for similar.
@@ -122,8 +140,11 @@ def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[Te
 
 
 async def _get_test_steps_from_linked_issues(
-    linked_issue_ids: list[int], db: Database, usage_log_id: int | None = None
+    linked_issue_ids: list[int] | None, db: Database, usage_log_id: int | None = None
 ) -> list[GeneratedTestSteps] | None:
+    if not linked_issue_ids:
+        return None
+
     issue_tasks = [issue_service.add_issue_if_not_exists(issue_id, db=db) for issue_id in linked_issue_ids]
     issues = await asyncio.gather(*issue_tasks)
     linked_issues = [issue for issue in issues if issue]
@@ -242,5 +263,5 @@ def _format_comment(test_steps: GeneratedTestStepsList) -> str:
 ```markdown
 {all_tests}
 ```
-<sub>AI generated these steps. Your quick sanity check makes them solid.</sub>
+<sub>These steps were crafted by AI. Please paste them into the PR description and refine to taste.</sub>
 """
