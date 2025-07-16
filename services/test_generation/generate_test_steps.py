@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import time
 
 from libs.helpers import cosine_similarity
 from libs.llm import llm
@@ -12,6 +13,10 @@ from models.models import GeneratedTestSteps, GeneratedTestStepsList, Issue, Pul
 from services.github import comment_service, issue_service, pull_request_service
 
 logger = logging.getLogger(__name__)
+
+# Simple cache for test suites to avoid repeated database calls
+_test_suites_cache = None
+_cache_last_updated = None
 
 
 _sassy_titles = [
@@ -49,12 +54,15 @@ async def generate_test_steps_for_pull_request(pull_request_id: int, db: Databas
         logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
         return None
 
-    # Consolidate similar test steps to remove repetitive details
+    # Consolidate similar test steps to remove repetitive details (skip for single tests)
     if len(test_steps.test) > 1:
+        logger.info(f"PR #{pull_request_id}: consolidating {len(test_steps.test)} test steps")
         consolidated_steps = await _consolidate_test_steps(test_steps)
         if consolidated_steps:
             test_steps = consolidated_steps
             logger.info(f"PR #{pull_request_id}: consolidated test steps.")
+    else:
+        logger.info(f"PR #{pull_request_id}: single test step, skipping consolidation")
 
     comment = _format_comment(test_steps=test_steps)
     comment_service.add_comment_to_pull_request(pull_request_id, comment)
@@ -70,10 +78,38 @@ def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[Te
     if not pr_embedding:
         logger.warning("no PR embedding provided for finding similar test steps.")
         return []
-    existing_steps = db.get_all_test_suites()
+
+    # Use cached test suites instead of loading from DB every time
+    existing_steps = _get_cached_test_suites(db)
     k = 5
     similar_steps = sorted(existing_steps, key=lambda x: cosine_similarity(x.embedding, pr_embedding), reverse=True)[:k]
     return similar_steps
+
+
+def _get_cached_test_suites(db: Database) -> list[TestSuite]:
+    """Get test suites from cache or load them if cache is empty/stale"""
+
+    global _test_suites_cache, _cache_last_updated
+
+    current_time = time.time()
+    cache_ttl = 300  # 5 minutes
+
+    # Load from database if cache is empty or stale
+    if _test_suites_cache is None or _cache_last_updated is None or current_time - _cache_last_updated > cache_ttl:
+        logger.info("Loading test suites to cache")
+        _test_suites_cache = db.get_all_test_suites()
+        _cache_last_updated = current_time
+        logger.info(f"Cached {len(_test_suites_cache)} test suites")
+
+    return _test_suites_cache
+
+
+def clear_test_suites_cache():
+    """Clear the test suites cache - useful for testing"""
+    global _test_suites_cache, _cache_last_updated
+    _test_suites_cache = None
+    _cache_last_updated = None
+    logger.info("Test suites cache cleared")
 
 
 async def _get_test_steps_from_linked_issues(
