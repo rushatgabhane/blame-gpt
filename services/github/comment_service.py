@@ -74,15 +74,20 @@ async def react_comment(comment_url: str, emoji: str):
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"Bearer {github_token.get_secret_value()}",
     }
-    async with httpx.AsyncClient() as client:
-        res = await client.post(
-            url=f"{comment_url}/reactions",
-            headers=headers,
-            json={"content": emoji},
-        )
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.post(
+                url=f"{comment_url}/reactions",
+                headers=headers,
+                json={"content": emoji},
+            )
 
-    if res.status_code != 201:
-        logger.info(f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}")
+        if res.status_code != 201:
+            logger.info(f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}")
+    except httpx.ConnectTimeout:
+        logger.warning(f"connection timeout while trying to react with {emoji} on comment {comment_url}")
+    except httpx.RequestError as e:
+        logger.error(f"request error while trying to react with {emoji} on comment {comment_url}: {e}")
 
 
 def get_comment(comment_url: str) -> IssueComment | None:
