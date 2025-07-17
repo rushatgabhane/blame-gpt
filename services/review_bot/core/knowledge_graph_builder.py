@@ -66,7 +66,18 @@ class KnowledgeGraphBuilder:
                 print(f"   Using temporary directory: {self.temp_dir}")
             else:
                 # Use local directory (for testing and development)
-                local_dir = Path.cwd() / "local"
+                # Find project root (go up to find the directory containing libs/)
+                current_dir = Path(__file__).parent
+                while current_dir.parent != current_dir:
+                    if (current_dir / "libs").exists():
+                        project_root = current_dir
+                        break
+                    current_dir = current_dir.parent
+                else:
+                    # Fallback to current working directory
+                    project_root = Path.cwd()
+                
+                local_dir = project_root / "local"
                 local_dir.mkdir(exist_ok=True)  # Create local dir if it doesn't exist
                 self.repo_path = local_dir / f"{constants.REPO_NAME}"
                 print(f"   Using local directory: {self.repo_path}")
