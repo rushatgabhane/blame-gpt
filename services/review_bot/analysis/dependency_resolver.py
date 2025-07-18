@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from libs.neo4j_client import Neo4jClient
+from services.review_bot.config import ReviewBotConfig
 
 
 class ImpactLevel(Enum):
@@ -52,6 +53,7 @@ class DependencyResolver:
         self.neo4j_client = neo4j_client
         self.impacted_entities: List[ImpactedEntity] = []
         self.dependency_chains: List[DependencyChain] = []
+        self.smart_filtering_config = ReviewBotConfig.get_smart_filtering_config()
         
     def analyze_dependencies(self, mini_kg: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -336,23 +338,106 @@ class DependencyResolver:
     
     def _find_transitive_function_impacts(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        Find functions in files that import the changed file.
+        Find functions in files that import the changed file, with smart filtering.
         
         Args:
             entity: File entity to find transitive impacts for
             
         Returns:
-            List of functions in importing files
+            List of functions in importing files (filtered for relevance)
         """
         if not self.neo4j_client.session:
             return []
         
         try:
-            # Query to find functions in files that import this file
-            # Handle both relative and absolute paths
+            # Check if smart filtering is enabled
+            if not self.smart_filtering_config["enabled"]:
+                return self._find_all_transitive_functions(entity)
+            
+            # Strategy 1: Find functions that actually use the changed code
+            actual_usage_functions = self._find_actual_usage_functions(entity)
+            
+            # Strategy 2: Find high-centrality functions (called by many others)
+            high_centrality_functions = self._find_high_centrality_functions(entity)
+            
+            # Strategy 3: Find functions that call many others (potential orchestrators)
+            orchestrator_functions = self._find_orchestrator_functions(entity)
+            
+            # Combine and deduplicate results
+            all_functions = {}
+            
+            # Priority 1: Actual usage (highest priority)
+            for func in actual_usage_functions:
+                key = f"{func['file_path']}:{func['name']}"
+                func['filter_reason'] = 'actual_usage'
+                func['priority'] = 1
+                all_functions[key] = func
+            
+            # Priority 2: High centrality
+            for func in high_centrality_functions:
+                key = f"{func['file_path']}:{func['name']}"
+                if key not in all_functions:
+                    func['filter_reason'] = 'high_centrality'
+                    func['priority'] = 2
+                    all_functions[key] = func
+            
+            # Priority 3: Orchestrators
+            for func in orchestrator_functions:
+                key = f"{func['file_path']}:{func['name']}"
+                if key not in all_functions:
+                    func['filter_reason'] = 'orchestrator'
+                    func['priority'] = 3
+                    all_functions[key] = func
+            
+            # Convert back to list and sort by priority
+            filtered_functions = list(all_functions.values())
+            filtered_functions.sort(key=lambda x: x['priority'])
+            
+            # Cap at configured max functions to prevent overwhelming results
+            max_functions = self.smart_filtering_config["max_secondary_impacts"]
+            
+            # Also apply per-category limits to ensure diversity
+            max_per_category = max(10, max_functions // 3)
+            
+            # Limit each category
+            actual_usage_limited = [f for f in filtered_functions if f.get('filter_reason') == 'actual_usage'][:max_per_category]
+            high_centrality_limited = [f for f in filtered_functions if f.get('filter_reason') == 'high_centrality'][:max_per_category]
+            orchestrator_limited = [f for f in filtered_functions if f.get('filter_reason') == 'orchestrator'][:max_per_category]
+            
+            # Combine limited results
+            filtered_functions = actual_usage_limited + high_centrality_limited + orchestrator_limited
+            
+            if len(filtered_functions) > max_functions:
+                print(f"      📊 Smart filtering: {len(all_functions)} → {max_functions} functions")
+                filtered_functions = filtered_functions[:max_functions]
+            else:
+                print(f"      📊 Smart filtering: Found {len(filtered_functions)} relevant functions")
+            
+            return filtered_functions
+            
+        except Exception as e:
+            print(f"      ⚠️ Error finding transitive function impacts: {e}")
+            return []
+    
+    def _find_all_transitive_functions(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Find ALL functions in files that import the changed file (original approach).
+        
+        Args:
+            entity: File entity to find transitive impacts for
+            
+        Returns:
+            List of ALL functions in importing files (unfiltered)
+        """
+        if not self.neo4j_client.session:
+            return []
+        
+        try:
+            # Original query - returns ALL functions in importing files
             query = """
-            MATCH (importer:File)-[:IMPORTS]->(target:File)-[:CONTAINS]->(func:Function)
+            MATCH (importer:File)-[:IMPORTS]->(target:File)
             WHERE target.path = $file_path OR target.path ENDS WITH $file_path
+            MATCH (importer)-[:CONTAINS]->(func:Function)
             RETURN DISTINCT
                 func.name as func_name,
                 importer.path as file_path,
@@ -374,13 +459,236 @@ class DependencyResolver:
                     "relationship_type": "transitive_import",
                     "start_line": record["start_line"],
                     "end_line": record["end_line"],
-                    "ast_type": record["ast_type"]
+                    "ast_type": record["ast_type"],
+                    "filter_reason": "no_filtering",
+                    "priority": 1
                 })
+            
+            print(f"      📊 No filtering: Found {len(functions)} functions")
+            return functions
+            
+        except Exception as e:
+            print(f"      ⚠️ Error finding all transitive functions: {e}")
+            return []
+    
+    def _find_actual_usage_functions(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Find functions that actually call functions from the changed file.
+        
+        Args:
+            entity: File entity to analyze
+            
+        Returns:
+            List of functions that actually use the changed code
+        """
+        if not self.neo4j_client.session:
+            return []
+        
+        try:
+            print(f"      🔍 Looking for actual usage of: {entity['file_path']}")
+            
+            # Fixed query - simplified approach that actually works
+            # Look for function calls that reference the changed module
+            module_name = entity["file_path"].split("/")[-1].replace(".ts", "").replace(".js", "")
+            
+            query = """
+            MATCH (caller_file:File)-[:CALLS]->(fc:FunctionCall)
+            WHERE (fc.target CONTAINS $module_name
+                   OR fc.target = $module_name)
+              AND NOT caller_file.path =~ ".*[Tt]est.*"
+              AND NOT caller_file.path CONTAINS $module_name
+              AND caller_file.path <> $file_path
+            
+            MATCH (caller_file)-[:CONTAINS]->(caller_func:Function)
+            
+            // Check if the call is within the function's line range
+            WHERE caller_func.start_line <= fc.line AND fc.line <= caller_func.end_line
+            
+            RETURN DISTINCT
+                caller_func.name as func_name,
+                caller_file.path as file_path,
+                caller_func.start_line as start_line,
+                caller_func.end_line as end_line,
+                caller_func.ast_type as ast_type,
+                fc.target as called_function
+            LIMIT 30
+            """
+            
+            result = self.neo4j_client.session.run(query, {
+                "file_path": entity["file_path"],
+                "module_name": module_name
+            })
+            
+            functions = []
+            for record in result:
+                functions.append({
+                    "name": record["func_name"],
+                    "file_path": record["file_path"],
+                    "entity_type": "function",
+                    "relationship_type": "actual_usage",
+                    "start_line": record["start_line"],
+                    "end_line": record["end_line"],
+                    "ast_type": record["ast_type"],
+                    "called_function": record["called_function"]
+                })
+            
+            print(f"      ✅ Found {len(functions)} functions with actual usage")
+            
+            # Debug: Show sample calls
+            for func in functions[:3]:
+                print(f"         - {func['name']} calls {func['called_function']}")
             
             return functions
             
         except Exception as e:
-            print(f"      ⚠️ Error finding transitive function impacts: {e}")
+            print(f"      ⚠️ Error finding actual usage functions: {e}")
+            return []
+    
+    def _find_high_centrality_functions(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Find functions with high centrality (called by many others) in importing files.
+        
+        Args:
+            entity: File entity to analyze
+            
+        Returns:
+            List of high-centrality functions
+        """
+        if not self.neo4j_client.session:
+            return []
+        
+        try:
+            print(f"      🔍 Looking for high centrality functions in files importing: {entity['file_path']}")
+            
+            # Query to find functions that are called by many others
+            query = """
+            MATCH (target_file:File)<-[:IMPORTS]-(importer:File)
+            WHERE target_file.path ENDS WITH $file_path
+            AND NOT importer.path =~ ".*Test.*"
+            AND NOT importer.path =~ ".*test.*"
+            
+            MATCH (importer)-[:CONTAINS]->(func:Function)
+            WHERE func.file_path = importer.path
+            
+            // Count incoming calls - using FunctionCall pattern
+            OPTIONAL MATCH (caller_file:File)-[:CALLS]->(fc:FunctionCall)
+            WHERE fc.target = func.name AND caller_file.path <> importer.path
+            WITH func, importer, count(fc) as incoming_calls
+            WHERE incoming_calls >= $min_centrality
+            
+            RETURN DISTINCT
+                func.name as func_name,
+                importer.path as file_path,
+                func.start_line as start_line,
+                func.end_line as end_line,
+                func.ast_type as ast_type,
+                incoming_calls
+            ORDER BY incoming_calls DESC
+            LIMIT 20
+            """
+            
+            result = self.neo4j_client.session.run(query, {
+                "file_path": entity["file_path"],
+                "min_centrality": self.smart_filtering_config["min_centrality_threshold"]
+            })
+            
+            functions = []
+            for record in result:
+                functions.append({
+                    "name": record["func_name"],
+                    "file_path": record["file_path"],
+                    "entity_type": "function",
+                    "relationship_type": "high_centrality",
+                    "start_line": record["start_line"],
+                    "end_line": record["end_line"],
+                    "ast_type": record["ast_type"],
+                    "incoming_calls": record["incoming_calls"]
+                })
+            
+            print(f"      ✅ Found {len(functions)} high centrality functions")
+            
+            # Debug: Show sample functions
+            for func in functions[:3]:
+                print(f"         - {func['name']} ({func['incoming_calls']} incoming calls)")
+            
+            return functions
+            
+        except Exception as e:
+            print(f"      ⚠️ Error finding high centrality functions: {e}")
+            return []
+    
+    def _find_orchestrator_functions(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Find functions that call many others (orchestrators) in importing files.
+        
+        Args:
+            entity: File entity to analyze
+            
+        Returns:
+            List of orchestrator functions
+        """
+        if not self.neo4j_client.session:
+            return []
+        
+        try:
+            print(f"      🔍 Looking for orchestrator functions in files importing: {entity['file_path']}")
+            
+            # Query to find functions that call many others
+            query = """
+            MATCH (target_file:File)<-[:IMPORTS]-(importer:File)
+            WHERE target_file.path ENDS WITH $file_path
+            AND NOT importer.path =~ ".*Test.*"
+            AND NOT importer.path =~ ".*test.*"
+            AND NOT importer.path =~ ".*/utils/.*"
+            
+            MATCH (importer)-[:CONTAINS]->(func:Function)
+            WHERE func.file_path = importer.path
+            
+            // Count outgoing calls - using FunctionCall pattern
+            OPTIONAL MATCH (importer)-[:CALLS]->(fc:FunctionCall)
+            WHERE func.start_line <= fc.line AND fc.line <= func.end_line
+            WITH func, importer, count(fc) as outgoing_calls
+            WHERE outgoing_calls >= $min_orchestrator
+            
+            RETURN DISTINCT
+                func.name as func_name,
+                importer.path as file_path,
+                func.start_line as start_line,
+                func.end_line as end_line,
+                func.ast_type as ast_type,
+                outgoing_calls
+            ORDER BY outgoing_calls DESC
+            LIMIT 20
+            """
+            
+            result = self.neo4j_client.session.run(query, {
+                "file_path": entity["file_path"],
+                "min_orchestrator": self.smart_filtering_config["min_orchestrator_threshold"]
+            })
+            
+            functions = []
+            for record in result:
+                functions.append({
+                    "name": record["func_name"],
+                    "file_path": record["file_path"],
+                    "entity_type": "function",
+                    "relationship_type": "orchestrator",
+                    "start_line": record["start_line"],
+                    "end_line": record["end_line"],
+                    "ast_type": record["ast_type"],
+                    "outgoing_calls": record["outgoing_calls"]
+                })
+            
+            print(f"      ✅ Found {len(functions)} orchestrator functions")
+            
+            # Debug: Show sample functions
+            for func in functions[:3]:
+                print(f"         - {func['name']} ({func['outgoing_calls']} outgoing calls)")
+            
+            return functions
+            
+        except Exception as e:
+            print(f"      ⚠️ Error finding orchestrator functions: {e}")
             return []
     
     def _build_dependency_chains(

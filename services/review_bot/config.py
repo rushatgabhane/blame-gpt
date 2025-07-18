@@ -28,6 +28,12 @@ class ReviewBotConfig:
     # Processing settings
     BATCH_SIZE = 50  # For progress updates
     
+    # Smart filtering settings
+    ENABLE_SMART_FILTERING = os.getenv("ENABLE_SMART_FILTERING", "true").lower() == "true"
+    MAX_SECONDARY_IMPACTS = int(os.getenv("MAX_SECONDARY_IMPACTS", "30"))
+    MIN_CENTRALITY_THRESHOLD = int(os.getenv("MIN_CENTRALITY_THRESHOLD", "10"))
+    MIN_ORCHESTRATOR_THRESHOLD = int(os.getenv("MIN_ORCHESTRATOR_THRESHOLD", "20"))
+    
     # Docker Neo4j settings (for local development)
     NEO4J_DOCKER_IMAGE = "neo4j:5.20"
     NEO4J_CONTAINER_NAME = "neo4j-kg"
@@ -50,6 +56,16 @@ class ReviewBotConfig:
             "extensions": cls.SUPPORTED_EXTENSIONS,
             "exclude_patterns": cls.EXCLUDE_PATTERNS,
             "src_dir": cls.DEFAULT_SRC_DIR
+        }
+    
+    @classmethod
+    def get_smart_filtering_config(cls) -> Dict[str, Any]:
+        """Get smart filtering configuration."""
+        return {
+            "enabled": cls.ENABLE_SMART_FILTERING,
+            "max_secondary_impacts": cls.MAX_SECONDARY_IMPACTS,
+            "min_centrality_threshold": cls.MIN_CENTRALITY_THRESHOLD,
+            "min_orchestrator_threshold": cls.MIN_ORCHESTRATOR_THRESHOLD
         }
     
     @classmethod

@@ -1,0 +1,232 @@
+{
+  "analysis_type": "summary_and_metadata",
+  "pr_analysis_summary": {
+    "total_files_changed": 2,
+    "files_added": 0,
+    "files_modified": 2,
+    "files_deleted": 0,
+    "total_functions_changed": 0,
+    "functions_added": 0,
+    "functions_modified": 0,
+    "functions_deleted": 0,
+    "total_additions": 45,
+    "total_deletions": 1
+  },
+  "dependency_summary": {
+    "total_impacted": 9591,
+    "direct_impacts": 23,
+    "secondary_impacts": 9568,
+    "tertiary_impacts": 0,
+    "entity_counts": {
+      "function": 9568,
+      "file": 23,
+      "class": 0
+    },
+    "risk_counts": {
+      "high": 0,
+      "medium": 0,
+      "low": 9591
+    },
+    "dependency_chains": 9591
+  },
+  "changed_entities": [
+    {
+      "name": "ReportUtils.ts",
+      "file_path": "src/libs/ReportUtils.ts",
+      "type": "file",
+      "change_type": "modified"
+    },
+    {
+      "name": "ReportUtilsTest.ts",
+      "file_path": "tests/unit/ReportUtilsTest.ts",
+      "type": "file",
+      "change_type": "modified"
+    }
+  ],
+  "metadata": {
+    "pr_number": 65748,
+    "analysis_type": "complete_flow"
+  },
+  "dependency_chains_sample": [
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "ReportPreviewActionUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/ReportPreviewActionUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "QuickActionUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/QuickActionUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "IOUUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/IOUUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "SearchQueryUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/SearchQueryUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "TransactionPreviewUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/TransactionPreviewUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "markAllPolicyReportsAsRead.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/markAllPolicyReportsAsRead.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "DistanceRequestUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/DistanceRequestUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "MentionUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/MentionUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "CardFeedUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/CardFeedUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "SidebarUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/SidebarUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "OptionsListUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/OptionsListUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "MoneyRequestReportUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/MoneyRequestReportUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "DebugUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/DebugUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "SearchUIUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/SearchUIUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "navigateAfterOnboarding.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/navigateAfterOnboarding.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "ModifiedExpenseMessage.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/ModifiedExpenseMessage.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "ReportFieldOptionsListUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/ReportFieldOptionsListUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "TripReservationUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/TripReservationUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "NextStepUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/NextStepUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    },
+    {
+      "source": "ReportUtils.ts",
+      "source_file": "src/libs/ReportUtils.ts",
+      "target": "ReportSecondaryActionUtils.ts",
+      "target_file": "/Users/niteeqsheik/Research/blame-gpt/local/App/src/libs/ReportSecondaryActionUtils.ts",
+      "relationship": "imports",
+      "length": 1,
+      "risk_level": "low"
+    }
+  ]
+}
