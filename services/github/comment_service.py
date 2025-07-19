@@ -14,7 +14,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
     try:
-        comment = _format_comment(culprit_pull_requests)
+        comment = format_blame_comment(culprit_pull_requests)
         if not is_production_environment():
             logger.info(f"skipping comment creation in non production environment {comment}")
             return comment
@@ -38,7 +38,7 @@ _sassy_culprit_titles = [
 ]
 
 
-def _format_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
+def format_blame_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str:
     if not culprit_pull_requests:
         return ""
 
@@ -74,15 +74,20 @@ async def react_comment(comment_url: str, emoji: str):
         "Accept": "application/vnd.github.v3+json",
         "Authorization": f"Bearer {github_token.get_secret_value()}",
     }
-    async with httpx.AsyncClient() as client:
-        res = await client.post(
-            url=f"{comment_url}/reactions",
-            headers=headers,
-            json={"content": emoji},
-        )
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            res = await client.post(
+                url=f"{comment_url}/reactions",
+                headers=headers,
+                json={"content": emoji},
+            )
 
-    if res.status_code != 201:
-        logger.info(f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}")
+        if res.status_code != 201:
+            logger.info(f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}")
+    except httpx.ConnectTimeout:
+        logger.warning(f"connection timeout while trying to react with {emoji} on comment {comment_url}")
+    except httpx.RequestError as e:
+        logger.error(f"request error while trying to react with {emoji} on comment {comment_url}: {e}")
 
 
 def get_comment(comment_url: str) -> IssueComment | None:
@@ -94,4 +99,48 @@ def get_comment(comment_url: str) -> IssueComment | None:
         return IssueComment(requester=gh_user._requester, headers=_headers, attributes=data, completed=True)
     except Exception as e:
         logger.error(f"failed to get comment {comment_url}: {e}")
+        return None
+
+
+def create_thinking_comment(issue_number: int, thinking_text: str) -> IssueComment | None:
+    """Create a thinking comment that can be edited later."""
+    try:
+        if not is_production_environment():
+            logger.info(f"skipping thinking comment creation in non production environment: {thinking_text}")
+            return None
+
+        comment = repo.get_issue(number=issue_number).create_comment(thinking_text)
+        return comment
+    except Exception as e:
+        logger.error(f"error creating thinking comment on issue #{issue_number}: {e}")
+        return None
+
+
+def edit_comment(comment: IssueComment | None, new_text: str):
+    """Edit an existing comment with new text."""
+    if comment is None:
+        return
+
+    try:
+        if not is_production_environment():
+            logger.info(f"skipping comment edit in non production environment: {new_text}")
+            return
+
+        comment.edit(new_text)
+
+    except Exception as e:
+        logger.error(f"error editing comment {comment.id}: {e}")
+
+
+def create_thinking_comment_for_pr(pull_request_id: int, thinking_text: str) -> IssueComment | None:
+    """Create a thinking comment on a pull request that can be edited later."""
+    try:
+        if not is_production_environment():
+            logger.info(f"skipping thinking comment creation in non production environment: {thinking_text}")
+            return None
+
+        comment = repo.get_pull(pull_request_id).create_issue_comment(thinking_text)
+        return comment
+    except Exception as e:
+        logger.error(f"error creating thinking comment on PR #{pull_request_id}: {e}")
         return None

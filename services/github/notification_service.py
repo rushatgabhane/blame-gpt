@@ -4,11 +4,12 @@ from datetime import UTC, datetime
 
 import httpx
 from fastapi import FastAPI
+from github.IssueComment import IssueComment
 from github.Notification import Notification
 
 from libs import constants
 from libs.github import gh_user, github_token
-from libs.helpers import now_8601, now_rfc1123
+from libs.helpers import now_8601, now_rfc1123, thinking_verb
 from libs.llm import llmNano
 from libs.prompt_templates.command_classification import command_classification_parser, command_classifier_prompt
 from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
@@ -16,7 +17,12 @@ from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
 from services import blame_pipeline, user_service
-from services.github.comment_service import get_comment, react_comment
+from services.github.comment_service import (
+    create_thinking_comment,
+    create_thinking_comment_for_pr,
+    get_comment,
+    react_comment,
+)
 from services.test_step import test_step_pipeline
 
 logger = logging.getLogger(__name__)
@@ -56,13 +62,16 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
             logger.info(f"no new notifications found since {app.state.last_modified_notification}")
             return
 
+        tasks = []
         for data in notifications:
             n = _create_notification(data)
             if not _is_valid_notification(n):
                 await _unsubscribe_notification(n)
                 continue
 
-            asyncio.create_task(_process_notification(n, core_db, docs_db))
+            tasks.append(asyncio.create_task(_process_notification(n, core_db, docs_db)))
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
     except httpx.RemoteProtocolError as e:
         logger.error(f"expected sometimes: remote protocol error while fetching notifications: {e}")
@@ -91,7 +100,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
         if not comment or constants.USER_TAG.lower() not in comment.body.lower():
             return
 
-        asyncio.create_task(react_comment(latest_comment_url, "eyes"))
+        react_task = asyncio.create_task(react_comment(latest_comment_url, "eyes"))
 
         command_name = _classify_command(comment.body, n.subject.type)
 
@@ -113,9 +122,22 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
             comment_text=comment.body,
         )
 
-        await _run_command(command_name, n, core_db, docs_db, usage_log_id)
+        should_process_again = _has_again(comment)
 
-        await _unsubscribe_notification(n)
+        await _run_command(
+            command_name=command_name,
+            n=n,
+            core_db=core_db,
+            docs_db=docs_db,
+            usage_log_id=usage_log_id,
+            should_process_again=should_process_again,
+        )
+
+        unsubscribe_task = asyncio.create_task(_unsubscribe_notification(n))
+
+        # Wait for async tasks to complete
+        await unsubscribe_task
+        await react_task
     except Exception as e:
         logger.error(f"#{issue_or_pull_request_id} {n.id}: error processing notification : {n} : {e}")
 
@@ -185,12 +207,23 @@ def _classify_command(comment_body: str, subject_type: str) -> CommandName:
 
 
 async def _run_command(
-    command_name: CommandName, n: Notification, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None
+    command_name: CommandName,
+    n: Notification,
+    core_db: CoreDatabase,
+    docs_db: DocsDatabase,
+    usage_log_id: int | None,
+    should_process_again: bool = False,
 ):
     issue_or_pull_request_id = _get_issue_or_pr_id(n)
     if command_name == CommandName.BLAME and n.subject.type == "Issue":
-        async for step in blame_pipeline.run(issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id):
-            logger.info(f"{n.id}: #{issue_or_pull_request_id} {step}")
+        thinking_comment = create_thinking_comment(
+            issue_number=issue_or_pull_request_id, thinking_text=f"{thinking_verb()}..."
+        )
+        async for step in blame_pipeline.run(
+            issue_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id, thinking_comment=thinking_comment
+        ):
+            # we don't wanna print the yield logs
+            logger.debug(f"{n.id}: #{issue_or_pull_request_id} {step}")
         return
 
     if command_name == CommandName.OHMYDOCS:
@@ -200,9 +233,20 @@ async def _run_command(
         return
 
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
-        async for step in test_step_pipeline.run(issue_or_pull_request_id, core_db, usage_log_id):
-            logger.info(f"PR #{issue_or_pull_request_id}: {step}")
+        thinking_comment = create_thinking_comment_for_pr(
+            pull_request_id=issue_or_pull_request_id,
+            thinking_text=f"{thinking_verb()}...",
+        )
+        async for step in test_step_pipeline.run(
+            issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again
+        ):
+            # we don't wanna print the yield logs
+            logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")
-    logger.info(f"{n.id}: unknown command for notification {n.id}, skipping")
+    logger.info(f"{n.id}: unknown command, skipping")
+
+
+def _has_again(comment: IssueComment) -> bool:
+    return "again" in comment.body.lower()

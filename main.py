@@ -17,7 +17,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 
-from controllers._deploy_blocker_controller import deploy_blocker_router
+from controllers._deprecated_deploy_blocker_controller import deploy_blocker_router
 from controllers.blame_controller import blame_router
 from controllers.docs_controller import docs_router
 from controllers.issue_controller import issue_router
