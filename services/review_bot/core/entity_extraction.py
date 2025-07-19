@@ -4,11 +4,11 @@ Extracts functions, classes, variables, imports, exports, and function calls fro
 """
 
 from pathlib import Path
-from typing import Dict, List, Any, Optional
-import tree_sitter
-from tree_sitter import Language, Parser
+from typing import Any, Dict, List  # noqa: UP035
+
 import tree_sitter_javascript
 import tree_sitter_typescript
+from tree_sitter import Language, Parser
 
 
 class EntityExtractor:

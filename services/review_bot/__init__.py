@@ -2,14 +2,15 @@
 Review bot service for building knowledge graphs from codebases.
 """
 
+# Import from modules
+from .analysis import PRDiffAnalyzer
 from .config import ReviewBotConfig
-from .entity_extraction import EntityExtractor
-from .knowledge_graph_builder import KnowledgeGraphBuilder
-from .relationship_builder import RelationshipBuilder
+from .core import EntityExtractor, KnowledgeGraphBuilder, RelationshipBuilder
 
 __all__ = [
-    'KnowledgeGraphBuilder',
+    'ReviewBotConfig',
     'EntityExtractor', 
     'RelationshipBuilder',
-    'ReviewBotConfig'
+    'KnowledgeGraphBuilder',
+    'PRDiffAnalyzer'
 ]

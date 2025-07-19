@@ -1,6 +1,6 @@
 
-REPO_OWNER = "nitee-13"
-REPO_NAME = "Expensify"
+REPO_OWNER = "Expensify"
+REPO_NAME = "App"
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 
