@@ -19,7 +19,16 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 3. Activate the virtual env `source venv/bin/activate`
 4. Install requirements `pip install -r requirements.txt`
 5. Copy the env file `cp .env.example .env`, and set your personal github token, set openai api key
+
+> [!WARNING]
+> Do NOT set `ENVIRONMENT=production` in your `.env` file - this will create real GitHub comments on live repositories.
+
 6. Start the server using `uvicorn main:app --reload`
+
+
+#### Github token
+- Use token of type `classic`
+- Scope: `repo`, and `notification`
 
 ### Notebooks
 To run the notebooks run `jupyter lab`.
