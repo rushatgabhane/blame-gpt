@@ -27,7 +27,7 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 
 
 #### Github token
-- Use token of type `classic`
+- In your personal account, create a new token of type `classic`
 - Scope: `repo`, and `notification`
 
 ### Notebooks
