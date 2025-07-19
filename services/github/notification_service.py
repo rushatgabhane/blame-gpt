@@ -70,7 +70,6 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
                 continue
 
             tasks.append(asyncio.create_task(_process_notification(n, core_db, docs_db)))
-        
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -101,7 +100,7 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
         if not comment or constants.USER_TAG.lower() not in comment.body.lower():
             return
 
-        asyncio.create_task(react_comment(latest_comment_url, "eyes"))
+        react_task = asyncio.create_task(react_comment(latest_comment_url, "eyes"))
 
         command_name = _classify_command(comment.body, n.subject.type)
 
@@ -134,7 +133,11 @@ async def _process_notification(n: Notification, core_db: CoreDatabase, docs_db:
             should_process_again=should_process_again,
         )
 
-        await _unsubscribe_notification(n)
+        unsubscribe_task = asyncio.create_task(_unsubscribe_notification(n))
+
+        # Wait for async tasks to complete
+        await unsubscribe_task
+        await react_task
     except Exception as e:
         logger.error(f"#{issue_or_pull_request_id} {n.id}: error processing notification : {n} : {e}")
 
@@ -234,13 +237,15 @@ async def _run_command(
             pull_request_id=issue_or_pull_request_id,
             thinking_text=f"{thinking_verb()}...",
         )
-        async for step in test_step_pipeline.run(issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again):
+        async for step in test_step_pipeline.run(
+            issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again
+        ):
             # we don't wanna print the yield logs
             logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
         return
 
     await react_comment(n.subject.latest_comment_url, "-1")
-    logger.info(f"{n.id}: unknown command for notification {n.id}, skipping")
+    logger.info(f"{n.id}: unknown command, skipping")
 
 
 def _has_again(comment: IssueComment) -> bool:
