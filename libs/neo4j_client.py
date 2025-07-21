@@ -361,14 +361,59 @@ class Neo4jClient:
         try:
             self.session.run("""
             MATCH (file:File)-[:CALLS]->(fc:FunctionCall)
-            MATCH (file)-[:CONTAINS]->(dst:Function)
-            WHERE fc.target = dst.name
-            MERGE (dst)<-[:INVOKES]-(:Function {file_path: file.path, name: fc.target})
+            MATCH (file)-[:CONTAINS]->(caller:Function)
+            MATCH (file)-[:CONTAINS]->(target:Function)
+            WHERE fc.target = target.name
+              AND caller.start_line <= fc.line 
+              AND fc.line <= caller.end_line
+              AND caller.name <> target.name
+            MERGE (caller)-[:INVOKES]->(target)
             """)
             return True
         except Exception as e:
             print(f"Error resolving same-file calls: {e}")
             return False
+
+    def load_cross_file_call_relationships(self, cross_file_rels: List[Dict[str, Any]]) -> int:
+        """
+        Load cross-file function call relationships and create INVOKES relationships.
+        
+        Args:
+            cross_file_rels: List of cross-file call relationship dictionaries
+            
+        Returns:
+            Number of INVOKES relationships created
+        """
+        if not cross_file_rels:
+            return 0
+            
+        rows = []
+        for rel in cross_file_rels:
+            rows.append({
+                "source_file": rel["source_file"],
+                "target_file": rel["target_file"],
+                "function_name": rel["function_name"],
+                "line": rel["line"]
+            })
+
+        if rows:
+            result = self.session.run("""
+            UNWIND $rows AS r
+            MATCH (source_func:Function)
+            WHERE source_func.file_path = r.source_file
+              AND source_func.start_line <= r.line 
+              AND r.line <= source_func.end_line
+            MATCH (target_func:Function)
+            WHERE target_func.file_path = r.target_file
+              AND target_func.name = r.function_name
+            MERGE (source_func)-[:INVOKES]->(target_func)
+            RETURN count(*) as relationships_created
+            """, rows=rows)
+            
+            count = result.single()
+            return count["relationships_created"] if count else 0
+        
+        return 0
 
     def get_stats(self) -> Dict[str, Any]:
         """

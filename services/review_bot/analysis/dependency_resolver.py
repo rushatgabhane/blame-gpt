@@ -80,8 +80,13 @@ class DependencyResolver:
             impacts = self._find_entity_impacts(entity)
             all_impacts[f"{entity['file_path']}:{entity['name']}"] = impacts
             
-            print(f"      Found {len(impacts['direct'])} direct impacts, "
-                  f"{len(impacts['secondary'])} secondary impacts")
+            # Count how many impacts are in external files vs same file
+            direct_external = len([i for i in impacts['direct'] if not self._is_same_file(i.get('file_path', ''), entity['file_path'])])
+            secondary_external = len([i for i in impacts['secondary'] if not self._is_same_file(i.get('file_path', ''), entity['file_path'])])
+            
+            print(f"      Found {len(impacts['direct'])} direct impacts ({direct_external} external), "
+                  f"{len(impacts['secondary'])} secondary impacts ({secondary_external} external)")
+            print(f"      Same-file functions filtered out (whole file will be sent to LLM)")
         
         # Build dependency chains
         dependency_chains = self._build_dependency_chains(changed_entities, all_impacts)
@@ -105,6 +110,7 @@ class DependencyResolver:
     def _extract_changed_entities(self, mini_kg: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Extract changed entities from mini KG for dependency analysis.
+        Uses enhanced function change detection if available.
         
         Args:
             mini_kg: Mini knowledge graph structure
@@ -114,39 +120,57 @@ class DependencyResolver:
         """
         changed_entities = []
         
-        # Get function changes
-        for change in mini_kg.get("changes", {}).get("added_functions", []):
-            changed_entities.append({
-                "name": change["name"],
-                "file_path": change["file_path"],
-                "type": "function",
-                "change_type": "added"
-            })
+        # First, check for enhanced function changes (line-level diff analysis)
+        enhanced_function_changes = mini_kg.get("enhanced_function_changes", [])
+        if enhanced_function_changes:
+            print(f"   🎯 Using enhanced function changes: {len(enhanced_function_changes)} functions")
+            for change in enhanced_function_changes:
+                changed_entities.append({
+                    "name": change["name"],
+                    "file_path": change["file_path"],
+                    "type": "function",
+                    "change_type": change["change_type"],
+                    "detection_method": "line_level_diff"
+                })
+        else:
+            # Fallback to original logic
+            print(f"   ⚠️ No enhanced function changes, falling back to original detection")
+            
+            # Get function changes
+            for change in mini_kg.get("changes", {}).get("added_functions", []):
+                changed_entities.append({
+                    "name": change["name"],
+                    "file_path": change["file_path"],
+                    "type": "function",
+                    "change_type": "added"
+                })
+            
+            for change in mini_kg.get("changes", {}).get("modified_functions", []):
+                changed_entities.append({
+                    "name": change["name"],
+                    "file_path": change["file_path"],
+                    "type": "function",
+                    "change_type": "modified"
+                })
+            
+            for change in mini_kg.get("changes", {}).get("deleted_functions", []):
+                changed_entities.append({
+                    "name": change["name"],
+                    "file_path": change["file_path"],
+                    "type": "function",
+                    "change_type": "deleted"
+                })
         
-        for change in mini_kg.get("changes", {}).get("modified_functions", []):
-            changed_entities.append({
-                "name": change["name"],
-                "file_path": change["file_path"],
-                "type": "function",
-                "change_type": "modified"
-            })
-        
-        for change in mini_kg.get("changes", {}).get("deleted_functions", []):
-            changed_entities.append({
-                "name": change["name"],
-                "file_path": change["file_path"],
-                "type": "function",
-                "change_type": "deleted"
-            })
-        
-        # Get file changes
-        for file_path in mini_kg.get("changes", {}).get("modified_files", []):
-            changed_entities.append({
-                "name": file_path.split("/")[-1],  # Just filename
-                "file_path": file_path,
-                "type": "file",
-                "change_type": "modified"
-            })
+        # Only include file-level changes if we don't have enhanced function changes
+        # This prevents duplicate analysis paths that create the same impacts
+        if not enhanced_function_changes:
+            for file_path in mini_kg.get("changes", {}).get("modified_files", []):
+                changed_entities.append({
+                    "name": file_path.split("/")[-1],  # Just filename
+                    "file_path": file_path,
+                    "type": "file",
+                    "change_type": "modified"
+                })
         
         return changed_entities
     
@@ -176,20 +200,140 @@ class DependencyResolver:
             # Find files that import this function's file
             impacts["direct"].extend(self._find_file_importers(entity))
             
-        elif entity["type"] == "file":
+        # Store smart filtering results for comprehensive deduplication
+        smart_filtering_results = []
+        
+        if entity["type"] == "file":
             # Find all files that import this file
             impacts["direct"].extend(self._find_file_importers(entity))
             
-            # Find all functions in files that import this file
-            impacts["secondary"].extend(self._find_transitive_function_impacts(entity))
+            # Find all functions in files that import this file (stored separately for deduplication)
+            smart_filtering_results = self._find_transitive_function_impacts(entity)
         
-        # Find secondary impacts (2-hop dependencies)
+        # Filter out same-file functions from impacts (but keep direct callers)
+        entity_file = entity["file_path"]
+        entity_name = entity["name"]
+        impacts["direct"] = self._filter_out_same_file_functions_intelligently(impacts["direct"], entity_file, entity_name)
+        
+        # Comprehensive secondary impact collection with cross-source deduplication
+        secondary_impacts_map = {}  # Use map to track unique impacts and prioritize function-level relationships
+        
+        # First collect smart filtering results from file analysis
+        for smart_impact in smart_filtering_results:
+            unique_key = f"{smart_impact.get('name', '')}:{smart_impact.get('file_path', '')}:{smart_impact.get('start_line', '')}"
+            # Ensure smart filtering results have relationship_source for prioritization
+            if "relationship_source" not in smart_impact:
+                smart_impact["relationship_source"] = "file_import"
+            secondary_impacts_map[unique_key] = smart_impact
+        
+        # Then collect any existing secondary impacts (for backward compatibility)
+        for secondary_impact in impacts["secondary"]:
+            unique_key = f"{secondary_impact.get('name', '')}:{secondary_impact.get('file_path', '')}:{secondary_impact.get('start_line', '')}"
+            # Mark as file-level relationship for prioritization if not already marked
+            if "relationship_source" not in secondary_impact:
+                secondary_impact["relationship_source"] = "file_import"
+            
+            # Only add if not already present or if this has higher priority
+            if unique_key not in secondary_impacts_map:
+                secondary_impacts_map[unique_key] = secondary_impact
+            else:
+                current_priority = self._get_relationship_priority(secondary_impact)
+                existing_priority = self._get_relationship_priority(secondary_impacts_map[unique_key])
+                if current_priority < existing_priority:
+                    secondary_impacts_map[unique_key] = secondary_impact
+        
+        # Then find secondary impacts from direct impacts (function-level relationships)
         for direct_impact in impacts["direct"]:
             if direct_impact["entity_type"] == "function":
-                secondary_impacts = self._find_function_callers(direct_impact)
-                impacts["secondary"].extend(secondary_impacts)
+                # Find callers of direct impacts (who calls the functions this function calls)
+                secondary_callers = self._find_function_callers(direct_impact)
+                
+                for caller in secondary_callers:
+                    unique_key = f"{caller.get('name', '')}:{caller.get('file_path', '')}:{caller.get('start_line', '')}"
+                    # Mark as function-level relationship for prioritization
+                    caller["relationship_source"] = "function_call"
+                    
+                    # Prioritize function-level over file-level relationships
+                    if unique_key not in secondary_impacts_map or secondary_impacts_map[unique_key].get("relationship_source") == "file_import":
+                        secondary_impacts_map[unique_key] = caller
+                
+                # Find callees of direct callees (what the called functions call)
+                # This captures the complete call chain: changed_func -> direct_callee -> secondary_callee
+                if direct_impact.get("relationship_type") == "called_by":
+                    secondary_callees = self._find_function_callees(direct_impact)
+                    
+                    for callee in secondary_callees:
+                        unique_key = f"{callee.get('name', '')}:{callee.get('file_path', '')}:{callee.get('start_line', '')}"
+                        # Mark as function-level relationship for prioritization
+                        callee["relationship_source"] = "function_call"
+                        
+                        # Prioritize function-level over file-level relationships
+                        if unique_key not in secondary_impacts_map or secondary_impacts_map[unique_key].get("relationship_source") == "file_import":
+                            secondary_impacts_map[unique_key] = callee
+        
+        # Convert back to list and filter out same-file functions
+        impacts["secondary"] = list(secondary_impacts_map.values())
+        impacts["secondary"] = self._filter_out_same_file_functions_intelligently(impacts["secondary"], entity_file, entity_name)
+        
+        # Final deduplication pass to handle smart filtering results
+        # Smart filtering may have added additional entries that bypass our previous deduplication
+        final_secondary_map = {}
+        for impact in impacts["secondary"]:
+            unique_key = f"{impact.get('name', '')}:{impact.get('file_path', '')}:{impact.get('start_line', '')}"
+            
+            # Prioritize by relationship source and filter reason
+            should_replace = False
+            if unique_key not in final_secondary_map:
+                should_replace = True
+            else:
+                existing = final_secondary_map[unique_key]
+                
+                # Priority order: function_call > actual_usage > file_import
+                current_priority = self._get_relationship_priority(impact)
+                existing_priority = self._get_relationship_priority(existing)
+                
+                if current_priority < existing_priority:  # Lower number = higher priority
+                    should_replace = True
+            
+            if should_replace:
+                final_secondary_map[unique_key] = impact
+        
+        impacts["secondary"] = list(final_secondary_map.values())
         
         return impacts
+    
+    def _get_relationship_priority(self, impact: Dict[str, Any]) -> int:
+        """
+        Get priority order for relationship sources and filter reasons.
+        Lower number = higher priority.
+        
+        Args:
+            impact: Impact entity
+            
+        Returns:
+            Priority level (lower is higher priority)
+        """
+        relationship_source = impact.get("relationship_source", "")
+        filter_reason = impact.get("filter_reason", "")
+        
+        # Highest priority: Direct function calls
+        if relationship_source == "function_call":
+            return 1
+        
+        # Medium priority: Actual usage from smart filtering
+        if filter_reason == "actual_usage":
+            return 2
+        
+        # Lower priority: Other smart filtering reasons
+        if filter_reason in ["high_centrality", "orchestrator"]:
+            return 3
+        
+        # Lowest priority: File imports
+        if relationship_source == "file_import":
+            return 4
+        
+        # Default case
+        return 5
     
     def _find_function_callers(self, entity: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
@@ -396,13 +540,57 @@ class DependencyResolver:
             # Cap at configured max functions to prevent overwhelming results
             max_functions = self.smart_filtering_config["max_secondary_impacts"]
             
-            # Also apply per-category limits to ensure diversity
-            max_per_category = max(10, max_functions // 3)
+            # Prioritize files by coupling strength - files with more calls are higher priority
+            # This ensures we get complete coverage of the most tightly coupled files
+            max_per_category = max(50, max_functions // 2)  # Increased limits to capture more functions
             
-            # Limit each category
-            actual_usage_limited = [f for f in filtered_functions if f.get('filter_reason') == 'actual_usage'][:max_per_category]
-            high_centrality_limited = [f for f in filtered_functions if f.get('filter_reason') == 'high_centrality'][:max_per_category]
-            orchestrator_limited = [f for f in filtered_functions if f.get('filter_reason') == 'orchestrator'][:max_per_category]
+            # Separate functions by category
+            actual_usage_functions = [f for f in filtered_functions if f.get('filter_reason') == 'actual_usage']
+            high_centrality_functions = [f for f in filtered_functions if f.get('filter_reason') == 'high_centrality']
+            orchestrator_functions = [f for f in filtered_functions if f.get('filter_reason') == 'orchestrator']
+            
+            # Simple and effective approach: prioritize files by number of calls to changed function
+            def apply_file_priority_filtering(functions, limit):
+                if len(functions) <= limit:
+                    return functions
+                
+                # Group by file
+                by_file = {}
+                for func in functions:
+                    file_path = func['file_path']
+                    if file_path not in by_file:
+                        by_file[file_path] = []
+                    by_file[file_path].append(func)
+                
+                # Sort files by number of functions calling the changed code (descending)
+                # Files with more calls are more tightly coupled and higher priority
+                file_items = list(by_file.items())
+                file_items.sort(key=lambda x: len(x[1]), reverse=True)
+                
+                result = []
+                remaining_slots = limit
+                
+                # Take ALL functions from each file, starting with highest priority files
+                for file_path, file_functions in file_items:
+                    if remaining_slots <= 0:
+                        break
+                    
+                    if len(file_functions) <= remaining_slots:
+                        # Take all functions from this file
+                        result.extend(file_functions)
+                        remaining_slots -= len(file_functions)
+                    else:
+                        # Take as many as we can fit
+                        result.extend(file_functions[:remaining_slots])
+                        remaining_slots = 0
+                        break
+                
+                return result
+            
+            # Apply file priority filtering to each category
+            actual_usage_limited = apply_file_priority_filtering(actual_usage_functions, max_per_category)
+            high_centrality_limited = apply_file_priority_filtering(high_centrality_functions, max_per_category)
+            orchestrator_limited = apply_file_priority_filtering(orchestrator_functions, max_per_category)
             
             # Combine limited results
             filtered_functions = actual_usage_limited + high_centrality_limited + orchestrator_limited
@@ -440,7 +628,7 @@ class DependencyResolver:
             MATCH (importer)-[:CONTAINS]->(func:Function)
             RETURN DISTINCT
                 func.name as func_name,
-                importer.path as file_path,
+                func.file_path as file_path,
                 func.start_line as start_line,
                 func.end_line as end_line,
                 func.ast_type as ast_type
@@ -487,31 +675,60 @@ class DependencyResolver:
         try:
             print(f"      🔍 Looking for actual usage of: {entity['file_path']}")
             
-            # Fixed query - simplified approach that actually works
-            # Look for function calls that reference the changed module
+            # Enhanced query to find both module calls and direct function calls via INVOKES
             module_name = entity["file_path"].split("/")[-1].replace(".ts", "").replace(".js", "")
             
             query = """
-            MATCH (caller_file:File)-[:CALLS]->(fc:FunctionCall)
-            WHERE (fc.target CONTAINS $module_name
-                   OR fc.target = $module_name)
-              AND NOT caller_file.path =~ ".*[Tt]est.*"
-              AND NOT caller_file.path CONTAINS $module_name
-              AND caller_file.path <> $file_path
+            // Find functions that call modules or have cross-file INVOKES relationships
+            MATCH (caller_func:Function)
+            WHERE NOT caller_func.file_path =~ ".*[Tt]est.*"
+              AND NOT caller_func.file_path CONTAINS $module_name
+              AND caller_func.file_path <> $file_path
             
-            MATCH (caller_file)-[:CONTAINS]->(caller_func:Function)
+            // Check for direct INVOKES relationships to target file functions
+            OPTIONAL MATCH (caller_func)-[:INVOKES]->(target_func:Function)
+            WHERE target_func.file_path ENDS WITH $file_path
             
-            // Check if the call is within the function's line range
-            WHERE caller_func.start_line <= fc.line AND fc.line <= caller_func.end_line
+            // Also check for module-style function calls
+            OPTIONAL MATCH (caller_file:File)-[:CALLS]->(fc:FunctionCall)
+            WHERE caller_file.path = caller_func.file_path
+              AND (fc.target CONTAINS $module_name OR fc.target = $module_name)
+              AND caller_func.start_line <= fc.line AND fc.line <= caller_func.end_line
+            
+            // Return functions that have either type of relationship
+            WITH caller_func, target_func, fc
+            WHERE target_func IS NOT NULL OR fc IS NOT NULL
+            
+            // Use a different approach: get a sample from each file
+            WITH caller_func, target_func, fc
+            WHERE target_func IS NOT NULL OR fc IS NOT NULL
+            
+            // Order by start_line first, then group by file and collect function data
+            WITH caller_func, target_func, fc
+            ORDER BY caller_func.file_path, caller_func.start_line
+            
+            // Group by file and collect function data in order
+            WITH caller_func.file_path as file_path,
+                 collect({
+                     name: caller_func.name,
+                     file_path: caller_func.file_path,
+                     start_line: caller_func.start_line,
+                     end_line: caller_func.end_line,
+                     ast_type: caller_func.ast_type,
+                     called_function: COALESCE(target_func.name, fc.target)
+                 })[0..50] as functions  // Increased from 20 to 50 to capture more functions per file
+            
+            // Unwind to get individual functions back
+            UNWIND functions as func
             
             RETURN DISTINCT
-                caller_func.name as func_name,
-                caller_file.path as file_path,
-                caller_func.start_line as start_line,
-                caller_func.end_line as end_line,
-                caller_func.ast_type as ast_type,
-                fc.target as called_function
-            LIMIT 30
+                func.name as func_name,
+                func.file_path as file_path,
+                func.start_line as start_line,
+                func.end_line as end_line,
+                func.ast_type as ast_type,
+                func.called_function as called_function
+            ORDER BY func.file_path, func.name
             """
             
             result = self.neo4j_client.session.run(query, {
@@ -578,7 +795,7 @@ class DependencyResolver:
             
             RETURN DISTINCT
                 func.name as func_name,
-                importer.path as file_path,
+                func.file_path as file_path,
                 func.start_line as start_line,
                 func.end_line as end_line,
                 func.ast_type as ast_type,
@@ -652,7 +869,7 @@ class DependencyResolver:
             
             RETURN DISTINCT
                 func.name as func_name,
-                importer.path as file_path,
+                func.file_path as file_path,
                 func.start_line as start_line,
                 func.end_line as end_line,
                 func.ast_type as ast_type,
@@ -690,6 +907,101 @@ class DependencyResolver:
         except Exception as e:
             print(f"      ⚠️ Error finding orchestrator functions: {e}")
             return []
+    
+    def _filter_out_same_file_functions_intelligently(self, impacts: List[Dict[str, Any]], entity_file: str, entity_name: str) -> List[Dict[str, Any]]:
+        """
+        Intelligently filter same-file functions while preserving important call chains.
+        
+        KEEPS:
+        1. All functions from different files
+        2. Functions from same file that DIRECTLY CALL the changed function (important for call chains)
+        3. Non-function entities (files, etc.)
+        
+        FILTERS OUT:
+        1. Functions from same file that DON'T directly call the changed function (noise)
+        
+        Args:
+            impacts: List of impact entities
+            entity_file: File path of the changed entity
+            entity_name: Name of the changed function
+            
+        Returns:
+            Filtered list preserving important same-file callers
+        """
+        filtered_impacts = []
+        
+        for impact in impacts:
+            should_keep = False
+            
+            # Always keep non-function entities (files, classes, etc.)
+            if impact.get("entity_type") != "function":
+                should_keep = True
+            
+            # Always keep functions from different files
+            elif not self._is_same_file(impact.get("file_path", ""), entity_file):
+                should_keep = True
+            
+            # For same-file functions: keep only if they directly call the changed function
+            elif (self._is_same_file(impact.get("file_path", ""), entity_file) and 
+                  impact.get("relationship_type") == "calls"):
+                should_keep = True
+                # Add metadata to indicate this is a same-file caller (for debugging)
+                impact["same_file_caller"] = True
+            
+            if should_keep:
+                filtered_impacts.append(impact)
+        
+        return filtered_impacts
+    
+    def _filter_out_same_file_functions(self, impacts: List[Dict[str, Any]], entity_file: str) -> List[Dict[str, Any]]:
+        """
+        LEGACY: Filter out functions that are in the same file as the changed entity.
+        Since we'll send the whole changed file to the LLM anyway, 
+        we don't need to list same-file functions as separate impacts.
+        
+        Args:
+            impacts: List of impact entities
+            entity_file: File path of the changed entity
+            
+        Returns:
+            Filtered list excluding same-file functions
+        """
+        filtered_impacts = []
+        
+        for impact in impacts:
+            # Keep the impact if:
+            # 1. It's not a function (e.g., it's a file)
+            # 2. It's a function in a different file
+            if (impact.get("entity_type") != "function" or 
+                not self._is_same_file(impact.get("file_path", ""), entity_file)):
+                filtered_impacts.append(impact)
+        
+        return filtered_impacts
+    
+    def _is_same_file(self, impact_file: str, entity_file: str) -> bool:
+        """
+        Check if two file paths refer to the same file.
+        Handles both relative and absolute paths.
+        
+        Args:
+            impact_file: File path from impact entity
+            entity_file: File path from changed entity
+            
+        Returns:
+            True if they refer to the same file
+        """
+        if not impact_file or not entity_file:
+            return False
+        
+        # Normalize paths by using the filename and comparing
+        impact_filename = impact_file.split("/")[-1]
+        entity_filename = entity_file.split("/")[-1]
+        
+        # Also check if one ends with the other (for relative vs absolute paths)
+        return (impact_filename == entity_filename or 
+                impact_file.endswith(entity_file) or 
+                entity_file.endswith(impact_file) or
+                impact_file == entity_file)
     
     def _build_dependency_chains(
         self, 

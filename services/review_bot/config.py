@@ -30,9 +30,9 @@ class ReviewBotConfig:
     
     # Smart filtering settings
     ENABLE_SMART_FILTERING = os.getenv("ENABLE_SMART_FILTERING", "true").lower() == "true"
-    MAX_SECONDARY_IMPACTS = int(os.getenv("MAX_SECONDARY_IMPACTS", "30"))
-    MIN_CENTRALITY_THRESHOLD = int(os.getenv("MIN_CENTRALITY_THRESHOLD", "10"))
-    MIN_ORCHESTRATOR_THRESHOLD = int(os.getenv("MIN_ORCHESTRATOR_THRESHOLD", "20"))
+    MAX_SECONDARY_IMPACTS = int(os.getenv("MAX_SECONDARY_IMPACTS", "80"))
+    MIN_CENTRALITY_THRESHOLD = int(os.getenv("MIN_CENTRALITY_THRESHOLD", "5"))
+    MIN_ORCHESTRATOR_THRESHOLD = int(os.getenv("MIN_ORCHESTRATOR_THRESHOLD", "10"))
     
     # Docker Neo4j settings (for local development)
     NEO4J_DOCKER_IMAGE = "neo4j:5.20"

@@ -383,6 +383,13 @@ class KnowledgeGraphBuilder:
             if self.neo4j_client.resolve_same_file_calls():
                 print("      ✅ Same-file INVOKES relationships created")
             
+            # Load cross-file function call relationships
+            print("   🌐 Loading cross-file function calls...")
+            cross_file_count = self.neo4j_client.load_cross_file_call_relationships(
+                relationships['cross_file_call_relationships']
+            )
+            print(f"      ✅ {cross_file_count} cross-file INVOKES relationships created")
+            
             # Get final statistics
             stats = self.neo4j_client.get_stats()
             if stats:
