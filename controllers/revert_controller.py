@@ -17,7 +17,7 @@ class RevertRequest(BaseModel):
 
 @revert_router.post("/api/revert", dependencies=[Depends(auth_middleware.verify_internal_auth_token)])
 async def revert(request: Request, data: RevertRequest):
-    db = cast(Database, request.app.state.db)
+    db = cast(Database, request.app.state.docs_db)
 
     async def stream_logs():
         async for step in revert_pipeline.run(data.pull_request_id, db):

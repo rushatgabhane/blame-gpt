@@ -3,7 +3,7 @@ import subprocess
 from collections.abc import AsyncGenerator
 
 from libs.github import repo
-from libs.sqlite.core.core_sqlite_client import Database
+from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
 
 logger = logging.getLogger(__name__)
