@@ -83,7 +83,9 @@ async def react_comment(comment_url: str, emoji: str):
             )
 
         if res.status_code != 201:
-            logger.info(f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}")
+            logger.info(
+                f"failed to react with {emoji} on comment {comment_url}/reactions, status code: {res.status_code}"
+            )
     except httpx.ConnectTimeout:
         logger.warning(f"connection timeout while trying to react with {emoji} on comment {comment_url}")
     except httpx.RequestError as e:
