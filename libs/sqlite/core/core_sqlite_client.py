@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import sqlite3
 from functools import wraps
@@ -7,15 +8,18 @@ from pathlib import Path
 from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
+from libs.sqlite.vector.vector_service import VectorService
 from models.enums import CommandName
 from models.models import CulpritPullRequest, Issue, PullRequest, TestSuite, UsageLog, User, UserUsageLog
+
+logger = logging.getLogger(__name__)
 
 
 def require_connection(method):
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self.connection is None:
-            raise ValueError("database connection is not initialized.")
+            raise RuntimeError("Database connection is not available")
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -36,6 +40,9 @@ class Database:
         self.connection.execute("PRAGMA synchronous=NORMAL;")
         self.connection.execute("PRAGMA strict=ON;")
         self.connection.execute("PRAGMA foreign_keys=ON;")
+
+        # Initialize vector service
+        self.vector_service = VectorService(self.connection)
 
     def close(self):
         if self.connection:
@@ -71,6 +78,7 @@ class Database:
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
+            logger.error(f"Failed to add pull request {pr.id}: {e}", exc_info=True)
             raise e
 
     # Does not return embeddings
@@ -115,6 +123,7 @@ class Database:
             self.connection.commit()
         except Exception as e:
             self.connection.rollback()
+            logger.error(f"Failed to add issue {issue.id}: {e}", exc_info=True)
             raise e
 
     @require_connection
@@ -227,29 +236,34 @@ class Database:
     @require_connection
     def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
         assert self.connection is not None
-        try:
-            self.connection.execute(
-                core_queries.ADD_PULL_REQUEST_TEST_STEPS,
-                (pull_request_id, test_steps),
-            )
-            self.connection.commit()
-        except Exception as e:
-            self.connection.rollback()
-            raise e
+        self.connection.execute(core_queries.ADD_PULL_REQUEST_TEST_STEPS, (pull_request_id, test_steps))
+        self.connection.commit()
 
     @require_connection
-    def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int | None:
+    def get_pull_request_test_steps(self, pull_request_id: int) -> str | None:
         assert self.connection is not None
-        try:
-            row = self.connection.execute(
-                core_queries.ADD_USER,
-                (username, email, name, avatar_url),
-            ).fetchone()
-            self.connection.commit()
-            return row[0] if row else None
-        except Exception as e:
-            self.connection.rollback()
-            raise e
+        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_BY_ID, (pull_request_id,)).fetchone()
+        if not row:
+            return None
+        return row[1]
+
+    @require_connection
+    def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int:
+        assert self.connection is not None
+        rows = self.connection.execute(
+            core_queries.ADD_USER,
+            (username, email, name, avatar_url),
+        ).fetchone()
+
+        if rows:
+            user_id = rows[0][0]
+        else:
+            # User already exists, fetch the ID
+            row = self.connection.execute(core_queries.GET_USER_ID_BY_USERNAME, (username,)).fetchone()
+            user_id = row[0] if row else None
+
+        self.connection.commit()
+        return user_id
 
     @require_connection
     def get_user_by_username(self, username: str) -> User | None:
@@ -356,11 +370,65 @@ class Database:
     @require_connection
     def add_test_suite(self, case_id: int, title: str, steps: str, hash: str, embedding: list[float]):
         assert self.connection is not None
-        self.connection.execute(
-            core_queries.INSERT_TEST_SUITE,
-            (case_id, title, steps, hash, json.dumps(embedding)),
-        )
-        self.connection.commit()
+
+        try:
+            # Insert into original table (for backward compatibility)
+            self.connection.execute(
+                core_queries.INSERT_TEST_SUITE,
+                (case_id, title, steps, hash, json.dumps(embedding)),
+            )
+
+            # Also insert into vector table
+            self.vector_service.add_test_suite_vector(
+                case_id=case_id, title=title, steps=steps, hash=hash, embedding=embedding
+            )
+
+            self.connection.commit()
+        except Exception as e:
+            self.connection.rollback()
+            raise e
+
+    @require_connection
+    def add_test_suites_batch(self, test_suites: list[tuple[int, str, str, str, list[float]]], batch_size: int = 100):
+        """
+        Add multiple test suites in batches for better performance.
+
+        Args:
+            test_suites: List of tuples (case_id, title, steps, hash, embedding)
+            batch_size: Number of items to process in each batch
+        """
+        assert self.connection is not None
+
+        if not test_suites:
+            return
+
+        total_batches = (len(test_suites) + batch_size - 1) // batch_size
+        logger.info(f"Processing {len(test_suites)} test suites in {total_batches} batches of {batch_size}")
+
+        for i in range(0, len(test_suites), batch_size):
+            batch = test_suites[i : i + batch_size]
+            batch_num = (i // batch_size) + 1
+
+            try:
+                # Prepare data for original table
+                original_table_data = [
+                    (case_id, title, steps, hash, json.dumps(embedding))
+                    for case_id, title, steps, hash, embedding in batch
+                ]
+
+                # Batch insert to original table
+                self.connection.executemany(core_queries.INSERT_TEST_SUITE, original_table_data)
+
+                # Batch insert to vector table
+                self.vector_service.add_test_suite_vectors_batch(batch)
+
+                self.connection.commit()
+                logger.info(f"Successfully processed batch {batch_num}/{total_batches} ({len(batch)} items)")
+
+            except Exception as e:
+                self.connection.rollback()
+                logger.error(f"Failed to process batch {batch_num}/{total_batches}: {e}", exc_info=True)
+                raise e
 
     @require_connection
     def get_hash_by_case_id(self, case_id: int) -> str | None:
@@ -385,3 +453,20 @@ class Database:
             )
             for row in rows
         ]
+
+    def find_similar_test_suites(self, query_embedding: list[float], k: int = 5) -> list[TestSuite]:
+        """
+        Find similar test suites using vector search.
+
+        Args:
+            query_embedding: The embedding vector to search for
+            k: Number of similar results to return
+
+        Returns:
+            List of TestSuite objects, sorted by similarity
+        """
+        if not query_embedding:
+            return []
+
+        results = self.vector_service.find_similar_test_suites(query_embedding, k)
+        return [result.to_test_suite() for result in results]

@@ -145,3 +145,21 @@ SELECT hash FROM test_suite WHERE case_id = ?;
 GET_ALL_TEST_SUITE = """
 SELECT id, case_id, title, steps, hash, embedding FROM test_suite;
 """
+
+INSERT_TEST_SUITE_VECTOR = """
+INSERT OR REPLACE INTO test_suite_vectors 
+(case_id, title, steps, hash, embedding)
+VALUES (?, ?, ?, ?, ?);
+"""
+
+SEARCH_SIMILAR_TEST_SUITES = """
+SELECT 
+    case_id,
+    title,
+    steps,
+    hash,
+    distance
+FROM test_suite_vectors
+WHERE embedding MATCH ? AND k = ?
+ORDER BY distance ASC;
+"""

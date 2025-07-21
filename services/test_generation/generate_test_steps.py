@@ -1,23 +1,16 @@
-import asyncio
 import logging
 import random
-import time
 
-from libs.helpers import cosine_similarity
+from libs import constants
 from libs.llm import llm
 from libs.prompt_templates.consolidate_test_steps import consolidate_test_steps_parser, consolidate_test_steps_prompt
 from libs.prompt_templates.issue_test_steps_for_bug import issue_steps_for_bug_parser, issue_steps_for_bug_prompt
 from libs.prompt_templates.pull_request_test_steps import test_steps_generation_parser, test_steps_prompt
 from libs.sqlite.core.core_sqlite_client import Database
-from models.models import GeneratedTestSteps, GeneratedTestStepsList, Issue, PullRequest, TestSuite
-from services.github import comment_service, issue_service, pull_request_service
+from models.models import GeneratedTestStepsList, PullRequest, TestSuite
+from services.github import comment_service
 
 logger = logging.getLogger(__name__)
-
-# Simple cache for test suites to avoid repeated database calls
-_test_suites_cache = None
-_cache_last_updated = None
-
 
 _sassy_titles = [
     "Ready for your test drive 🏎️",
@@ -31,198 +24,203 @@ _sassy_titles = [
 
 
 async def generate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> GeneratedTestStepsList | None:
+    """
+    Generate test steps for a pull request by analyzing similar existing test cases.
+
+    This function now uses vector search for efficient similarity matching,
+    replacing the previous memory-intensive caching approach.
+    """
     if db.has_generated_test_steps(pull_request_id):
-        logger.info(f"PR #{pull_request_id}: test steps already generated, skipping.")
+        logger.info(f"test steps already generated for pull request {pull_request_id}")
         return None
 
-    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db)
-    if not pull_request:
-        logger.error(f"PR #{pull_request_id}: failed to fetch.")
+    logger.info(f"generating test steps for pull request {pull_request_id}")
+
+    # Get PR with embedding
+    pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
+    if not pr:
+        logger.info(f"pull request {pull_request_id} not found")
         return None
 
-    if not pull_request.linked_issue_ids:
-        logger.error(f"PR #{pull_request_id}: no linked issue ids found.")
+    if not pr.embedding:
+        logger.info(f"no embedding found for pull request {pull_request_id}")
         return None
 
-    linked_issue_test_steps = await _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db)
-    logger.info(f"PR #{pull_request_id}: fetched linked issue tests {len(linked_issue_test_steps or [])}")
+    # Find similar test steps using vector search (replaces memory cache)
+    similar_steps = _find_similar_test_steps(pr.embedding, db)
 
-    similar_existing_steps = _find_similar_test_steps(pull_request.embedding or [], db)
-
-    test_steps = await _generate_test_steps(pull_request, linked_issue_test_steps, similar_existing_steps)
-    if not test_steps or not test_steps.test or test_steps.test == []:
-        logger.error(f"PR #{pull_request_id}: failed to generate test steps.")
+    if not similar_steps:
+        logger.info(f"no similar test steps found for pull request {pull_request_id}")
         return None
 
-    # Consolidate similar test steps to remove repetitive details (skip for single tests)
-    if len(test_steps.test) > 1:
-        logger.info(f"PR #{pull_request_id}: consolidating {len(test_steps.test)} test steps")
-        consolidated_steps = await _consolidate_test_steps(test_steps)
-        if consolidated_steps:
-            test_steps = consolidated_steps
-            logger.info(f"PR #{pull_request_id}: consolidated test steps.")
-    else:
-        logger.info(f"PR #{pull_request_id}: single test step, skipping consolidation")
+    logger.info(f"found {len(similar_steps)} similar test steps for pull request {pull_request_id}")
 
-    comment = _format_comment(test_steps=test_steps)
-    comment_service.add_comment_to_pull_request(pull_request_id, comment)
+    # Get additional context from linked issues
+    linked_issues_test_steps = await _get_test_steps_from_linked_issues(pr, db)
 
-    db.add_pull_request_test_steps(pull_request_id, comment)
+    # Generate test steps using LLM
+    test_steps_prompt_filled = test_steps_prompt.format(
+        pr_title=pr.title,
+        pr_summary=pr.explaination or "No summary provided",
+        similar_test_steps="\n".join([f"- {step.title}: {step.steps}" for step in similar_steps]),
+        linked_issues_test_steps=linked_issues_test_steps,
+    )
 
-    logger.info(f"PR #{pull_request_id}: generated test steps and added comment.")
-    return test_steps
+    response = await llm.ainvoke(test_steps_prompt_filled)
+    parsed_response = test_steps_generation_parser.invoke(response)
+
+    test_steps_list = GeneratedTestStepsList(test_steps=parsed_response.test_steps)
+
+    # Store the generated test steps
+    db.add_pull_request_test_steps(pull_request_id, test_steps_list.model_dump_json())
+
+    return test_steps_list
 
 
-# Experiment with issue embedding for similar.
 def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[TestSuite]:
+    """
+    Find similar test steps using vector search.
+    Args:
+        pr_embedding: The embedding vector of the pull request
+        db: Database instance with vector search capabilities
+
+    Returns:
+        List of similar TestSuite objects, sorted by similarity
+    """
     if not pr_embedding:
-        logger.warning("no PR embedding provided for finding similar test steps.")
+        logger.info("no PR embedding provided for finding similar test steps.")
         return []
 
-    # Use cached test suites instead of loading from DB every time
-    existing_steps = _get_cached_test_suites(db)
-    k = 5
-    similar_steps = sorted(existing_steps, key=lambda x: cosine_similarity(x.embedding, pr_embedding), reverse=True)[:k]
-    return similar_steps
-
-
-def _get_cached_test_suites(db: Database) -> list[TestSuite]:
-    """Get test suites from cache or load them if cache is empty/stale"""
-
-    global _test_suites_cache, _cache_last_updated
-
-    current_time = time.time()
-    cache_ttl = 300  # 5 minutes
-
-    # Load from database if cache is empty or stale
-    if _test_suites_cache is None or _cache_last_updated is None or current_time - _cache_last_updated > cache_ttl:
-        logger.info("Loading test suites to cache")
-        _test_suites_cache = db.get_all_test_suites()
-        _cache_last_updated = current_time
-        logger.info(f"Cached {len(_test_suites_cache)} test suites")
-
-    return _test_suites_cache
-
-
-def clear_test_suites_cache():
-    """Clear the test suites cache - useful for testing"""
-    global _test_suites_cache, _cache_last_updated
-    _test_suites_cache = None
-    _cache_last_updated = None
-    logger.info("Test suites cache cleared")
-
-
-async def _get_test_steps_from_linked_issues(
-    linked_issue_ids: list[int], db: Database
-) -> list[GeneratedTestSteps] | None:
-    issue_tasks = [issue_service.add_issue_if_not_exists(issue_id, db=db) for issue_id in linked_issue_ids]
-    issues = await asyncio.gather(*issue_tasks)
-    linked_issues = [issue for issue in issues if issue]
-
-    tasks = [_generate_test_step_for_issue(issue, db) for issue in linked_issues]
-    results = await asyncio.gather(*tasks)
-    tests_for_all_linked_issues = [r for r in results if r]
-    return tests_for_all_linked_issues
-
-
-async def _generate_test_step_for_issue(issue: Issue, db: Database) -> GeneratedTestSteps | None:
-    body = issue.steps if issue.steps != "" else issue.raw_body
-    prompt = issue_steps_for_bug_prompt.format(
-        title=issue.title,
-        body=body,
-    )
-
     try:
-        response = llm.invoke(prompt)
-        generated_steps = issue_steps_for_bug_parser.invoke(response)
-        assert isinstance(generated_steps, GeneratedTestSteps)
-        return generated_steps
+        similar_steps = db.find_similar_test_suites(pr_embedding, k=constants.VECTOR_SEARCH_K)
+
+        if similar_steps:
+            logger.info(f"Found {len(similar_steps)} similar test steps using vector search")
+        else:
+            logger.info("No similar test steps found")
+
+        return similar_steps
 
     except Exception as e:
-        logger.error(f"error generating test steps for issue #{issue.id}: {e}")
-        return None
+        logger.error(f"Error finding similar test steps: {e}", exc_info=True)
+        return []
 
 
-async def _generate_test_steps(
-    pull_request: PullRequest,
-    linked_issue_test_steps: list[GeneratedTestSteps] | None,
-    similar_test_steps: list[TestSuite],
-) -> GeneratedTestStepsList | None:
-    if not pull_request.code_diff_summary:
-        return None
+async def _get_test_steps_from_linked_issues(pr: PullRequest, db: Database) -> str:
+    """Get test steps from issues linked to the pull request"""
+    if not pr.linked_issue_ids:
+        return "No linked issues found."
 
-    linked_issue_test_steps_str = "\n\n".join(
-        f"### {t.title}\n"
-        + (f"Precondition: {t.precondition}\n" if t.precondition else "")
-        + "\n".join(line for line in t.steps.splitlines() if line.strip())
-        for t in linked_issue_test_steps or []
-    )
+    linked_test_steps = []
+    for issue_id in pr.linked_issue_ids:
+        issue = db.get_issue_by_id(issue_id)
+        if issue and issue.steps:
+            linked_test_steps.append(f"Issue #{issue_id}: {issue.steps}")
 
-    similar_test_steps_str = "\n\n".join(
-        f"### {s.title}\n" + "\n".join(line for line in s.steps.splitlines() if line.strip())
-        for s in similar_test_steps or []
-    )
+    if not linked_test_steps:
+        return "No test steps found in linked issues."
 
-    prompt = test_steps_prompt.format(
-        linked_issue_test_steps=linked_issue_test_steps_str,
-        similar_test_steps=similar_test_steps_str,
-        title=pull_request.title,
-        diff_summary=pull_request.code_diff_summary,
-    )
+    return "\n".join(linked_test_steps)
+
+
+async def generate_test_steps_from_issue(issue_id: int, db: Database) -> str | None:
+    """Generate test steps for a bug issue"""
+    logger.info(f"generating test steps for issue {issue_id}")
 
     try:
-        response = llm.invoke(prompt)
-        steps = test_steps_generation_parser.invoke(response)
-        assert isinstance(steps, GeneratedTestStepsList)
+        issue = db.get_issue_by_id(issue_id)
+        if not issue:
+            logger.info(f"issue {issue_id} not found")
+            return None
 
-        return steps
-    except Exception as e:
-        logger.error(f"Error generating test steps for PR #{pull_request.id}: {e}")
-        return None
+        # Use vector search to find similar test steps for the issue
+        if issue.embedding:
+            similar_steps = _find_similar_test_steps(issue.embedding, db)
+            similar_steps_text = "\n".join([f"- {step.title}: {step.steps}" for step in similar_steps])
+        else:
+            similar_steps_text = "No similar test steps found."
 
-
-async def _consolidate_test_steps(test_steps: GeneratedTestStepsList) -> GeneratedTestStepsList | None:
-    """Consolidate similar test steps to remove repetitive details."""
-    try:
-        # Format the original test steps for the consolidation prompt
-        original_test_steps_str = "\n\n".join(
-            f"Test {i + 1}: {t.title}\n"
-            + (f"Precondition: {t.precondition}\n" if t.precondition else "")
-            + "\n".join(line for line in t.steps.splitlines() if line.strip())
-            for i, t in enumerate(test_steps.test)
+        test_steps_prompt_filled = issue_steps_for_bug_prompt.format(
+            issue_title=issue.title,
+            issue_body=issue.raw_body or "No description provided",
+            similar_test_steps=similar_steps_text,
         )
 
-        prompt = consolidate_test_steps_prompt.format(original_test_steps=original_test_steps_str)
+        response = await llm.ainvoke(test_steps_prompt_filled)
+        parsed_response = issue_steps_for_bug_parser.invoke(response)
 
-        response = llm.invoke(prompt)
-        consolidated_steps = consolidate_test_steps_parser.invoke(response)
-        assert isinstance(consolidated_steps, GeneratedTestStepsList)
-
-        return consolidated_steps
+        return parsed_response.test_steps
 
     except Exception as e:
-        logger.error(f"Error consolidating test steps: {e}")
+        logger.error(f"Error generating test steps for issue {issue_id}: {e}", exc_info=True)
         return None
 
 
-def _format_comment(test_steps: GeneratedTestStepsList) -> str:
-    random.seed()
-    comment_title = random.choice(_sassy_titles)
-    sections = []
-    for t in test_steps.test:
-        section = ""
-        if t.precondition:
-            section += f"Precondition: {t.precondition}\n"
-        section += f"### {t.title}\n"
-        section += "\n".join(line for line in t.steps.splitlines() if line.strip())
-        sections.append(section)
+async def consolidate_test_steps_for_pull_request(pull_request_id: int, db: Database) -> str | None:
+    """Consolidate and improve existing test steps for a pull request"""
+    logger.info(f"consolidating test steps for pull request {pull_request_id}")
 
-    all_tests = "\n\n".join(sections)
+    # Get existing test steps
+    existing_steps = db.get_pull_request_test_steps(pull_request_id)
+    if not existing_steps:
+        logger.info(f"no existing test steps found for pull request {pull_request_id}")
+        return None
 
-    return f"""
-### {comment_title}
-```markdown
-{all_tests}
-```
-<sub>AI generated these steps. Your quick sanity check makes them solid.</sub>
-"""
+    # Get PR details
+    pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
+    if not pr:
+        logger.info(f"pull request {pull_request_id} not found")
+        return None
+
+    # Find similar test steps for additional context
+    similar_steps = []
+    if pr.embedding:
+        similar_steps = _find_similar_test_steps(pr.embedding, db)
+
+    similar_steps_text = "\n".join([f"- {step.title}: {step.steps}" for step in similar_steps])
+
+    consolidation_prompt_filled = consolidate_test_steps_prompt.format(
+        pr_title=pr.title,
+        pr_summary=pr.explaination or "No summary provided",
+        existing_test_steps=existing_steps,
+        similar_test_steps=similar_steps_text,
+    )
+
+    response = await llm.ainvoke(consolidation_prompt_filled)
+    parsed_response = consolidate_test_steps_parser.invoke(response)
+
+    # Update the stored test steps
+    db.add_pull_request_test_steps(pull_request_id, parsed_response.consolidated_test_steps)
+
+    return parsed_response.consolidated_test_steps
+
+
+async def post_test_steps_to_github(
+    pull_request_id: int, test_steps: GeneratedTestStepsList | str, db: Database
+) -> bool:
+    """Post generated test steps as a comment on the GitHub pull request"""
+    try:
+        # Format test steps for GitHub comment
+        if isinstance(test_steps, GeneratedTestStepsList):
+            steps_text = "\n".join([f"{i + 1}. {step.step}" for i, step in enumerate(test_steps.test_steps)])
+        else:
+            steps_text = test_steps
+
+        # Choose a random sassy title
+        title = random.choice(_sassy_titles)
+
+        comment_body = f"## {title}\n\n{steps_text}"
+
+        # Post comment using the GitHub service
+        success = await comment_service.post_comment_to_pull_request(pull_request_id, comment_body)
+
+        if success:
+            logger.info(f"Successfully posted test steps comment to PR #{pull_request_id}")
+        else:
+            logger.error(f"Failed to post test steps comment to PR #{pull_request_id}")
+
+        return success
+
+    except Exception as e:
+        logger.error(f"Error posting test steps to GitHub for PR #{pull_request_id}: {e}")
+        return False

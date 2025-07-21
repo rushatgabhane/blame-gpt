@@ -172,3 +172,4 @@ xxhash==3.5.0
 yoyo-migrations==9.0.0
 zipp==3.23.0
 zstandard==0.23.0
+sqlite-vec>=0.1.0
