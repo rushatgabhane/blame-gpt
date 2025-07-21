@@ -222,8 +222,8 @@ class Database:
     def has_generated_test_steps(self, pull_request_id: int) -> bool:
         assert self.connection is not None
 
-        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_BY_ID, (pull_request_id,)).fetchone()
-        return bool(row and row[1])
+        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_ID_BY_ID, (pull_request_id,)).fetchone()
+        return bool(row and row["pull_request_id"])
 
     @require_connection
     def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
