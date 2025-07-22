@@ -42,7 +42,6 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 logger.info(f"Found commit {commit.sha} to revert. Reverting...")
                 git_revert_status = subprocess.run(
                     ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit.sha, "-m", "1"],
-                    check=True,
                     stderr=subprocess.STDOUT,
                 )
 
@@ -60,6 +59,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
 
                 break
 
+        pull_request = None
         if is_production_environment():
             logger.info("Opening PR with changes...")
             pull_request = repo.create_pull(
@@ -72,7 +72,10 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             logger.info(f"PR {pull_request.id} opened at {pull_request.url}")
 
         _delete_new_branch(local_revert_branch)
-        yield f"revert pipeline completed. PR {pull_request.id} opened at {pull_request.url}"
+        if pull_request:
+            yield f"revert pipeline completed. PR {pull_request.id} opened at {pull_request.url}"
+        else:
+            yield "revert pipeline completed. Changes committed locally (non-production environment"
 
     except Exception as e:
         logger.exception(f"{pull_request_id}: error in revert pipeline {e}")

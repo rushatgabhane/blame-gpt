@@ -39,7 +39,7 @@ def revert_with_ai(repo: Repository, pull_request_id: int, commit: Commit):
             commit_ai_revert(pull_request_id)
 
         except Exception as e:
-            logging.error(f"failed to process PR {pull_request_id}: {e}")
+            logger.error(f"failed to process PR {pull_request_id}: {e}")
             return
 
     except Exception as e:
@@ -51,7 +51,7 @@ def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[Ed
     """
     Send patches to AI and get intelligent revert suggestions.
     """
-    edit_suggestions = []
+    edit_suggestions: list[EditSuggestion] = []
 
     for patch in patches:
         # Prepare context for AI
@@ -73,7 +73,7 @@ def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[Ed
 
         # Get AI response
         ai_response = llmReasoningCheap.invoke(prompt)
-        print(ai_response)
+        logger.debug(f"Generated {len(edit_suggestions)} edit suggestions")
 
         # Parse AI suggestions
         suggestions = parse_ai_suggestions(str(ai_response.content), patch.filename)
@@ -176,6 +176,10 @@ def _get_current_file_content(filename: str) -> list[str]:
     Get the current content of a file.
     """
     file_path = Path.joinpath(CLONE_DIR, filename)
+    if not file_path.exists():
+        logger.warning(f"File {filename} not found, returning empty content")
+        return []
+
     with open(file_path, encoding="utf-8") as f:
         lines = f.readlines()
 
