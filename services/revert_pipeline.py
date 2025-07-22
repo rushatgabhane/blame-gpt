@@ -12,71 +12,69 @@ logger = logging.getLogger(__name__)
 
 
 async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
-    # 1. problematic PR is always closed, so look for the commit r"Merge pull request #(\d+)"
+    # 1. problematic PR is always closed, so get the merge commit SHA from the PR
     # 2. git checkout -b revert-{pr_id}
     # 3. git revert the commit from 1
     # 4. can't track if a PR is processed because the files can't be saved on disk
 
     try:
         yield "starting the revert pipeline, syncing repo"
-        local_revert_branch = f"revert-{pull_request_id}"
+        pull_request = repo.get_pull(pull_request_id)
+        pull_request_id = pull_request.number
+        local_revert_branch = f"revert-{pull_request.number}"
         logger.info("Syncing repo...")
         sync_docs(db)
         yield "repo synced"
         logger.info(f"Checking out to branch {local_revert_branch}...")
         # delete if exists
         _delete_new_branch(local_revert_branch)
-        subprocess.run(
-            ["git", "-C", str(CLONE_DIR), "checkout", "-b", local_revert_branch],
-            # check=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
-        )
+        subprocess.run(["git", "-C", str(CLONE_DIR), "checkout", "-b", local_revert_branch])
         yield f"checked out to branch {local_revert_branch}"
 
-        logger.info("Comparing staging branch with production to find commits...")
-        comparison = repo.compare("production", "staging")
-        logger.info("Iterating through commits...")
-        for commit in comparison.commits:
-            if commit.commit.message.startswith(f"Merge pull request #{pull_request_id}"):
-                logger.info(f"Found commit {commit.sha} to revert. Reverting...")
-                git_revert_status = subprocess.run(
-                    ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit.sha, "-m", "1"],
-                    stderr=subprocess.STDOUT,
-                )
+        if pull_request.merged:
+            commit_sha = pull_request.merge_commit_sha
 
-                if git_revert_status.returncode >= 0:
-                    # 1. get file patches
-                    # by this time, the new is already created but the git revert commit has failed
-                    # 2. send patches (filename, edits) to the LLM
-                    # 3. get edit suggestions for each file
-                    # 4. apply edits
-                    # 5. commit
-                    # 6. open PR
-                    subprocess.run(["git", "-C", str(CLONE_DIR), "revert", "--abort"])
-                    logger.info("git revert failed, reverting with AI...")
-                    revert_service.revert_with_ai(repo, pull_request_id, commit)
+            logger.info("Comparing staging branch with production to find commits...")
+            logger.info("Iterating through commits...")
 
-                break
-
-        pull_request = None
-        if is_production_environment():
-            logger.info("Opening PR with changes...")
-            pull_request = repo.create_pull(
-                base="staging",  # confirm if correct base?
-                head=local_revert_branch,
-                title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
-                body=f"PR to revert changes in #{pull_request_id}",
-                maintainer_can_modify=True,
+            logger.info(f"Found commit {commit_sha} to revert. Reverting...")
+            git_revert_status = subprocess.run(
+                ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit_sha, "-m", "1"],
+                stderr=subprocess.STDOUT,
             )
-            logger.info(f"PR {pull_request.id} opened at {pull_request.url}")
 
-        _delete_new_branch(local_revert_branch)
-        if pull_request:
-            yield f"revert pipeline completed. PR {pull_request.id} opened at {pull_request.url}"
+            if git_revert_status.returncode != 0:
+                # 1. get file patches
+                # by this time, the new branch is already created but the git revert commit has failed
+                # 2. send patches (filename, edits) to the LLM
+                # 3. get edit suggestions for each file
+                # 4. apply edits
+                # 5. commit
+                # 6. open PR
+                subprocess.run(["git", "-C", str(CLONE_DIR), "revert", "--abort"])
+                logger.info("git revert failed, reverting with AI...")
+                revert_service.revert_with_ai(pull_request)
+
+            created_pull_request = None
+            if is_production_environment():
+                logger.info("Opening PR with changes...")
+                created_pull_request = repo.create_pull(
+                    base="staging",  # confirm if correct base?
+                    head=local_revert_branch,
+                    title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
+                    body=f"PR to revert changes in #{pull_request_id}",
+                    maintainer_can_modify=True,
+                )
+                logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.url}")
+
+            _delete_new_branch(local_revert_branch)
+            if created_pull_request:
+                yield f"revert pipeline completed. PR {created_pull_request.id} opened at {created_pull_request.url}"
+            else:
+                yield "revert pipeline completed. Changes committed locally (non-production environment"
         else:
-            yield "revert pipeline completed. Changes committed locally (non-production environment"
-
+            yield "PR is not merged. Skipping..."
+            return
     except Exception as e:
         logger.exception(f"{pull_request_id}: error in revert pipeline {e}")
         _delete_new_branch(local_revert_branch)

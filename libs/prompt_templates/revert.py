@@ -10,8 +10,9 @@ template = """
     I need help creating an intelligent revert for the following code changes.
 
     File: {filename}
-    Original commit: {commit_hash}
-    Commit message: {commit_message}
+    Original commit hash: {commit_hash}
+    Pull request title: {pull_request_title}
+    Pull request body message: {pull_request_body}
 
     Current file content:
     ```
@@ -36,6 +37,6 @@ template = """
 
 revert_prompt = PromptTemplate(
     template=template,
-    input_variables=["filename", "commit_hash", "commit_message", "file_content", "patch"],
+    input_variables=["filename", "commit_hash", "pull_request_body", "pull_request_title", "file_content", "patch"],
     partial_variables={"format_instructions": revert_parser.get_format_instructions()},
 )

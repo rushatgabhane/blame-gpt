@@ -3,8 +3,7 @@ import logging
 import subprocess
 from pathlib import Path
 
-from github.Commit import Commit
-from github.Repository import Repository
+from github.PullRequest import PullRequest
 
 from libs.llm import llmReasoningCheap
 from libs.prompt_templates.revert import revert_prompt
@@ -15,10 +14,11 @@ from services.github import pull_request_service
 logger = logging.getLogger(__name__)
 
 
-def revert_with_ai(repo: Repository, pull_request_id: int, commit: Commit):
+def revert_with_ai(pull_request: PullRequest):
     """
     Perform AI-assisted revert of a pull request.
     """
+    pull_request_id = pull_request.number
     try:
         # 1. Get file patches from the original PR
         patches = pull_request_service.get_pull_request_patch(pull_request_id)
@@ -29,8 +29,8 @@ def revert_with_ai(repo: Repository, pull_request_id: int, commit: Commit):
 
         try:
             # 3. Send patches to AI and get edit suggestions
-            edit_suggestions = get_ai_edit_suggestions(patches, commit)
-            print(edit_suggestions)
+            edit_suggestions = get_ai_edit_suggestions(patches, pull_request)
+            logger.debug(f"AI edit suggestions: \n{edit_suggestions}")
 
             # 4. Apply AI-suggested edits
             apply_edit_suggestions(edit_suggestions)
@@ -47,26 +47,28 @@ def revert_with_ai(repo: Repository, pull_request_id: int, commit: Commit):
         return
 
 
-def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[EditSuggestion]:
+def get_ai_edit_suggestions(file_patches: list[FilePatch], pull_request: PullRequest) -> list[EditSuggestion]:
     """
     Send patches to AI and get intelligent revert suggestions.
     """
     edit_suggestions: list[EditSuggestion] = []
 
-    for patch in patches:
+    for file_patch in file_patches:
         # Prepare context for AI
         context = {
-            "filename": patch.filename,
-            "patch": patch.patch,
-            "commit_message": commit.commit.message,
-            "commit_hash": str(commit.sha),
-            "file_content": _get_current_file_content(patch.filename),
+            "filename": file_patch.filename,
+            "patch": file_patch.patch,
+            "pull_request_title": pull_request.title,
+            "pull_request_body": pull_request.body,
+            "commit_hash": pull_request.merge_commit_sha,
+            "file_content": _get_current_file_content(file_patch.filename),
         }
 
         prompt = revert_prompt.format(
             filename=context["filename"],
             commit_hash=context["commit_hash"],
-            commit_message=context["commit_message"],
+            pull_request_body=context["pull_request_body"],
+            pull_request_title=context["pull_request_title"],
             file_content=context["file_content"],
             patch=context["patch"],
         )
@@ -75,7 +77,7 @@ def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[Ed
         ai_response = llmReasoningCheap.invoke(prompt)
 
         # Parse AI suggestions
-        suggestions = parse_ai_suggestions(str(ai_response.content), patch.filename)
+        suggestions = parse_ai_suggestions(str(ai_response.content), file_patch.filename)
         edit_suggestions.extend(suggestions)
         logger.debug(f"Generated {len(edit_suggestions)} edit suggestions")
 
