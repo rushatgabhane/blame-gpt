@@ -5,6 +5,7 @@ from collections.abc import AsyncGenerator
 from libs.github import repo
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
+from services.revert_service import revert_service
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +23,8 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         sync_docs(db)
         yield "repo synced"
         logger.info(f"Checking out to branch {local_revert_branch}...")
-        subprocess.run(
-            ["git", "-C", str(CLONE_DIR), "checkout", "main"],
-            # check=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
-        )
-        subprocess.run(
-            ["git", "-C", str(CLONE_DIR), "branch", "-D", local_revert_branch],
-            # check=True,
-            stdout=subprocess.PIPE,
-            text=True,
-            # stderr=subprocess.DEVNULL,
-        )
+        # delete if exists
+        _delete_new_branch(local_revert_branch)
         subprocess.run(
             ["git", "-C", str(CLONE_DIR), "checkout", "-b", local_revert_branch],
             # check=True,
@@ -49,19 +39,44 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         for commit in comparison.commits:
             if commit.commit.message.startswith(f"Merge pull request #{pull_request_id}"):
                 logger.info(f"Found commit {commit.sha} to revert. Reverting...")
-                subprocess.run(
-                    ["git", "-C", str(CLONE_DIR), "revert", commit.sha, "-m", "1"],
+                git_revert_status = subprocess.run(
+                    ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit.sha, "-m", "1"],
                     check=True,
-                    # stdout=subprocess.STDOUT,
                     stderr=subprocess.STDOUT,
                 )
-                logger.info("Committing changes...")
-                subprocess.run(["git", "-C", str(CLONE_DIR), "commit", "-am", f"Revert #{pull_request_id}"], check=True)
-                logger.info("Changes committed")
+
+                if git_revert_status.returncode >= 0:
+                    # 1. get file patches
+                    # by this time, the new is already created but the git revert commit has failed
+                    # 2. send patches (filename, edits) to the LLM
+                    # 3. get edit suggestions for each file
+                    # 4. apply edits
+                    # 5. commit
+                    # 6. open PR
+                    subprocess.run(["git", "-C", str(CLONE_DIR), "revert", "--abort"])
+                    logger.info("git revert failed, reverting with AI...")
+                    revert_service.revert_with_ai(repo, pull_request_id, commit)
+
                 break
 
+        _delete_new_branch(local_revert_branch)
         yield "revert pipeline completed"
 
     except Exception as e:
         logger.exception(f"{pull_request_id}: error in revert pipeline {e}")
+        _delete_new_branch(local_revert_branch)
         yield f"some error occurred in revert pipeline. please report this issue with the pull request id: {pull_request_id}"
+
+
+def _delete_new_branch(local_revert_branch: str):
+    subprocess.run(
+        ["git", "-C", str(CLONE_DIR), "checkout", "main"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    subprocess.run(
+        ["git", "-C", str(CLONE_DIR), "branch", "-D", local_revert_branch],
+        # check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
