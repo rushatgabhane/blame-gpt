@@ -79,7 +79,6 @@ def get_ai_edit_suggestions(file_patches: list[FilePatch], pull_request: PullReq
         # Parse AI suggestions
         suggestions = parse_ai_suggestions(str(ai_response.content), file_patch.filename)
         edit_suggestions.extend(suggestions)
-        logger.debug(f"Generated {len(edit_suggestions)} edit suggestions")
 
     return edit_suggestions
 
