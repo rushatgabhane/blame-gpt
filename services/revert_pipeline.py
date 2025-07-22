@@ -2,7 +2,7 @@ import logging
 import subprocess
 from collections.abc import AsyncGenerator
 
-from libs.github import repo
+from libs.github import gh_user, repo
 from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
@@ -59,8 +59,8 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             if is_production_environment():
                 logger.info("Opening PR with changes...")
                 created_pull_request = repo.create_pull(
-                    base="staging",  # confirm if correct base?
-                    head=local_revert_branch,
+                    base=pull_request.base.label,  # confirm if correct base?
+                    head=f"{gh_user.login}:{local_revert_branch}",
                     title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
                     body=f"PR to revert changes in #{pull_request_id}",
                     maintainer_can_modify=True,

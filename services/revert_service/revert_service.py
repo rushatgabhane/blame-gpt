@@ -190,4 +190,9 @@ def _get_current_file_content(filename: str) -> list[str]:
 
 def commit_ai_revert(pull_request_id: int):
     logger.info("Committing changes...")
-    subprocess.run(["git", "-C", str(CLONE_DIR), "commit", "-am", f"Revert #{pull_request_id}"], check=True)
+    try:
+        subprocess.run(["git", "-C", str(CLONE_DIR), "commit", "-am", f"Revert #{pull_request_id}"], check=True)
+        logger.info(f"Successfully committed revert for PR #{pull_request_id}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to commit revert for PR #{pull_request_id}: {e}")
+        return
