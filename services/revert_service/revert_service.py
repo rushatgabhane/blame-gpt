@@ -73,11 +73,11 @@ def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[Ed
 
         # Get AI response
         ai_response = llmReasoningCheap.invoke(prompt)
-        logger.debug(f"Generated {len(edit_suggestions)} edit suggestions")
 
         # Parse AI suggestions
         suggestions = parse_ai_suggestions(str(ai_response.content), patch.filename)
         edit_suggestions.extend(suggestions)
+        logger.debug(f"Generated {len(edit_suggestions)} edit suggestions")
 
     return edit_suggestions
 
