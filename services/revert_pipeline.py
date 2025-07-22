@@ -3,6 +3,7 @@ import subprocess
 from collections.abc import AsyncGenerator
 
 from libs.github import repo
+from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
 from services.revert_service import revert_service
@@ -59,8 +60,19 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
 
                 break
 
+        if is_production_environment():
+            logger.info("Opening PR with changes...")
+            pull_request = repo.create_pull(
+                base="staging",  # confirm if correct base?
+                head=local_revert_branch,
+                title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
+                body=f"PR to revert changes in #{pull_request_id}",
+                maintainer_can_modify=True,
+            )
+            logger.info(f"PR {pull_request.id} opened at {pull_request.url}")
+
         _delete_new_branch(local_revert_branch)
-        yield "revert pipeline completed"
+        yield f"revert pipeline completed. PR {pull_request.id} opened at {pull_request.url}"
 
     except Exception as e:
         logger.exception(f"{pull_request_id}: error in revert pipeline {e}")
