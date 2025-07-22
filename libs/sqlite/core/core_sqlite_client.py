@@ -250,16 +250,19 @@ class Database:
     @require_connection
     def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int:
         assert self.connection is not None
-        rows = self.connection.execute(
+        cursor = self.connection.execute(
             core_queries.ADD_USER,
             (username, email, name, avatar_url),
-        ).fetchone()
+        )
 
-        if rows:
-            user_id = rows[0][0]
+        if cursor.rowcount > 0:
+            user_id = cursor.lastrowid
         else:
             # User already exists, fetch the ID
-            row = self.connection.execute(core_queries.GET_USER_ID_BY_USERNAME, (username,)).fetchone()
+            row = self.connection.execute(
+                core_queries.GET_USER_ID_BY_USERNAME,
+                (username,),
+            ).fetchone()
             user_id = row[0] if row else None
 
         self.connection.commit()
