@@ -170,7 +170,7 @@ class TestSuite(BaseModel):
     embedding: list[float] | None = None
 
 
-class EditSuggestion:
+class EditSuggestion(BaseModel):
     filename: str
     line_start: int
     line_end: int

@@ -76,7 +76,7 @@ def get_ai_edit_suggestions(patches: list[FilePatch], commit: Commit) -> list[Ed
         print(ai_response)
 
         # Parse AI suggestions
-        suggestions = parse_ai_suggestions(ai_response, patch.filename)
+        suggestions = parse_ai_suggestions(str(ai_response.content), patch.filename)
         edit_suggestions.extend(suggestions)
 
     return edit_suggestions
@@ -115,7 +115,7 @@ def apply_edit_suggestions(suggestions: list[EditSuggestion]):
     Apply AI-suggested edits to the files.
     """
     # Group suggestions by filename
-    files_to_edit = {}
+    files_to_edit: dict[str, list[EditSuggestion]] = {}
     for suggestion in suggestions:
         if suggestion.filename not in files_to_edit:
             files_to_edit[suggestion.filename] = []
