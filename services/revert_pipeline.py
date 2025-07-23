@@ -61,7 +61,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             if is_production_environment():
                 logger.info("Opening PR with changes...")
                 subprocess.run(["git", "-C", str(CLONE_DIR), "push", "origin", local_revert_branch], check=True)
-                print(f"Branch {local_revert_branch} pushed to remote.")
+                logger.info(f"Branch {local_revert_branch} pushed to remote.")
                 created_pull_request = repo.create_pull(
                     base=pull_request.base.ref,
                     head=local_revert_branch,
