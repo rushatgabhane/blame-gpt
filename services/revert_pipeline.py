@@ -6,7 +6,6 @@ from libs.github import repo
 from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
-from services.revert_service import revert_service
 
 logger = logging.getLogger(__name__)
 
@@ -46,30 +45,35 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             if git_revert_status.returncode != 0:
                 # 1. get file patches
                 # by this time, the new branch is already created but the git revert commit has failed
-                # 2. send patches (filename, edits) to the LLM
-                # 3. get edit suggestions for each file
-                # 4. apply edits
+                # 2. send patches (filename, edits) to the LLM - skipped for now
+                # 3. get edit suggestions for each file - skipped for now
+                # 4. apply edits - skipped for now
                 # 5. commit
-                # 6. open PR
+                # 6. push branch to remote
+                # 7. open PR
                 subprocess.run(["git", "-C", str(CLONE_DIR), "revert", "--abort"])
-                logger.info("git revert failed, reverting with AI...")
-                revert_service.revert_with_ai(pull_request)
+                logger.info("git revert failed, returning...")
+                _delete_new_branch(local_revert_branch)
+                yield "git revert failed, skipping..."
+                return
 
             created_pull_request = None
             if is_production_environment():
                 logger.info("Opening PR with changes...")
+                subprocess.run(["git", "-C", str(CLONE_DIR), "push", "origin", local_revert_branch], check=True)
+                print(f"Branch {local_revert_branch} pushed to remote.")
                 created_pull_request = repo.create_pull(
-                    base=pull_request.base.ref,  # confirm if correct base?
+                    base=pull_request.base.ref,
                     head=local_revert_branch,
-                    title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
+                    title=f"Revert PR #{pull_request_id}",
                     body=f"PR to revert changes in #{pull_request_id}",
                     maintainer_can_modify=True,
                 )
-                logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.url}")
+                logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.html_url}")
 
             _delete_new_branch(local_revert_branch)
             if created_pull_request:
-                yield f"revert pipeline completed. PR {created_pull_request.id} opened at {created_pull_request.url}"
+                yield f"revert pipeline completed. PR {created_pull_request.id} opened at {created_pull_request.html_url}"
             else:
                 yield "revert pipeline completed. Changes committed locally (non-production environment"
         else:
