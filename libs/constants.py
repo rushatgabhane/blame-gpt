@@ -1,5 +1,6 @@
 REPO_OWNER = "Expensify"
 REPO_NAME = "App"
+CLONE_DIR = "data/app"
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 

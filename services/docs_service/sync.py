@@ -2,13 +2,14 @@ import logging
 import subprocess
 from pathlib import Path
 
+from libs import constants
 from libs.helpers import compute_sha256
 from libs.llm import embedding_model
 from libs.sqlite.docs.docs_sqlite_client import Database
 
-CLONE_DIR = Path("data/app")
+CLONE_DIR = Path(constants.CLONE_DIR)
 ARTICLES_DIR = CLONE_DIR / "docs/articles"
-REPO_URL = "https://github.com/Expensify/App.git"
+REPO_URL = f"https://github.com/{constants.REPO_OWNER}/{constants.REPO_NAME}.git"
 logger = logging.getLogger(__name__)
 
 
