@@ -42,7 +42,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit_sha, "-m", "1"],
                 stderr=subprocess.STDOUT,
             )
-            pr_body = f"PR to revert changes in #{pull_request_id}.",
+            pr_body = f"PR to revert changes in #{pull_request_id}."
 
             if git_revert_status != 0:
                 # 1. get file patches
