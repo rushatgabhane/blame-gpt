@@ -60,9 +60,9 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 logger.info("Opening PR with changes...")
                 subprocess.run(["git", "-C", str(CLONE_DIR), "push", "origin", local_revert_branch], check=True)
                 created_pull_request = repo.create_pull(
-                    base=pull_request.base.ref,  # confirm if correct base?
+                    base=pull_request.base.ref,
                     head=local_revert_branch,
-                    title=f"Revert PR #{pull_request_id}",  # probably need a better title and body
+                    title=f"Revert PR #{pull_request_id}",
                     body=f"PR to revert changes in #{pull_request_id}",
                     maintainer_can_modify=True,
                 )
@@ -90,7 +90,6 @@ def _delete_new_branch(local_revert_branch: str):
     )
     subprocess.run(
         ["git", "-C", str(CLONE_DIR), "branch", "-D", local_revert_branch],
-        # check=True,
         stdout=subprocess.PIPE,
         text=True,
     )
