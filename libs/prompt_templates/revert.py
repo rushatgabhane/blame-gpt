@@ -29,6 +29,7 @@ template = """
     2. Handle edge cases where a simple revert might break other code
     3. Suggest alternative approaches if a direct revert would be problematic
     4. Consider the semantic meaning of the changes, not just line-by-line reversal
+    5. Compare the changes properly and suggest the correct line numbers to be updated in the current file
 
     Respond with a JSON array of edit suggestions in this format:
 

@@ -43,7 +43,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 stderr=subprocess.STDOUT,
             )
 
-            if git_revert_status.returncode != 0:
+            if git_revert_status != 0:
                 # 1. get file patches
                 # by this time, the new branch is already created but the git revert commit has failed
                 # 2. send patches (filename, edits) to the LLM
@@ -58,6 +58,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             created_pull_request = None
             if is_production_environment():
                 logger.info("Opening PR with changes...")
+                subprocess.run(["git", "-C", str(CLONE_DIR), "push", "origin", local_revert_branch], check=True)
                 created_pull_request = repo.create_pull(
                     base=pull_request.base.ref,  # confirm if correct base?
                     head=local_revert_branch,
@@ -65,11 +66,11 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                     body=f"PR to revert changes in #{pull_request_id}",
                     maintainer_can_modify=True,
                 )
-                logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.url}")
+                logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.html_url}")
 
             _delete_new_branch(local_revert_branch)
             if created_pull_request:
-                yield f"revert pipeline completed. PR {created_pull_request.id} opened at {created_pull_request.url}"
+                yield f"revert pipeline completed. PR {created_pull_request.id} opened at {created_pull_request.html_url}"
             else:
                 yield "revert pipeline completed. Changes committed locally (non-production environment"
         else:

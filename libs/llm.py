@@ -70,6 +70,7 @@ LLM_PRICING: dict[str, LLMPricing] = {
 }
 
 api_key = SecretStr(os.getenv("OPENAI_API_KEY") or "")
+huggingface_api_key = SecretStr(os.getenv("HUGGINGFACE_API_KEY") or "")
 
 llmReasoningCheap = ChatOpenAI(model=ModelNames.O3_MINI, api_key=api_key)
 llmReasoning = ChatOpenAI(model=ModelNames.O3, api_key=api_key)
@@ -77,6 +78,20 @@ llm = ChatOpenAI(model=ModelNames.GPT_4_1, api_key=api_key, temperature=0.2)
 llmCheap = ChatOpenAI(model=ModelNames.GPT_4_1_MINI, api_key=api_key, temperature=0.2)
 llmNano = ChatOpenAI(model=ModelNames.GPT_4_1_NANO, api_key=api_key, temperature=0.2)
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
+
+llmCodingModelCheapKimi = ChatOpenAI(
+    model="moonshotai/kimi-k2-instruct",
+    base_url="https://router.huggingface.co/novita/v3/openai",
+    api_key=huggingface_api_key,
+    temperature=0,
+)
+
+llmCodingModelCheapQwen = ChatOpenAI(
+    model="Qwen/Qwen3-Coder-480B-A35B-Instruct:novita",
+    base_url="https://router.huggingface.co/v1",
+    api_key=huggingface_api_key,
+    temperature=0,
+)
 
 if bool(os.getenv("USE_CHEAP_LLM_ONLY")):
     # Reassign the models to use the cheaper and non reasoning models

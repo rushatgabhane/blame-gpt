@@ -5,7 +5,7 @@ from pathlib import Path
 
 from github.PullRequest import PullRequest
 
-from libs.llm import llmReasoningCheap
+from libs.llm import llmCodingModelCheapKimi
 from libs.prompt_templates.revert import revert_prompt
 from models.models import EditSuggestion, FilePatch
 from services.docs_service.sync import CLONE_DIR
@@ -74,10 +74,14 @@ def get_ai_edit_suggestions(file_patches: list[FilePatch], pull_request: PullReq
         )
 
         # Get AI response
-        ai_response = llmReasoningCheap.invoke(prompt)
+        ai_response = llmCodingModelCheapKimi.invoke(prompt)
+        ai_response_clean = str(ai_response.content).replace("json", "").replace("```", "")
+        # ai_response_clean = ""
+        print(ai_response_clean)
+        print(type(ai_response_clean))
 
         # Parse AI suggestions
-        suggestions = parse_ai_suggestions(str(ai_response.content), file_patch.filename)
+        suggestions = parse_ai_suggestions(ai_response_clean, file_patch.filename)
         edit_suggestions.extend(suggestions)
 
     return edit_suggestions
@@ -89,6 +93,7 @@ def parse_ai_suggestions(ai_response: str, filename: str) -> list[EditSuggestion
     """
     try:
         suggestions_data = json.loads(ai_response)
+
         suggestions = []
 
         for suggestion in suggestions_data:
@@ -129,60 +134,107 @@ def apply_edit_suggestions(suggestions: list[EditSuggestion]):
 
 def _apply_file_edits(filename: str, suggestions: list[EditSuggestion]):
     """
-    Apply edits to a specific file.
+    Apply edits to a specific file, handling line number shifts correctly.
     """
     file_path = Path.joinpath(CLONE_DIR, filename)
 
     if not file_path.exists():
-        logger.warning(f"File {filename} does not exist, skipping")
+        print(f"Warning: File {filename} does not exist, skipping")
         return
 
     # Read current content
     with open(file_path, encoding="utf-8") as f:
-        lines = f.readlines()
+        content = f.read()
 
-    # Sort suggestions by line number (descending to avoid offset issues)
-    suggestions.sort(key=lambda x: x.line_start, reverse=True)
+    # Convert suggestions to character-based offsets for more reliable editing
+    char_based_edits = convert_to_char_offsets(content, suggestions)
 
-    # Apply each suggestion
-    for suggestion in suggestions:
+    # Sort by character offset (descending to avoid offset issues)
+    char_based_edits.sort(key=lambda x: x["start_offset"], reverse=True)
+
+    # Apply each edit
+    for edit in char_based_edits:
         try:
-            # Convert to 0-based indexing
-            start_idx = suggestion.line_start - 1
-            end_idx = suggestion.line_end - 1
+            start_offset = edit["start_offset"]
+            end_offset = edit["end_offset"]
+            new_text = edit["new_text"]
 
-            # Replace the lines
-            if suggestion.new_text:
-                new_lines = suggestion.new_text.split("\n")
-                lines[start_idx : end_idx + 1] = [line + "\n" for line in new_lines]
-            else:
-                # Delete lines
-                del lines[start_idx : end_idx + 1]
+            # Apply the edit
+            content = content[:start_offset] + new_text + content[end_offset:]
 
-            logger.info(
-                f"Applied edit to {filename} lines {suggestion.line_start}-{suggestion.line_end}: {suggestion.reasoning}"
+            print(
+                f"Applied edit to {filename} lines {edit['original_line_start']}-{edit['original_line_end']}: {edit['reasoning']}"
             )
 
-        except IndexError as e:
-            logger.warning(f"Error applying suggestion to {filename}: {e}")
+        except Exception as e:
+            print(f"Error applying suggestion to {filename}: {e}")
             continue
 
     # Write modified content back
     with open(file_path, "w", encoding="utf-8") as f:
-        f.writelines(lines)
+        f.write(content)
 
 
-def _get_current_file_content(filename: str) -> list[str]:
+def convert_to_char_offsets(content: str, suggestions: list[EditSuggestion]) -> list[dict]:
+    """
+    Convert line-based suggestions to character-based offsets.
+    This makes edits more reliable when multiple changes are applied.
+    """
+    lines = content.split("\n")
+    char_based_edits = []
+
+    for suggestion in suggestions:
+        try:
+            start_line = suggestion.line_start
+            end_line = suggestion.line_end
+
+            # Validate line numbers
+            if start_line < 0 or end_line >= len(lines) or start_line > end_line:
+                print(
+                    f"Warning: Invalid line range {suggestion.line_start}-{suggestion.line_end} for file {suggestion.filename}"
+                )
+                continue
+
+            # Calculate character offsets
+            start_offset = sum(len(lines[i]) + 1 for i in range(start_line))  # +1 for newline
+            end_offset = sum(len(lines[i]) + 1 for i in range(end_line + 1))
+
+            # Adjust for the last line if it doesn't end with newline
+            if end_line == len(lines) - 1 and not content.endswith("\n"):
+                end_offset -= 1
+
+            # Handle newlines in replacement text
+            new_text = suggestion.new_text if suggestion.new_text else ""
+
+            char_based_edits.append(
+                {
+                    "start_offset": start_offset,
+                    "end_offset": end_offset,
+                    "new_text": new_text,
+                    "original_line_start": suggestion.line_start,
+                    "original_line_end": suggestion.line_end,
+                    "reasoning": suggestion.reasoning,
+                }
+            )
+
+        except Exception as e:
+            print(f"Error converting suggestion to char offset: {e}")
+            continue
+
+    return char_based_edits
+
+
+def _get_current_file_content(filename: str) -> str:
     """
     Get the current content of a file.
     """
     file_path = Path.joinpath(CLONE_DIR, filename)
     if not file_path.exists():
         logger.warning(f"File {filename} not found, returning empty content")
-        return []
+        return ""
 
     with open(file_path, encoding="utf-8") as f:
-        lines = f.readlines()
+        lines = f.read()
 
     return lines
 
