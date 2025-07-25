@@ -42,6 +42,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 ["git", "-C", str(CLONE_DIR), "revert", "--no-edit", commit_sha, "-m", "1"],
                 stderr=subprocess.STDOUT,
             )
+            pr_body = f"PR to revert changes in #{pull_request_id}.",
 
             if git_revert_status != 0:
                 # 1. get file patches
@@ -54,6 +55,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                 subprocess.run(["git", "-C", str(CLONE_DIR), "revert", "--abort"])
                 logger.info("git revert failed, reverting with AI...")
                 revert_service.revert_with_ai(pull_request)
+                pr_body= f"{pr_body} \nWARNING: AI created this pull request, please verify the changes before merging"
 
             created_pull_request = None
             if is_production_environment():
@@ -63,7 +65,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
                     base=pull_request.base.ref,
                     head=local_revert_branch,
                     title=f"Revert PR #{pull_request_id}",
-                    body=f"PR to revert changes in #{pull_request_id}",
+                    body=pr_body,
                     maintainer_can_modify=True,
                 )
                 logger.info(f"PR {created_pull_request.id} opened at {created_pull_request.html_url}")
