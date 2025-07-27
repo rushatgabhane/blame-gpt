@@ -21,13 +21,12 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
     # 3. git revert the commit from 1
     # 4. can't track if a PR is processed because the files can't be saved on disk
 
-    if pull_request_id in tracked_pull_requests:
+    # implement PR lock with folder - cleaner and efficient
+    new_dir = Path.joinpath(CLONE_DIR, f"../revert-{pull_request_id}")
+    if os.path.exists(new_dir):
         yield "Revert PR request already received."
         return
 
-    # lock PR
-    tracked_pull_requests.add(pull_request_id)
-    new_dir = Path.joinpath(CLONE_DIR, f"../revert-{pull_request_id}")
     try:
         yield "starting the revert pipeline, syncing repo"
         pull_request = repo.get_pull(pull_request_id)
@@ -94,7 +93,6 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         yield f"some error occurred in revert pipeline. please report this issue with the pull request id: {pull_request_id}"
 
     _cleanup(new_dir)
-    tracked_pull_requests.remove(pull_request_id)
 
 
 def _sync_repo(dir: Path, db: Database):
@@ -109,5 +107,6 @@ def _sync_repo(dir: Path, db: Database):
 
 def _cleanup(directory_path: Path):
     # since the folder itslef is being deleted, there is no
-    # need to delete the branch separately
+    # need to delete the branch separately. Also, this way, we don't
+    # need to keep track of what the main branch is called (main/master)
     subprocess.run(["rm", "-rf", str(directory_path)])
