@@ -10,8 +10,6 @@ from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
 from services.revert_service import revert_service
 
-tracked_pull_requests = set()
-
 logger = logging.getLogger(__name__)
 
 
