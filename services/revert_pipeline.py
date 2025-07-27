@@ -7,6 +7,8 @@ from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
 
+tracked_pull_requests = set()
+
 logger = logging.getLogger(__name__)
 
 
@@ -16,6 +18,11 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
     # 3. git revert the commit from 1
     # 4. can't track if a PR is processed because the files can't be saved on disk
 
+    if pull_request_id in tracked_pull_requests:
+        yield "Pull request revert request already received."
+
+    # lock PR
+    tracked_pull_requests.add(pull_request_id)
     try:
         yield "starting the revert pipeline, syncing repo"
         pull_request = repo.get_pull(pull_request_id)
@@ -79,9 +86,12 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         else:
             yield "PR is not merged. Skipping..."
             return
+
+        tracked_pull_requests.remove(pull_request_id)
     except Exception as e:
         logger.exception(f"{pull_request_id}: error in revert pipeline {e}")
         _delete_new_branch(local_revert_branch)
+        tracked_pull_requests.remove(pull_request_id)
         yield f"some error occurred in revert pipeline. please report this issue with the pull request id: {pull_request_id}"
 
 
