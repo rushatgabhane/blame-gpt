@@ -168,3 +168,20 @@ class TestSuite(BaseModel):
     steps: str
     hash: str
     embedding: list[float] | None = None
+
+
+class EditSuggestion(BaseModel):
+    filename: str
+    line_start: int
+    line_end: int
+    old_text: str
+    new_text: str
+    reasoning: str
+
+
+class RevertPR(BaseModel):
+    line_start: int
+    line_end: int
+    old_text: str
+    new_text: str
+    reasoning: str

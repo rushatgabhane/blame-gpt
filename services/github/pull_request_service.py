@@ -30,7 +30,9 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
     return sorted(list(pr_numbers)) if pr_numbers else None
 
 
-def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None) -> None:
+def add_new_pull_requests_between(
+    base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None
+) -> None:
     with _add_new_prs_lock:
         new_ids = _get_pull_requests_between(base, head)
         if not new_ids:
@@ -42,7 +44,9 @@ def add_new_pull_requests_between(base: str, head: str, issue_id: int, db: Datab
         logging.info(f"{issue_id}: processing {len(new_ids_to_process)} new pull requests")
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {executor.submit(_get_pr_with_embeddings, pr_id, db, usage_log_id): pr_id for pr_id in new_ids_to_process}
+            futures = {
+                executor.submit(_get_pr_with_embeddings, pr_id, db, usage_log_id): pr_id for pr_id in new_ids_to_process
+            }
             for future in as_completed(futures):
                 pull_request = future.result()
                 if pull_request:
@@ -103,7 +107,7 @@ def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: in
         )
         response = llmReasoningCheap.invoke(code_diff_summary_input)
         track_llm_usage(db, usage_log_id, response, ModelNames.O3_MINI)
-        
+
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
@@ -181,7 +185,9 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
     return patches
 
 
-def add_pull_request_if_not_exist(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
+def add_pull_request_if_not_exist(
+    pull_request_id: int, db: Database, usage_log_id: int | None = None
+) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr

@@ -37,6 +37,6 @@ async def ingest_test_steps(core_db: CoreDatabase):
             embedding = embedding_model.embed_query(steps)
             if not embedding:
                 continue
-            
+
             core_db.add_test_suite(case_id=case_id, title=title, steps=steps, hash=hash, embedding=embedding)
             logger.info(f"added test case # {i}")
