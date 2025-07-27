@@ -27,7 +27,6 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
     # lock PR
     tracked_pull_requests.add(pull_request_id)
     new_dir = Path.joinpath(CLONE_DIR, f"../revert-{pull_request_id}")
-    repo_dir = Path.joinpath(new_dir, "app2")
     try:
         yield "starting the revert pipeline, syncing repo"
         pull_request = repo.get_pull(pull_request_id)
@@ -45,18 +44,18 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         yield "repo synced"
 
         logger.info(f"Checking out to branch {local_revert_branch}...")
-        subprocess.run(["git", "-C", str(repo_dir), "checkout", "-b", local_revert_branch])
+        subprocess.run(["git", "-C", str(new_dir), "checkout", "-b", local_revert_branch])
         yield f"checked out to branch {local_revert_branch}"
         commit_sha = pull_request.merge_commit_sha
 
         logger.info(f"Found commit {commit_sha} to revert. Reverting...")
         git_revert_status = subprocess.run(
-            ["git", "-C", str(repo_dir), "revert", "--no-edit", commit_sha, "-m", "1"],
+            ["git", "-C", str(new_dir), "revert", "--no-edit", commit_sha, "-m", "1"],
             stderr=subprocess.STDOUT,
         )
 
         if git_revert_status.returncode != 0:
-            subprocess.run(["git", "-C", str(repo_dir), "revert", "--abort"])
+            subprocess.run(["git", "-C", str(new_dir), "revert", "--abort"])
             logger.info("git revert failed, returning...")
             _cleanup(new_dir)
             tracked_pull_requests.remove(pull_request_id)
@@ -66,7 +65,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
         created_pull_request = None
         if is_production_environment():
             logger.info("Opening PR with changes...")
-            subprocess.run(["git", "-C", str(repo_dir), "push", "origin", local_revert_branch], check=True)
+            subprocess.run(["git", "-C", str(new_dir), "push", "origin", local_revert_branch], check=True)
             logger.info(f"Branch {local_revert_branch} pushed to remote.")
             created_pull_request = repo.create_pull(
                 base=pull_request.base.ref,
@@ -97,7 +96,7 @@ def _sync_repo(dir: Path, db: Database):
 
     sync_docs(db)
     os.mkdir(dir)
-    subprocess.run(["cp", "-r", str(CLONE_DIR), str(dir)], check=True, stderr=subprocess.PIPE, text=True)
+    subprocess.run(["cp", "-r", str(CLONE_DIR) +'/.', str(dir)], check=True, stderr=subprocess.PIPE, text=True)
 
 
 def _cleanup(directory_path: Path):
