@@ -96,7 +96,7 @@ def _sync_repo(dir: Path, db: Database):
 
     sync_docs(db)
     os.mkdir(dir)
-    subprocess.run(["cp", "-r", str(CLONE_DIR) +'/.', str(dir)], check=True, stderr=subprocess.PIPE, text=True)
+    subprocess.run(["cp", "-r", str(CLONE_DIR) + "/.", str(dir)], check=True, stderr=subprocess.PIPE, text=True)
 
 
 def _cleanup(directory_path: Path):
