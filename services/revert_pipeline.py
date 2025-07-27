@@ -7,7 +7,7 @@ from pathlib import Path
 from libs.github import repo
 from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
-from services.docs_service.sync import CLONE_DIR, REPO_URL, sync_docs
+from services.docs_service.sync import CLONE_DIR, sync_docs
 from services.revert_service import revert_service
 
 tracked_pull_requests = set()
