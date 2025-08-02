@@ -235,7 +235,7 @@ async def _run_command(
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
         thinking_comment = create_thinking_comment_for_pr(
             pull_request_id=issue_or_pull_request_id,
-            thinking_text=f"{thinking_verb()}...",
+            thinking_text=f"{thinking_verb()}... <img src='https://github.com/user-attachments/assets/aabec0d8-4fc8-4923-909d-b258e894c4dd' height=14>",
         )
         async for step in test_step_pipeline.run(
             issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again
