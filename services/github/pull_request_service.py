@@ -23,7 +23,8 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
 
     pr_numbers = set()
     for commit in comparison.commits:
-        match = re.search(r"Merge pull request #(\d+)", commit.commit.message)
+        # Ignores reverted PRs by design
+        match = re.search(r"^Merge pull request #(\d+)", commit.commit.message)
         if match:
             pr_numbers.add(int(match.group(1)))
 
