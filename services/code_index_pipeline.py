@@ -47,8 +47,8 @@ class CodeIndexPipeline:
         python_files = list(root.rglob("*.py"))
         logger.info(f"Found {len(python_files)} Python files")
 
-        file_analyses = []
-        languages = defaultdict(int)
+        file_analyses: list = []
+        languages: defaultdict[str, int] = defaultdict(int)
 
         for file_path in python_files:
             if self._should_skip_file(file_path):

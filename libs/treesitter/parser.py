@@ -55,7 +55,7 @@ class TreeSitterParser:
 
         try:
             captures = query.captures(tree.root_node)
-            return [(node, capture_name) for node, capture_name in captures]
+            return list(captures)
         except Exception as e:
             logger.error(f"Error executing query: {e}")
             return []

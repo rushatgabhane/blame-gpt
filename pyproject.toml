@@ -11,6 +11,7 @@ ignore = []
 python_version = "3.13"
 explicit_package_bases = true
 files = ["libs"]
+exclude = ["data/"]
 ignore_missing_imports = false
 
 [[tool.mypy.overrides]]

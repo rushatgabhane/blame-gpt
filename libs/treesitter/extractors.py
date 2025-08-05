@@ -22,8 +22,8 @@ class PythonEntityExtractor:
                 return None
 
             tree, content = result
-            entities = []
-            imports = []
+            entities: list[CodeEntity] = []
+            imports: list[str] = []
 
             # Traversal of the AST
             self._extract_from_node(tree.root_node, content, str(file_path), entities, imports)
@@ -45,7 +45,7 @@ class PythonEntityExtractor:
         file_path: str,
         entities: list[CodeEntity],
         imports: list[str],
-        parent_class: str = None,
+        parent_class: str | None = None,
     ):
         """Recursively extract entities from AST nodes"""
 
@@ -71,7 +71,7 @@ class PythonEntityExtractor:
             for child in node.children:
                 self._extract_from_node(child, content, file_path, entities, imports, parent_class)
 
-    def _make_function_entity(self, node, content: str, file_path: str, parent_class: str = None) -> CodeEntity | None:
+    def _make_function_entity(self, node, content: str, file_path: str, parent_class: str | None = None) -> CodeEntity | None:
         """Create function/method entity"""
         try:
             # Get function name
