@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from pydantic import BaseModel, Field
 
@@ -185,3 +185,52 @@ class RevertPR(BaseModel):
     old_text: str
     new_text: str
     reasoning: str
+
+
+class FunctionCall(BaseModel):
+    """Represents a function call with its target and arguments"""
+
+    target: str  # Entity ID for internal calls, function name for external
+    full_call: str  # Complete call text with parameters
+    is_internal: bool  # True if calling internal function, False if external
+
+
+class CodeEntity(BaseModel):
+    """Represents a code entity (function, class, method, etc.)"""
+
+    id: str  # Unique identifier: "file_path:parent.name"
+    name: str
+    type: str  # function, class, method, variable, import, etc.
+    file_path: str
+    docstring: str | None = None
+    signature: str | None = None
+    decorators: list[str] = Field(default_factory=list)
+    parent: str | None = None  # for methods, parent class
+    calls: list[FunctionCall] = Field(default_factory=list)  # function calls made by this entity
+    called_by: list[str] = Field(default_factory=list)  # entity IDs that call this entity
+    start_line: int | None = None  # starting line number in file
+    end_line: int | None = None  # ending line number in file
+
+
+class FileAnalysis(BaseModel):
+    """Analysis results for a single file"""
+
+    file_path: str
+    language: str
+    entities: list[CodeEntity]
+    imports: list[str]
+    file_hash: str
+
+
+class ProjectStructure(BaseModel):
+    """High-level analysis of entire project"""
+
+    name: str
+    root_path: str
+    total_files: int
+    languages: dict[str, int]  # language -> file count
+    file_analyses: list[FileAnalysis]
+    architecture_summary: str
+    key_components: list[dict[str, Any]] = Field(default_factory=list)
+    dependencies: dict[str, list[str]] = Field(default_factory=dict)
+    call_graph: dict[str, list[str]] = Field(default_factory=dict)  # entity_id -> list of internal entity_ids it calls

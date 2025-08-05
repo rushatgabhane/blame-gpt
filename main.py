@@ -19,6 +19,7 @@ from fastapi import FastAPI
 
 from controllers._deprecated_deploy_blocker_controller import deploy_blocker_router
 from controllers.blame_controller import blame_router
+from controllers.code_review_controller import router as code_review_router
 from controllers.docs_controller import docs_router
 from controllers.issue_controller import issue_router
 from controllers.revert_controller import revert_router
@@ -91,3 +92,4 @@ app.include_router(docs_router)
 app.include_router(user_router)
 app.include_router(test_steps_router)
 app.include_router(revert_router)
+app.include_router(code_review_router)
