@@ -9,7 +9,7 @@ from .graph import build_graph
 logger = logging.getLogger(__name__)
 
 
-async def docs(pull_request_id: int, db: core_sqlite_client.Database, docs_db: docs_sqlite_client.Database):
+async def docs(pull_request_id: int, db: core_sqlite_client.Database, docs_db: docs_sqlite_client.Database, usage_log_id: int | None = None):
     initial_state: State = {
         "pull_request_id": pull_request_id,
         "pull_request": None,
@@ -20,6 +20,7 @@ async def docs(pull_request_id: int, db: core_sqlite_client.Database, docs_db: d
         "relevant_docs": None,
         "doc_edit_suggestions": None,
         "comment": None,
+        "usage_log_id": usage_log_id,
     }
 
     graph = build_graph(db, docs_db)
