@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pathspec
 
+from libs.llm import llmNano
 from libs.treesitter.extractors import PythonEntityExtractor
 from models.models import ProjectStructure
 
@@ -22,7 +23,7 @@ class CodeIndexPipeline:
         # Load .gitignore patterns
         self.gitignore_spec = self._load_gitignore()
 
-    def analyze_codebase(self) -> ProjectStructure:
+    async def analyze_codebase(self) -> ProjectStructure:
         """Analyze entire codebase and extract high-level structure"""
         if not self.root.exists():
             raise ValueError(f"Path {self.root_path} does not exist")
@@ -42,7 +43,7 @@ class CodeIndexPipeline:
         file_tree = self._generate_file_tree()
         logger.info("generated file tree")
 
-        key_components = self._identify_key_components(file_analyses, file_tree)
+        key_components = await self._identify_key_components(file_analyses, file_tree)
         logger.info("resolved key components")
 
         return ProjectStructure(
@@ -178,11 +179,15 @@ class CodeIndexPipeline:
 
         return f"Python project '{self.project_name}' with {len(analyses)} files, {total_classes} classes, {total_functions} functions/methods"
 
-    def _identify_key_components(self, analyses, file_tree: str) -> list[dict]:
+    async def _identify_key_components(self, analyses, file_tree: str) -> list[dict]:
         """Identify key files by import count and LLM analysis of directory structure"""
+        logger.info(f"Starting key component identification for {len(analyses)} files")
         file_analysis = {}
 
-        for analysis in analyses:
+        for i, analysis in enumerate(analyses):
+            if i % 10 == 0:
+                logger.info(f"Processing file {i + 1}/{len(analyses)}: {analysis.file_path}")
+
             import_count = self._count_file_imports(analysis, analyses)
             file_functions = self._analyze_file_functions(analysis)
 
@@ -194,8 +199,10 @@ class CodeIndexPipeline:
                 "total_imports": len(analysis.imports),
             }
 
-        llm_important_files = self._get_llm_important_files(file_tree)
+        logger.info("Completed file analysis processing, calling LLM for important files")
+        llm_important_files = await self._get_llm_important_files(file_tree)
 
+        logger.info("Building final component list with LLM insights")
         return self._build_component_list_with_llm(file_analysis, llm_important_files)
 
     def _count_file_imports(self, target_analysis, all_analyses) -> int:
@@ -260,18 +267,31 @@ class CodeIndexPipeline:
 
         return components
 
-    def _get_llm_important_files(self, file_tree: str) -> list[str]:
+    async def _get_llm_important_files(self, file_tree: str) -> list[str]:
         """Use LLM to identify architecturally important files from directory structure"""
         try:
-            from libs.llm import llm
             from libs.prompt_templates.identify_important_files import (
                 format_identify_important_files_prompt,
                 important_files_parser,
             )
 
             prompt = format_identify_important_files_prompt(file_tree)
-            response = llm.invoke(prompt)
+            logger.info(f"File tree prompt length: {len(prompt)} characters (~{len(prompt) // 4} tokens)")
+
+            logger.info("Calling LLM to identify important files...")
+            response = await llmNano.ainvoke(prompt)
+            logger.info("LLM call completed, parsing response...")
+            
             parsed_response = important_files_parser.invoke(response)
+            logger.info("Response parsed successfully")
+
+            # Log token usage if available
+            token_usage = response.response_metadata["token_usage"]
+            logger.info(
+                f"File tree LLM usage - Input: {token_usage.get('prompt_tokens', 'N/A')}, "
+                f"Output: {token_usage.get('completion_tokens', 'N/A')}, "
+                f"Total: {token_usage.get('total_tokens', 'N/A')}"
+            )
 
             logger.info(f"LLM identified {len(parsed_response.files)} important files")
             return parsed_response.files
@@ -313,8 +333,14 @@ class CodeIndexPipeline:
 
         return components[:100]
 
+    def _has_python_files(self, path: Path) -> bool:
+        try:
+            return any(not self._should_skip_file(item) for item in path.rglob("*.py"))
+        except PermissionError:
+            return False
+
     def _generate_file_tree(self) -> str:
-        """Generate a simple file tree structure without ignored files"""
+        """Generate a file tree showing only Python files and directories containing them"""
         lines = []
 
         def add_files(path: Path, prefix: str = ""):
@@ -324,18 +350,18 @@ class CodeIndexPipeline:
             try:
                 items = sorted([item for item in path.iterdir() if not self._should_skip_file(item)])
 
-                for i, item in enumerate(items):
-                    is_last = i == len(items) - 1
-                    connector = "└── " if is_last else "├── "
-                    name = item.name + ("/" if item.is_dir() else "")
-                    lines.append(f"{prefix}{connector}{name}")
+                dirs_with_py = [item for item in items if item.is_dir() and self._has_python_files(item)]
+                py_files = [item for item in items if item.is_file() and item.suffix == ".py"]
 
-                    if item.is_dir():
-                        extension = "    " if is_last else "│   "
-                        add_files(item, prefix + extension)
+                for item in dirs_with_py:
+                    lines.append(f"{prefix} {item.name}/")
+                    add_files(item, prefix + " ")
+
+                for item in py_files:
+                    lines.append(f"{prefix} {item.name}")
 
             except PermissionError:
-                lines.append(f"{prefix}└── [Permission Denied]")
+                pass
 
         lines.append(f"{self.root.name}/")
         add_files(self.root)
@@ -349,7 +375,7 @@ async def run(codebase_path: str, project_name: str | None = None):
 
     try:
         logger.info(f"Starting code indexing for {codebase_path}")
-        project_structure = pipeline.analyze_codebase()
+        project_structure = await pipeline.analyze_codebase()
 
         # with open("project_structure.json", "w") as f:
         #     json.dump(project_structure.model_dump(), f, indent=2, default=str)
