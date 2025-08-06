@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 from datetime import UTC, datetime
 
 import httpx
@@ -255,11 +256,17 @@ def _has_again(comment: IssueComment) -> bool:
 async def _docs_with_progress(
     pull_request_id: int, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None
 ):
-    docs_task = asyncio.create_task(
-        run_graph.docs(pull_request_id=pull_request_id, db=core_db, docs_db=docs_db, usage_log_id=usage_log_id)
-    )
-    # to prevent killing the thread
-    while not docs_task.done():
+    result = []
+
+    def run_docs():
+        result.append(run_graph.docs(pull_request_id, core_db, docs_db, usage_log_id))
+
+    thread = threading.Thread(target=run_docs)
+    thread.start()
+
+    # Keep yielding to prevent worker timeout
+    while thread.is_alive():
         yield "processing..."
-        await asyncio.sleep(25)
-    await docs_task
+        await asyncio.sleep(10)
+
+    thread.join()
