@@ -16,7 +16,7 @@ async def sync(request: Request, data: DocPanicRequest):
     docs_db = request.app.state.docs_db
     db = request.app.state.db
 
-    await run_graph.docs(
+    run_graph.docs(
         pull_request_id=data.pull_request_id,
         db=db,
         docs_db=docs_db,
