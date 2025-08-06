@@ -232,5 +232,5 @@ class ProjectStructure(BaseModel):
     file_analyses: list[FileAnalysis]
     architecture_summary: str
     key_components: list[dict[str, Any]] = Field(default_factory=list)
-    dependencies: dict[str, list[str]] = Field(default_factory=dict)
     call_graph: dict[str, list[str]] = Field(default_factory=dict)  # entity_id -> list of internal entity_ids it calls
+    file_tree: str = Field(default="")

@@ -2,6 +2,8 @@ import logging
 from collections import defaultdict
 from pathlib import Path
 
+import pathspec
+
 from libs.treesitter.extractors import PythonEntityExtractor
 from models.models import ProjectStructure
 
@@ -11,40 +13,53 @@ logger = logging.getLogger(__name__)
 class CodeIndexPipeline:
     """Pipeline for analyzing entire codebases and extracting structure"""
 
-    def __init__(self):
+    def __init__(self, root_path: str, project_name: str | None = None):
         self.extractor = PythonEntityExtractor()
+        self.root = Path(root_path)
+        self.root_path = root_path
+        self.project_name = project_name or self.root.name
 
-    def analyze_codebase(self, root_path: str, project_name: str | None = None) -> ProjectStructure:
+        # Load .gitignore patterns
+        self.gitignore_spec = self._load_gitignore()
+
+    def analyze_codebase(self) -> ProjectStructure:
         """Analyze entire codebase and extract high-level structure"""
-        root = Path(root_path)
-        if not root.exists():
-            raise ValueError(f"Path {root_path} does not exist")
+        if not self.root.exists():
+            raise ValueError(f"Path {self.root_path} does not exist")
 
-        project_name = project_name or root.name
-        logger.info(f"Starting analysis of {project_name} at {root_path}")
-
-        file_analyses, languages = self._analyze_python_files(root)
+        file_analyses, languages = self._analyze_python_files()
+        logger.info("extraction done")
 
         self._resolve_call_relationships(file_analyses)
+        logger.info("resolved call relations")
 
         call_graph = self._build_call_graph(file_analyses)
-        architecture_summary = self._generate_summary(file_analyses, project_name)
-        key_components = self._identify_key_components(file_analyses)
+        logger.info("resolved call graph")
+
+        architecture_summary = self._generate_summary(file_analyses)
+        logger.info("resolved arch summary")
+
+        file_tree = self._generate_file_tree()
+        logger.info("generated file tree")
+
+        key_components = self._identify_key_components(file_analyses, file_tree)
+        logger.info("resolved key components")
 
         return ProjectStructure(
-            name=project_name,
-            root_path=root_path,
+            name=self.project_name,
+            root_path=self.root_path,
             total_files=len(file_analyses),
             languages=dict(languages),
             file_analyses=file_analyses,
             architecture_summary=architecture_summary,
             key_components=key_components,
             call_graph=call_graph,
+            file_tree=file_tree,
         )
 
-    def _analyze_python_files(self, root: Path) -> tuple[list, defaultdict]:
+    def _analyze_python_files(self) -> tuple[list, defaultdict]:
         """Find and analyze all Python files in the project"""
-        python_files = list(root.rglob("*.py"))
+        python_files = list(self.root.rglob("*.py"))
         logger.info(f"Found {len(python_files)} Python files")
 
         file_analyses: list = []
@@ -56,14 +71,39 @@ class CodeIndexPipeline:
 
             analysis = self.extractor.extract_from_file(file_path)
             if analysis:
+                logger.info(f"extracted from filepath {file_path}")
                 file_analyses.append(analysis)
                 languages[analysis.language] += 1
 
         return file_analyses, languages
 
+    def _load_gitignore(self) -> pathspec.PathSpec | None:
+        """Load .gitignore patterns from the root directory"""
+        gitignore_path = self.root / ".gitignore"
+        if not gitignore_path.exists():
+            return None
+        try:
+            with open(gitignore_path, encoding="utf-8") as f:
+                patterns = f.read().splitlines()
+            spec = pathspec.PathSpec.from_lines("gitwildmatch", patterns)
+            logger.info(f"Loaded .gitignore with {len(patterns)} patterns")
+            return spec
+        except Exception as e:
+            logger.warning(f"Failed to load .gitignore: {e}")
+            return None
+
     def _should_skip_file(self, file_path: Path) -> bool:
-        """Check if file should be skipped during analysis"""
-        ignored_dirs = {".git", "__pycache__", "node_modules", "venv", "env", ".pytest_cache"}
+        if self.gitignore_spec:
+            relative_path = str(file_path.relative_to(self.root))
+            if self.gitignore_spec.match_file(relative_path):
+                return True
+
+        file_str = str(file_path).lower()
+        if "test" in file_str or "tests" in file_str:
+            return True
+
+        # Fallback ignore
+        ignored_dirs = {".git", "build", "__pycache__", "node_modules", "venv", "env", ".pytest_cache"}
         return any(part.startswith(".") or part in ignored_dirs for part in file_path.parts)
 
     def _build_call_graph(self, file_analyses) -> dict[str, list[str]]:
@@ -131,15 +171,15 @@ class CodeIndexPipeline:
 
         return None
 
-    def _generate_summary(self, analyses, project_name: str) -> str:
+    def _generate_summary(self, analyses) -> str:
         """Generate simple architecture summary"""
         total_functions = sum(len([e for e in a.entities if e.type in ["function", "method"]]) for a in analyses)
         total_classes = sum(len([e for e in a.entities if e.type == "class"]) for a in analyses)
 
-        return f"Python project '{project_name}' with {len(analyses)} files, {total_classes} classes, {total_functions} functions/methods"
+        return f"Python project '{self.project_name}' with {len(analyses)} files, {total_classes} classes, {total_functions} functions/methods"
 
-    def _identify_key_components(self, analyses) -> list[dict]:
-        """Identify key files by import count, with top functions per file"""
+    def _identify_key_components(self, analyses, file_tree: str) -> list[dict]:
+        """Identify key files by import count and LLM analysis of directory structure"""
         file_analysis = {}
 
         for analysis in analyses:
@@ -154,7 +194,9 @@ class CodeIndexPipeline:
                 "total_imports": len(analysis.imports),
             }
 
-        return self._build_component_list(file_analysis)
+        llm_important_files = self._get_llm_important_files(file_tree)
+
+        return self._build_component_list_with_llm(file_analysis, llm_important_files)
 
     def _count_file_imports(self, target_analysis, all_analyses) -> int:
         """Count how many other files import/call functions from target file"""
@@ -200,7 +242,7 @@ class CodeIndexPipeline:
     def _build_component_list(self, file_analysis: dict) -> list[dict]:
         """Build final list of key components from file analysis"""
         # Sort files by import count (how many files depend on this file)
-        sorted_files = sorted(file_analysis.items(), key=lambda x: x[1]["import_count"], reverse=True)[:50]
+        sorted_files = sorted(file_analysis.items(), key=lambda x: x[1]["import_count"], reverse=True)[:100]
 
         components = []
         for file_path, info in sorted_files:
@@ -218,14 +260,99 @@ class CodeIndexPipeline:
 
         return components
 
+    def _get_llm_important_files(self, file_tree: str) -> list[str]:
+        """Use LLM to identify architecturally important files from directory structure"""
+        try:
+            from libs.llm import llm
+            from libs.prompt_templates.identify_important_files import (
+                format_identify_important_files_prompt,
+                important_files_parser,
+            )
+
+            prompt = format_identify_important_files_prompt(file_tree)
+            response = llm.invoke(prompt)
+            parsed_response = important_files_parser.invoke(response)
+
+            logger.info(f"LLM identified {len(parsed_response.files)} important files")
+            return parsed_response.files
+
+        except Exception as e:
+            logger.warning(f"Failed to get LLM important files: {e}")
+            return []
+
+    def _build_component_list_with_llm(self, file_analysis: dict, llm_important_files: list[str]) -> list[dict]:
+        """Build component list combining import analysis and LLM insights"""
+        components = []
+
+        def create_component(file_path: str, info: dict, comp_type: str) -> dict:
+            return {
+                "file": file_path,
+                "type": comp_type,
+                "import_count": info["import_count"],
+                "total_functions": info["total_functions"],
+                "functions_with_callers": info["functions_with_callers"],
+                "total_file_imports": info["total_imports"],
+                "top_functions": info["top_functions"],
+            }
+
+        # 1. LLM-identified important files (priority)
+        for relative_path in llm_important_files:
+            full_path = str(self.root / relative_path)
+            logger.info(f"LLM important file: {relative_path} -> {full_path}")
+            if full_path in file_analysis:
+                info = file_analysis[full_path]
+                components.append(create_component(full_path, info, "llm_identified_important"))
+            else:
+                logger.warning(f"LLM file not found in analysis: {full_path}")
+
+        # 2. High import count files (fill remaining slots)
+        sorted_files = sorted(file_analysis.items(), key=lambda x: x[1]["import_count"], reverse=True)
+        for file_path, info in sorted_files:
+            if info["import_count"] > 0 and not any(comp["file"] == file_path for comp in components):
+                components.append(create_component(file_path, info, "high_import_module"))
+
+        return components[:100]
+
+    def _generate_file_tree(self) -> str:
+        """Generate a simple file tree structure without ignored files"""
+        lines = []
+
+        def add_files(path: Path, prefix: str = ""):
+            if self._should_skip_file(path):
+                return
+
+            try:
+                items = sorted([item for item in path.iterdir() if not self._should_skip_file(item)])
+
+                for i, item in enumerate(items):
+                    is_last = i == len(items) - 1
+                    connector = "└── " if is_last else "├── "
+                    name = item.name + ("/" if item.is_dir() else "")
+                    lines.append(f"{prefix}{connector}{name}")
+
+                    if item.is_dir():
+                        extension = "    " if is_last else "│   "
+                        add_files(item, prefix + extension)
+
+            except PermissionError:
+                lines.append(f"{prefix}└── [Permission Denied]")
+
+        lines.append(f"{self.root.name}/")
+        add_files(self.root)
+
+        return "\n".join(lines)
+
 
 async def run(codebase_path: str, project_name: str | None = None):
     """Main entry point for code indexing pipeline"""
-    pipeline = CodeIndexPipeline()
+    pipeline = CodeIndexPipeline(codebase_path, project_name)
 
     try:
         logger.info(f"Starting code indexing for {codebase_path}")
-        project_structure = pipeline.analyze_codebase(codebase_path, project_name)
+        project_structure = pipeline.analyze_codebase()
+
+        # with open("project_structure.json", "w") as f:
+        #     json.dump(project_structure.model_dump(), f, indent=2, default=str)
 
         logger.info(f"Call graph has {len(project_structure.call_graph)} functions")
 
