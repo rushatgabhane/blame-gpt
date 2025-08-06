@@ -3,13 +3,14 @@ import logging
 
 from libs import constants
 from libs.helpers import blockquote, cosine_similarity
-from libs.llm import embedding_model, llmReasoningCheap
+from libs.llm import ModelNames, embedding_model, llmReasoningCheap
 from libs.prompt_templates.doc_edit_evaluation import doc_edit_evaluation_parser, doc_edit_evaluation_prompt
 from libs.prompt_templates.doc_edit_suggestion import doc_edit_parser, doc_edit_suggestions_prompt
 from libs.prompt_templates.pull_request_intent import pull_request_intent_parser, pull_request_intent_prompt
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from models.models import DocEditEvaluation, DocUpdateDiff, DocWithScore, PullRequestIntent, State
+from services import user_service
 from services.github import pull_request_service
 from services.github.comment_service import add_comment_to_pull_request
 
@@ -34,7 +35,7 @@ def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
     return state
 
 
-def pull_request_intent_node(state: State) -> State:
+def pull_request_intent_node(state: State, db: core_sqlite_client.Database) -> State:
     pull_request = state["pull_request"]
     en_patch = state["en_patch"] or ""
     if not pull_request:
@@ -50,6 +51,7 @@ def pull_request_intent_node(state: State) -> State:
     )
 
     output = llmReasoningCheap.invoke(input)
+    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
     p: PullRequestIntent = pull_request_intent_parser.invoke(output)
     if not p or not p.intent:
         logger.error(f"{pull_request.id}: intent parsing failed. output: {output}")
@@ -105,7 +107,7 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
     return state
 
 
-def doc_edit_suggestions_node(state: State) -> State:
+def doc_edit_suggestions_node(state: State, db: core_sqlite_client.Database) -> State:
     relevant_docs = state["relevant_docs"]
     if not relevant_docs:
         logger.error(f"{state['pull_request_id']}: no relevant docs found in state")
@@ -122,6 +124,7 @@ def doc_edit_suggestions_node(state: State) -> State:
         )
 
         output = llmReasoningCheap.invoke(input)
+        user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
         p = doc_edit_parser.invoke(output)
         if not p or not p.edits:
             logger.info(f"{state['pull_request_id']}: doc {doc.path}: edit suggestions is empty")
@@ -137,7 +140,7 @@ def doc_edit_suggestions_node(state: State) -> State:
     return state
 
 
-def doc_edit_evaluation_node(state: State) -> State:
+def doc_edit_evaluation_node(state: State, db: core_sqlite_client.Database) -> State:
     suggestions = state["doc_edit_suggestions"]
     if not suggestions:
         logger.error(f"{state['pull_request_id']}: no article update suggestions found in state")
@@ -149,6 +152,7 @@ def doc_edit_evaluation_node(state: State) -> State:
     )
 
     output = llmReasoningCheap.invoke(input)
+    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
     p: DocEditEvaluation = doc_edit_evaluation_parser.invoke(output)
 
     state["should_docs_update"] = p.should_docs_update
