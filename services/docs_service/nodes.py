@@ -63,7 +63,7 @@ def pull_request_intent_node(state: State, db: core_sqlite_client.Database) -> S
         state["should_docs_update"] = False
         return state
 
-    logger.info(f"{pull_request.id}: intent: {p.intent}")
+    logger.info(f"{pull_request.id}: intent done")
 
     state["intent"] = p.intent
     return state
@@ -88,7 +88,8 @@ def get_relevant_docs_node(state: State, docs_db: docs_sqlite_client.Database) -
 
     scored_docs.sort(key=lambda x: x.score, reverse=True)
 
-    threshold = 0.45
+    threshold = 0.2
+    # Todo: use a combination of exact and semantic search
     docs_above_threshold = [doc for doc in scored_docs if doc.score >= threshold]
     if not docs_above_threshold:
         state["should_docs_update"] = False
