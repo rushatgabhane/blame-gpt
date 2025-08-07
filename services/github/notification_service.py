@@ -73,6 +73,10 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
 
+    except httpx.ReadTimeout as e:
+        logger.warning(f"expected sometimes: timeout for get notifications, will retry next cycle: {e}")
+        return
+
     except httpx.RemoteProtocolError as e:
         logger.error(f"expected sometimes: remote protocol error while fetching notifications: {e}")
         return
