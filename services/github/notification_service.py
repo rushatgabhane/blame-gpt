@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import threading
 from datetime import UTC, datetime
 
 import httpx
@@ -17,6 +18,7 @@ from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
 from services import blame_pipeline, user_service
+from services.docs_service import run_graph
 from services.github.comment_service import (
     create_thinking_comment,
     create_thinking_comment_for_pr,
@@ -231,9 +233,8 @@ async def _run_command(
         return
 
     if command_name == CommandName.OHMYDOCS:
-        logger.info(f"{n.id}: ohmydocs command received for notification {n.id}, but not implemented yet.")
-        # Disable until it works well.
-        # await run_graph.docs(pull_request_id=issue_or_pull_request_id, db=core_db, docs_db=docs_db)
+        async for step in _docs_with_progress(issue_or_pull_request_id, core_db, docs_db, usage_log_id):
+            logger.debug(f"{n.id}: #{issue_or_pull_request_id} {step}")
         return
 
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
@@ -254,3 +255,22 @@ async def _run_command(
 
 def _has_again(comment: IssueComment) -> bool:
     return "again" in comment.body.lower()
+
+
+async def _docs_with_progress(
+    pull_request_id: int, core_db: CoreDatabase, docs_db: DocsDatabase, usage_log_id: int | None
+):
+    result = []
+
+    def run_docs():
+        result.append(run_graph.docs(pull_request_id, core_db, docs_db, usage_log_id))
+
+    thread = threading.Thread(target=run_docs)
+    thread.start()
+
+    # Keep yielding to prevent worker timeout
+    while thread.is_alive():
+        yield "processing..."
+        await asyncio.sleep(10)
+
+    thread.join()

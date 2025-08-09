@@ -6,7 +6,7 @@ from github.IssueComment import IssueComment
 
 from libs import constants
 from libs.helpers import cosine_similarity, thinking_verb
-from libs.llm import ModelNames, llmReasoning
+from libs.llm import ModelNames, llm
 from libs.prompt_templates.culprit_pull_request_with_score import blame_prompt, culprit_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CulpritPullRequests, Issue, PullRequest, PullRequestWithScore
@@ -186,8 +186,8 @@ def _find_culprit_pull_requests(
         culprits_to_find=culprits_to_find,
         pull_requests_block=pr_block,
     )
-    response = llmReasoning.invoke(input)
-    track_llm_usage(db, usage_log_id, response, ModelNames.O3)
+    response = llm.invoke(input)
+    track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
     return culprit_parser.invoke(response)
 
 

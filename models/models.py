@@ -98,6 +98,7 @@ class State(TypedDict):
     should_docs_update: bool | None
     update_reason: str | None
     comment: str | None
+    usage_log_id: int | None
 
 
 class CodeDiffSummary(BaseModel):
