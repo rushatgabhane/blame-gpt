@@ -40,18 +40,18 @@ async def get_repository_overview():
 
 
 class ReviewRequest(BaseModel):
-    pr_number: int
+    pull_request_id: int
 
 
-@router.post("/api/review", dependencies=[Depends(auth_middleware.verify_internal_auth_token)])
+@router.post("/api/review", dependencies=[Depends(auth_middleware.verify_user_auth_token)])
 async def review_pull_request(request: Request, data: ReviewRequest):
     """Generate line-by-line code review for a pull request"""
     
     db = cast(Database, request.app.state.db)
     
     async def generate_review():
-        async for message in run_line_by_line_review(data.pr_number, db):
-            yield f"#{data.pr_number}: {message}\n"
+        async for message in run_line_by_line_review(data.pull_request_id, db):
+            yield f"#{data.pull_request_id}: {message}\n"
     
     return StreamingResponse(
         generate_review(),
