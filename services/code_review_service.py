@@ -2,7 +2,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 
-from libs.llm import ModelNames, llmCheap
+from libs.llm import ModelNames, llm, llmCheap
 from libs.prompt_templates.line_by_line_code_review import format_line_by_line_review_prompt, line_by_line_review_parser
 from libs.prompt_templates.repository_overview import format_repository_overview_prompt, repository_overview_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -104,7 +104,7 @@ async def run_line_by_line_review(
         prompt = format_line_by_line_review_prompt(pr_data)
         logger.info(f"Generated prompt with {len(prompt)} characters")
         
-        response = await llmCheap.ainvoke(prompt)
+        response = await llm.ainvoke(prompt)
         
         # Track LLM usage
         if usage_log_id:
