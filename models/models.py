@@ -147,6 +147,37 @@ class UsageLog(BaseModel):
     comment_text: str | None = None
 
 
+class CodeReviewComment(BaseModel):
+    """Individual code review comment with conventional comment labels"""
+    
+    file: str = Field(description="The file path where the comment applies")
+    start_line: int = Field(description="The starting line number for the comment")
+    end_line: int = Field(description="The ending line number for the comment")
+    content: str = Field(description="The review comment content")
+    label: str = Field(description="Conventional comment label: 'praise', 'nitpick', 'suggestion', 'issue', 'todo', 'question', 'thought', 'chore', 'note'")
+    category: str = Field(description="Comment category: 'bug', 'security', 'performance', 'quality', 'test'")
+
+
+class PRDiff(BaseModel):
+    """Pull request diff information"""
+    
+    filename: str = Field(description="Name of the file")
+    status: str = Field(description="Status of the file: 'added', 'modified', 'deleted'")
+    additions: int = Field(description="Number of lines added")
+    deletions: int = Field(description="Number of lines deleted")
+    patch: str | None = Field(description="The actual diff patch content")
+
+
+class LineByLineCodeReview(BaseModel):
+    """Complete line-by-line code review"""
+    
+    pr_number: int = Field(description="Pull request number")
+    comments: list[CodeReviewComment] = Field(description="List of review comments")
+    overall_score: int = Field(description="Overall code quality score from 1-10")
+    summary: str = Field(description="Brief summary of the review findings")
+    files_reviewed: list[str] = Field(description="List of files that were reviewed")
+
+
 class LLMCall(BaseModel):
     id: int
     usage_log_id: int

@@ -11,7 +11,7 @@ from libs.github import repo
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
-from models.models import CodeDiffSummary, FilePatch, PullRequest
+from models.models import CodeDiffSummary, FilePatch, PRDiff, PullRequest
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -200,3 +200,66 @@ def add_pull_request_if_not_exist(
 
     db.add_pull_request(pull_request)
     return pull_request
+
+
+def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDiff]]:
+    """Get pull request model and file diffs for code review"""
+    try:
+        pr = repo.get_pull(pull_request_id)
+        
+        # Get files once
+        all_files = list(pr.get_files())
+        
+        # Get basic PR info for the model
+        pr_test = _parse_test_steps(pr.body or "")
+        pr_explaination = _parse_explaination(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
+        files = [f.filename for f in all_files]
+        
+        # Create PullRequest model (without embedding for review purposes)
+        pull_request_model = PullRequest(
+            id=pr.number,
+            title=pr.title,
+            test=pr_test,
+            explaination=pr_explaination,
+            files=files,
+            linked_issue_ids=linked_issue_ids
+        )
+        
+        # Get file diffs
+        pr_diffs = []
+        for file in all_files:
+            pr_diff = PRDiff(
+                filename=file.filename,
+                status=file.status,
+                additions=file.additions,
+                deletions=file.deletions,
+                patch=file.patch
+            )
+            pr_diffs.append(pr_diff)
+        
+        return pull_request_model, pr_diffs
+    
+    except Exception as e:
+        logging.error(f"failed to get PR diffs for {pull_request_id}: {e}")
+        raise
+
+
+def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
+    """Format PR diffs into a readable format for LLM review"""
+    formatted_diffs = []
+    
+    for diff in pr_diffs:
+        if not diff.patch:
+            continue
+            
+        formatted_diff = f"## File: {diff.filename}\n"
+        formatted_diff += f"Status: {diff.status}\n"
+        formatted_diff += f"Changes: +{diff.additions} -{diff.deletions}\n\n"
+        formatted_diff += "```diff\n"
+        formatted_diff += diff.patch
+        formatted_diff += "\n```\n"
+        
+        formatted_diffs.append(formatted_diff)
+    
+    return "\n\n".join(formatted_diffs)
