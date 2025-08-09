@@ -8,7 +8,7 @@ import requests
 
 from libs import constants
 from libs.github import repo
-from libs.llm import ModelNames, embedding_model, llmReasoningCheap
+from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import CodeDiffSummary, FilePatch, PullRequest
@@ -106,8 +106,8 @@ def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: in
             explanation=pr_explaination,
             code_diff=code_diff,
         )
-        response = llmReasoningCheap.invoke(code_diff_summary_input)
-        track_llm_usage(db, usage_log_id, response, ModelNames.O3_MINI)
+        response = llm.invoke(code_diff_summary_input)
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"

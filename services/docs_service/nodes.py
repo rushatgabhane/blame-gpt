@@ -3,7 +3,7 @@ import logging
 
 from libs import constants
 from libs.helpers import blockquote, cosine_similarity
-from libs.llm import ModelNames, embedding_model, llmReasoningCheap
+from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.doc_edit_evaluation import doc_edit_evaluation_parser, doc_edit_evaluation_prompt
 from libs.prompt_templates.doc_edit_suggestion import doc_edit_parser, doc_edit_suggestions_prompt
 from libs.prompt_templates.pull_request_intent import pull_request_intent_parser, pull_request_intent_prompt
@@ -50,8 +50,8 @@ def pull_request_intent_node(state: State, db: core_sqlite_client.Database) -> S
         en_patch=en_patch,
     )
 
-    output = llmReasoningCheap.invoke(input)
-    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
+    output = llm.invoke(input)
+    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.GPT_5)
     p: PullRequestIntent = pull_request_intent_parser.invoke(output)
     if not p or not p.intent:
         logger.error(f"{pull_request.id}: intent parsing failed. output: {output}")
@@ -124,8 +124,8 @@ def doc_edit_suggestions_node(state: State, db: core_sqlite_client.Database) -> 
             content=content,
         )
 
-        output = llmReasoningCheap.invoke(input)
-        user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
+        output = llm.invoke(input)
+        user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.GPT_5)
         p = doc_edit_parser.invoke(output)
         if not p or not p.edits:
             logger.info(f"{state['pull_request_id']}: doc {doc.path}: edit suggestions is empty")
@@ -152,8 +152,8 @@ def doc_edit_evaluation_node(state: State, db: core_sqlite_client.Database) -> S
         suggestions_json=json.dumps([s.model_dump() for s in suggestions]),
     )
 
-    output = llmReasoningCheap.invoke(input)
-    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.O3_MINI)
+    output = llm.invoke(input)
+    user_service.track_llm_usage(db, state["usage_log_id"], output, ModelNames.GPT_5)
     p: DocEditEvaluation = doc_edit_evaluation_parser.invoke(output)
 
     state["should_docs_update"] = p.should_docs_update

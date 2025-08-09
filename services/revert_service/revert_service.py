@@ -5,7 +5,7 @@ from pathlib import Path
 
 from github.PullRequest import PullRequest
 
-from libs.llm import llmReasoningCheap
+from libs.llm import llm
 from libs.prompt_templates.revert import revert_prompt
 from models.models import EditSuggestion, FilePatch
 from services.docs_service.sync import CLONE_DIR
@@ -74,7 +74,7 @@ def get_ai_edit_suggestions(file_patches: list[FilePatch], pull_request: PullReq
         )
 
         # Get AI response
-        ai_response = llmReasoningCheap.invoke(prompt)
+        ai_response = llm.invoke(prompt)
 
         # Parse AI suggestions
         suggestions = parse_ai_suggestions(str(ai_response.content), file_patch.filename)
