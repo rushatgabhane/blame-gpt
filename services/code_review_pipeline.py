@@ -15,23 +15,21 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
-async def run_line_by_line_review(
-    pull_request_id: int, db: Database, usage_log_id: int | None = None
-) -> AsyncGenerator[str]:
+async def run(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
     try:
-        yield f"starting line-by-line review for PR #{pull_request_id}..."
+        yield f"starting review for PR #{pull_request_id}"
 
-        yield "fetching pull request data and file diffs..."
+        yield "fetching PR data"
         pull_request, pr_diffs = get_pull_request_diffs(pull_request_id)
         logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs")
 
-        yield f"analyzing {len(pr_diffs)} changed files..."
+        yield f"analyzing {len(pr_diffs)} files"
 
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
 
         pr_data = {"title": pull_request.title, "description": pull_request.explanation, "file_diffs": formatted_diffs}
 
-        yield "generating review using AI..."
+        yield "generating review"
 
         prompt = code_review_prompt(pr_data)
         logger.info(f"Generated prompt with {len(prompt)} characters")
@@ -40,7 +38,6 @@ async def run_line_by_line_review(
 
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
-        yield "parsing AI response..."
         parsed_response = line_by_line_review_parser.invoke(response)
 
         review = LineByLineCodeReview(
@@ -51,7 +48,7 @@ async def run_line_by_line_review(
         )
 
         logger.info(f"Generated review with {len(review.comments)} comments")
-        yield "adding review comment to PR"
+        yield "adding review to PR"
 
         if not pull_request.commit_sha:
             logger.error(f"Missing commit SHA for PR #{pull_request_id}")
@@ -60,8 +57,8 @@ async def run_line_by_line_review(
 
         create_pull_request_review(pull_request_id, review, pull_request.commit_sha)
 
-        yield "review complete!"
+        yield "review complete"
 
     except Exception as e:
-        logger.exception(f"Line-by-line review failed for PR #{pull_request_id}: {e}")
-        yield f"error: {str(e)}"
+        logger.exception(f"code review failed for PR #{pull_request_id}: {e}")
+        yield f"some error occurred please report it with PR id #{pull_request_id}"
