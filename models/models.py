@@ -149,11 +149,11 @@ class UsageLog(BaseModel):
 
 class CodeReviewComment(BaseModel):
     file: str = Field(description="The file path where the comment applies")
-    start_line: int = Field(description="The starting line number for the comment")
-    end_line: int = Field(description="The ending line number for the comment")
-    content: str = Field(description="The review comment content")
+    line: int = Field(description="The line number for the comment")
+    content: str = Field(
+        description="The review comment content. Don't add label here. Be concise. Split in new paragraphs if needed."
+    )
     label: str = Field(description="Conventional comment label")
-    category: str = Field(description="Comment category: 'bug', 'security', 'performance', 'quality', 'test'")
 
 
 class PRDiff(BaseModel):

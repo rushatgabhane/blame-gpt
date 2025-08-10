@@ -35,7 +35,7 @@ Use conventional comments format (https://conventionalcomments.org/):
 IMPORTANT FORMATTING RULES:
 1. Set the label only in the "label" field.
 2. Do not set the label in in content field.
-3. For the code overview field: Keep it brief in markdown format using ### headers and bullet points (-). Just summarize what the PR does. Do not include recommendations or findings.
+3. For the code_overview field: Keep it concise in markdown format using ### headers and bullet points (-). Summarize what the PR does in markdown bullets (-). Do not include recommendations or findings.
 4. Only comment on lines with changes (marked with + or -)
 5. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
 
@@ -46,7 +46,7 @@ File Changes:
 {file_diffs}
 
 The diff shows line numbers as prefixes like "109 +    some_code_here". 
-Use these exact line numbers in your start_line and end_line fields.
+Use these exact line number in line field.
 Focus on new code (lines marked with +) and provide specific, actionable feedback.
 
 {format_instructions}

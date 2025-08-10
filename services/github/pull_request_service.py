@@ -305,10 +305,7 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
     try:
         pr = repo.get_pull(pull_request_id)
 
-        review_body = f"""
-### Code review
-{review_data.code_overview}
-"""
+        review_body = f"{review_data.code_overview}"
 
         review_comments = []
         for comment in review_data.comments:
@@ -316,7 +313,7 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
                 {
                     "path": comment.file,
                     "body": f"**{comment.label}**: {comment.content}",
-                    "line": comment.end_line,
+                    "line": comment.line,
                     "side": "RIGHT",
                 }
             )

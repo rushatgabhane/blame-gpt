@@ -108,7 +108,7 @@ async def run_line_by_line_review(
         review = LineByLineCodeReview(
             pr_number=pull_request_id,
             comments=parsed_response.comments,
-            code_overview=parsed_response.summary,
+            code_overview=parsed_response.code_overview,
             files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
         )
 
