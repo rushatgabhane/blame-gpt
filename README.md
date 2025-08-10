@@ -93,6 +93,10 @@ Pipeline:
 - Provides real-time feedback via comment reactions and status updates
 - Unsubscribes from processed notifications to avoid duplicates
 
+### Code review
+
+Automated code review triggered by `@blamegpt` mentions on pull requests. Reviews code changes for quality, bugs, performance, and security issues, then posts structured feedback as GitHub PR reviews with line-by-line comments.
+
 ### Blame pipeline
 
 When a new issue is created, a [github action](https://github.com/Blame-GPT/action/blob/main/action.yml) installed on a repo invokes `api/blame` endpoint.
