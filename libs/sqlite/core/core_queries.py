@@ -1,10 +1,10 @@
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explaination, files, code_diff_summary, linked_issue_ids)
+INSERT OR REPLACE INTO pull_requests (id, title, test, explanation, files, code_diff_summary, linked_issue_ids)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 """
 
 GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING = """
-SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, pr.linked_issue_ids, pe.embedding
+SELECT pr.id, pr.title, pr.test, pr.explanation, pr.files, pr.code_diff_summary, pr.linked_issue_ids, pe.embedding
 FROM pull_requests pr
 LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
 WHERE pr.id = ?;
@@ -35,7 +35,7 @@ SELECT issue_id, pull_request_id, score from issue_pull_request;
 """
 
 GET_PULL_REQUESTS_BY_ISSUE_ID = """
-SELECT pr.id, pr.title, pr.test, pr.explaination, pr.files, pr.code_diff_summary, pe.embedding
+SELECT pr.id, pr.title, pr.test, pr.explanation, pr.files, pr.code_diff_summary, pe.embedding
 FROM pull_requests pr
 JOIN issue_pull_request ipr ON ipr.pull_request_id = pr.id
 LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id

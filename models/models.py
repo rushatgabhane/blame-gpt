@@ -9,7 +9,7 @@ class PullRequest(BaseModel):
     id: int
     title: str
     test: str
-    explaination: str
+    explanation: str
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
@@ -195,7 +195,3 @@ class TestSuite(BaseModel):
     steps: str
     hash: str
     embedding: list[float] | None = None
-
-
-
-

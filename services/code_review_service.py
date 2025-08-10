@@ -29,7 +29,7 @@ async def run_line_by_line_review(
 
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
 
-        pr_data = {"title": pull_request.title, "description": pull_request.explaination, "file_diffs": formatted_diffs}
+        pr_data = {"title": pull_request.title, "description": pull_request.explanation, "file_diffs": formatted_diffs}
 
         yield "generating review using AI..."
 

@@ -205,6 +205,6 @@ Code diff summary: {pr.pull_request.code_diff_summary if pr.pull_request.code_di
 
 Score: {pr.score:.2f}
 
-Explanation: {pr.pull_request.explaination.strip() if pr.pull_request.explaination else "No explanation provided."}"""
+Explanation: {pr.pull_request.explanation.strip() if pr.pull_request.explanation else "No explanation provided."}"""
         for pr in prs
     )

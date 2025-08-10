@@ -97,13 +97,13 @@ def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: in
 
         pr_test = _parse_test_steps(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
-        pr_explaination = _parse_explaination(pr.body or "")
+        pr_explanation = _parse_explanation(pr.body or "")
 
         code_diff = _get_code_diff(pr.diff_url)
         code_diff_summary_input = code_diff_summary_prompt.format(
             title=pr.title,
             test=pr_test,
-            explanation=pr_explaination,
+            explanation=pr_explanation,
             code_diff=code_diff,
         )
         response = llm.invoke(code_diff_summary_input)
@@ -112,14 +112,14 @@ def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: in
         code_diff_summary = code_diff_summary_parser.invoke(response)
         assert isinstance(code_diff_summary, CodeDiffSummary), "code diff summary parsing failed"
 
-        pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explaination: {pr_explaination}\n Files changed: {files}\n Code diff summary: {code_diff_summary.pull_request_description}"
+        pr_text = f"Title: {pr.title}\n Tests: {pr_test}\n Explanation: {pr_explanation}\n Files changed: {files}\n Code diff summary: {code_diff_summary.pull_request_description}"
         pr_embedding = embedding_model.embed_query(pr_text)
 
         return PullRequest(
             id=pr.number,
             title=pr.title,
             test=pr_test,
-            explaination=pr_explaination,
+            explanation=pr_explanation,
             files=files,
             embedding=pr_embedding,
             code_diff_summary=code_diff_summary.pull_request_description,
@@ -156,7 +156,7 @@ def _parse_linked_issue_ids(body: str) -> list[int] | None:
     return [int(m[0] or m[1] or m[2]) for m in matches] if matches else None
 
 
-def _parse_explaination(body: str) -> str:
+def _parse_explanation(body: str) -> str:
     pattern = r"### Explanation of Change(.*?)### Fixed Issues"
     match = re.search(pattern, body, re.DOTALL | re.IGNORECASE)
     if not match:
@@ -209,7 +209,7 @@ def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDi
         all_files = list(pr.get_files())
 
         pr_test = _parse_test_steps(pr.body or "")
-        pr_explaination = _parse_explaination(pr.body or "")
+        pr_explanation = _parse_explanation(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
         files = [f.filename for f in all_files]
 
@@ -217,7 +217,7 @@ def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDi
             id=pr.number,
             title=pr.title,
             test=pr_test,
-            explaination=pr_explaination,
+            explanation=pr_explanation,
             files=files,
             linked_issue_ids=linked_issue_ids,
         )

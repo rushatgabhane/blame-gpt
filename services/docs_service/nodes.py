@@ -1,7 +1,6 @@
 import json
 import logging
 
-from libs import constants
 from libs.helpers import blockquote, cosine_similarity
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.doc_edit_evaluation import doc_edit_evaluation_parser, doc_edit_evaluation_prompt
@@ -46,7 +45,7 @@ def pull_request_intent_node(state: State, db: core_sqlite_client.Database) -> S
     input = pull_request_intent_prompt.format(
         title=pull_request.title,
         test=pull_request.test,
-        explanation=pull_request.explaination,
+        explanation=pull_request.explanation,
         en_patch=en_patch,
     )
 
