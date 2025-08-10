@@ -220,6 +220,7 @@ def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDi
             explanation=pr_explanation,
             files=files,
             linked_issue_ids=linked_issue_ids,
+            commit_sha=pr.head.sha,
         )
 
         pr_diffs = []
@@ -300,7 +301,7 @@ def _add_line_numbers_to_patch(patch: str) -> str:
     return "\n".join(numbered_lines)
 
 
-def create_pull_request_review(pull_request_id: int, review_data: LineByLineCodeReview) -> None:
+def create_pull_request_review(pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str) -> None:
     """Create a single GitHub review with body and multiple line comments"""
     try:
         pr = repo.get_pull(pull_request_id)
@@ -318,7 +319,7 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
                 }
             )
 
-        pr.create_review(body=review_body, event="COMMENT", comments=review_comments)  # type: ignore[arg-type]
+        pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit_sha)  # type: ignore[arg-type]
         logger.info(f"Created PR review for #{pull_request_id} with {len(review_comments)} comments")
 
     except Exception as e:

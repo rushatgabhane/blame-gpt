@@ -20,7 +20,8 @@ Please review this pull request and provide feedback on:
 ### Note
 - Be constructive and helpful in your feedback.
 - Do not make any comments about code format or whitespace.
-- Ignore missing imports unless you have the entire file from line number 1. 
+- Do not make any comments about import statements.
+- Do not make any assumptions about code you don't have in your context.
 
 Use conventional comments format (https://conventionalcomments.org/):
 - praise: Highlight something positive

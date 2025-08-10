@@ -16,6 +16,7 @@ class PullRequest(BaseModel):
     generated_test_steps: str | None = None
     code_diff: str | None = None
     linked_issue_ids: list[int] | None = None
+    commit_sha: str | None = None
 
 
 class CulpritPullRequest(BaseModel):

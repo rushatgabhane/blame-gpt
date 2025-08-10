@@ -38,7 +38,7 @@ async def run_line_by_line_review(
 
         response = await llm.ainvoke(prompt)
 
-        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5_MINI)
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
         yield "parsing AI response..."
         parsed_response = line_by_line_review_parser.invoke(response)
@@ -53,7 +53,12 @@ async def run_line_by_line_review(
         logger.info(f"Generated review with {len(review.comments)} comments")
         yield "adding review comment to PR"
 
-        create_pull_request_review(pull_request_id, review)
+        if not pull_request.commit_sha:
+            logger.error(f"Missing commit SHA for PR #{pull_request_id}")
+            yield "error: missing commit SHA"
+            return
+
+        create_pull_request_review(pull_request_id, review, pull_request.commit_sha)
 
         yield "review complete!"
 
