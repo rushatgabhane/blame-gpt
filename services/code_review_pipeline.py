@@ -2,6 +2,7 @@ import asyncio
 import logging
 from collections.abc import AsyncGenerator
 
+from libs.github import gh
 from libs.llm import ModelNames, llm
 from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
 from libs.sqlite.core.core_sqlite_client import Database
@@ -16,11 +17,18 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
-async def run(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> AsyncGenerator[str]:
+async def run(
+    pull_request_id: int,
+    repo_owner: str,
+    repo_name: str,
+    db: Database,
+    usage_log_id: int | None = None,
+) -> AsyncGenerator[str]:
     try:
-        yield f"starting review for PR #{pull_request_id}"
+        yield f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}"
 
-        pull_request, pr_diffs = get_pull_request_diffs(pull_request_id)
+        repo = gh.get_repo(f"{repo_owner}/{repo_name}")
+        pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo)
         logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs")
 
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
@@ -54,7 +62,7 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
             yield "error: missing commit SHA"
             return
 
-        create_pull_request_review(pull_request_id, review, pull_request.commit_sha)
+        create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo)
 
         yield "celebrating! code review is complete"
 

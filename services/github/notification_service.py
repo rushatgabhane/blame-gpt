@@ -251,7 +251,11 @@ async def _run_command(
 
     if command_name == CommandName.CODE_REVIEW and n.subject.type == "PullRequest":
         async for step in code_review_pipeline.run(
-            pull_request_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id
+            pull_request_id=issue_or_pull_request_id,
+            repo_owner=n.repository.owner.login,
+            repo_name=n.repository.name,
+            db=core_db,
+            usage_log_id=usage_log_id,
         ):
             # we don't wanna print the yield logs
             logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
