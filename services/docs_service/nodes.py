@@ -25,7 +25,7 @@ def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
         return state
 
     file_patches = pull_request_service.get_pull_request_patch(pull_request.id)
-    patch = [p.patch for p in file_patches if p.filename.endswith(constants.EN_TS)]
+    patch = [p.patch for p in file_patches if p.filename.endswith("en.ts")]
 
     en_patch_str = "\n".join(patch)
     state["pull_request"] = pull_request

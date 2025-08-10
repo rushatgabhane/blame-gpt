@@ -14,7 +14,6 @@ LABELS = {
     "DeployBlocker": "DeployBlocker",
 }
 
-EN_TS = "en.ts"
 USER_TAG = "@blamegpt"
 
 ENVIRONMENT_PRODUCTION = "production"
