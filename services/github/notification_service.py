@@ -17,7 +17,7 @@ from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
 from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
-from services import blame_pipeline, user_service
+from services import blame_pipeline, code_review_pipeline, user_service
 from services.docs_service import run_graph
 from services.github.comment_service import (
     create_thinking_comment,
@@ -74,6 +74,10 @@ async def listen_notifications(core_db: CoreDatabase, docs_db: DocsDatabase, app
             tasks.append(asyncio.create_task(_process_notification(n, core_db, docs_db)))
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
+
+    except httpx.ReadTimeout as e:
+        logger.warning(f"expected sometimes: timeout for get notifications, will retry next cycle: {e}")
+        return
 
     except httpx.RemoteProtocolError as e:
         logger.error(f"expected sometimes: remote protocol error while fetching notifications: {e}")
@@ -236,10 +240,18 @@ async def _run_command(
     if command_name == CommandName.TEST_STEPS and n.subject.type == "PullRequest":
         thinking_comment = create_thinking_comment_for_pr(
             pull_request_id=issue_or_pull_request_id,
-            thinking_text=f"{thinking_verb()}... <img src='https://github.com/user-attachments/assets/aabec0d8-4fc8-4923-909d-b258e894c4dd' height=14>",
+            thinking_text=f"{thinking_verb()}... <img src='https://github.com/user-attachments/assets/3689d0a2-6ccb-4431-8cd4-3c433c916d4a' height=16>",
         )
         async for step in test_step_pipeline.run(
             issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again
+        ):
+            # we don't wanna print the yield logs
+            logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
+        return
+
+    if command_name == CommandName.CODE_REVIEW and n.subject.type == "PullRequest":
+        async for step in code_review_pipeline.run(
+            pull_request_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id
         ):
             # we don't wanna print the yield logs
             logger.debug(f"PR #{issue_or_pull_request_id}: {step}")

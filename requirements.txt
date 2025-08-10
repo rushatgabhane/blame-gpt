@@ -148,6 +148,7 @@ tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3
 tree-sitter==0.24.0
+tree-sitter-python==0.23.4
 tree-sitter-typescript==0.23.2
 typer==0.15.4
 types-python-dateutil==2.9.0.20250516

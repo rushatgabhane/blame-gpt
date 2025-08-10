@@ -57,11 +57,11 @@ LLM_PRICING: dict[str, LLMPricing] = {
 
 api_key = SecretStr(os.getenv("OPENAI_API_KEY") or "")
 
-llm = ChatOpenAI(model=ModelNames.GPT_5, api_key=api_key, temperature=0.2)
-llmCheap = ChatOpenAI(model=ModelNames.GPT_5_MINI, api_key=api_key, temperature=0.2)
-llmNano = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key, temperature=0.2)
+llm = ChatOpenAI(model=ModelNames.GPT_5, api_key=api_key)
+llmCheap = ChatOpenAI(model=ModelNames.GPT_5_MINI, api_key=api_key)
+llmNano = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
 
 if bool(os.getenv("USE_CHEAP_LLM_ONLY")):
     # Reassign the main model to use the cheaper model
-    llm = ChatOpenAI(model=ModelNames.GPT_5_MINI, api_key=api_key, temperature=0.2)
+    llm = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)

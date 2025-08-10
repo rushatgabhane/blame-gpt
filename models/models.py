@@ -2,20 +2,21 @@ from typing import TypedDict
 
 from pydantic import BaseModel, Field
 
-from models.enums import CommandName
+from models.enums import CodeReviewCommentType, CommandName
 
 
 class PullRequest(BaseModel):
     id: int
     title: str
     test: str
-    explaination: str
+    explanation: str
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
     generated_test_steps: str | None = None
     code_diff: str | None = None
     linked_issue_ids: list[int] | None = None
+    commit_sha: str | None = None
 
 
 class CulpritPullRequest(BaseModel):
@@ -147,6 +148,32 @@ class UsageLog(BaseModel):
     comment_text: str | None = None
 
 
+class CodeReviewComment(BaseModel):
+    file: str = Field(description="The file path where the comment applies")
+    line: int = Field(description="The line number for the comment")
+    content: str = Field(
+        description="The review comment content. Don't add label here. Be concise. Split in new paragraphs if needed."
+    )
+    label: CodeReviewCommentType = Field(description="Conventional comment label")
+
+
+class PRDiff(BaseModel):
+    filename: str = Field(description="Name of the file")
+    status: str = Field(description="Status of the file: 'added', 'modified', 'deleted'")
+    additions: int = Field(description="Number of lines added")
+    deletions: int = Field(description="Number of lines deleted")
+    patch: str | None = Field(description="The actual diff patch content")
+
+
+class LineByLineCodeReview(BaseModel):
+    pr_number: int = Field(description="Pull request number")
+    comments: list[CodeReviewComment] = Field(description="List of review comments")
+    code_overview: str = Field(
+        description="Brief description of the pull request in markdown format with ### headers and bullet points."
+    )
+    files_reviewed: list[str] | None = Field(default=None, description="List of files that were reviewed")
+
+
 class LLMCall(BaseModel):
     id: int
     usage_log_id: int
@@ -169,20 +196,3 @@ class TestSuite(BaseModel):
     steps: str
     hash: str
     embedding: list[float] | None = None
-
-
-class EditSuggestion(BaseModel):
-    filename: str
-    line_start: int
-    line_end: int
-    old_text: str
-    new_text: str
-    reasoning: str
-
-
-class RevertPR(BaseModel):
-    line_start: int
-    line_end: int
-    old_text: str
-    new_text: str
-    reasoning: str

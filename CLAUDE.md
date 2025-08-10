@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Prefer early return, and reduce nesting.
+
 ## Overview
 
 BlameGPT is a FastAPI-based AI tool that helps workflows of engineers that use github. It uses Python 3.13 and has a React TypeScript frontend.

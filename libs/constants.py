@@ -1,5 +1,11 @@
-REPO_OWNER = "Expensify"
-REPO_NAME = "App"
+import os
+
+REPO_OWNER = os.getenv("REPO_OWNER")
+REPO_NAME = os.getenv("REPO_NAME")
+
+if not REPO_NAME or not REPO_OWNER:
+    raise RuntimeError("REPO_NAME and REPO_OWNER environment variables must be set")
+
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 
@@ -8,7 +14,6 @@ LABELS = {
     "DeployBlocker": "DeployBlocker",
 }
 
-EN_TS = "en.ts"
 USER_TAG = "@blamegpt"
 
 ENVIRONMENT_PRODUCTION = "production"
