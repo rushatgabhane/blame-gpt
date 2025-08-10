@@ -24,10 +24,15 @@ Use conventional comments format (https://conventionalcomments.org/):
 - suggestion: Propose an improvement
 - issue: Highlight a specific problem that should be addressed
 - todo: Small, tedious, but necessary changes
-- question: Ask for clarification or explanation
 - thought: Share a non-actionable thought or idea
 - chore: Simple mechanical changes
 - note: Highlight something important
+
+IMPORTANT FORMATTING RULES:
+1. Set the label in the "label" field (praise, nitpick, etc.)  
+2. Do NOT include the label prefix in the "content" field
+3. Only comment on lines with changes (marked with + or -)
+4. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
 
 PR Title: {pr_title}
 PR Description: {pr_description}
@@ -35,8 +40,9 @@ PR Description: {pr_description}
 File Changes:
 {file_diffs}
 
-Focus on new or modified lines (marked with +). Provide specific, actionable feedback.
-For each comment, specify the exact file and line numbers.
+The diff shows line numbers as prefixes like "109 +    some_code_here". 
+Use these exact line numbers in your start_line and end_line fields.
+Focus on new code (lines marked with +) and provide specific, actionable feedback.
 
 {format_instructions}"""
 

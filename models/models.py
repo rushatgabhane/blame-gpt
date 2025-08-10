@@ -168,7 +168,7 @@ class LineByLineCodeReview(BaseModel):
     pr_number: int = Field(description="Pull request number")
     comments: list[CodeReviewComment] = Field(description="List of review comments")
     summary: str = Field(description="Brief summary of the review findings")
-    files_reviewed: list[str] = Field(description="List of files that were reviewed")
+    files_reviewed: list[str] | None = Field(default=None, description="List of files that were reviewed")
 
 
 class LLMCall(BaseModel):
