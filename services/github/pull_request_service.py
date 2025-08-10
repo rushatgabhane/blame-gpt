@@ -11,6 +11,7 @@ from libs.github import repo
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
+from models.enums import CodeReviewCommentType
 from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRDiff, PullRequest
 from services.user_service import track_llm_usage
 
@@ -310,14 +311,15 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
 
         review_comments = []
         for comment in review_data.comments:
-            review_comments.append(
-                {
-                    "path": comment.file,
-                    "body": f"**{comment.label}**: {comment.content}",
-                    "line": comment.line,
-                    "side": "RIGHT",
-                }
-            )
+            if comment.label == CodeReviewCommentType.ISSUE or comment.label == CodeReviewCommentType.SUGGESTION:
+                review_comments.append(
+                    {
+                        "path": comment.file,
+                        "body": f"**{comment.label.value}**: {comment.content}",
+                        "line": comment.line,
+                        "side": "RIGHT",
+                    }
+                )
 
         commit = repo.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]

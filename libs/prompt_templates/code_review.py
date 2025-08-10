@@ -1,6 +1,7 @@
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 
+from models.enums import CodeReviewCommentType
 from models.models import LineByLineCodeReview
 
 line_by_line_review_parser = PydanticOutputParser(pydantic_object=LineByLineCodeReview)
@@ -24,13 +25,7 @@ Please review this pull request and provide feedback on:
 - Do not make any assumptions about code you don't have in your context.
 
 Use conventional comments format (https://conventionalcomments.org/):
-- nitpick: Trivial preference-based request  
-- suggestion: Propose an improvement
-- issue: Highlight a specific problem that should be addressed
-- todo: Small, tedious, but necessary changes
-- thought: Share a non-actionable thought or idea
-- chore: Simple mechanical changes
-- note: Highlight something important
+{comment_types}
 
 IMPORTANT FORMATTING RULES:
 1. Set the label only in the "label" field.
@@ -52,10 +47,16 @@ Focus on new code (lines marked with +) and provide specific, actionable feedbac
 {format_instructions}
 """
 
+    # Generate comment types list from enum
+    comment_types = "\n".join([f"- {ct.value}: {ct.description()}" for ct in CodeReviewCommentType])
+
     prompt = PromptTemplate(
         template=template,
         input_variables=["pr_title", "pr_description", "file_diffs"],
-        partial_variables={"format_instructions": line_by_line_review_parser.get_format_instructions()},
+        partial_variables={
+            "format_instructions": line_by_line_review_parser.get_format_instructions(),
+            "comment_types": comment_types,
+        },
     )
 
     return prompt.format(

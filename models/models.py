@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from pydantic import BaseModel, Field
 
-from models.enums import CommandName
+from models.enums import CodeReviewCommentType, CommandName
 
 
 class PullRequest(BaseModel):
@@ -154,7 +154,7 @@ class CodeReviewComment(BaseModel):
     content: str = Field(
         description="The review comment content. Don't add label here. Be concise. Split in new paragraphs if needed."
     )
-    label: str = Field(description="Conventional comment label")
+    label: CodeReviewCommentType = Field(description="Conventional comment label")
 
 
 class PRDiff(BaseModel):

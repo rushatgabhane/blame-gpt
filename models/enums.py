@@ -17,3 +17,26 @@ class CommandName(Enum):
             CommandName.CODE_REVIEW: "perform a code review of a pull request. analyze code changes and provide detailed feedback.",
             CommandName.UNKNOWN: "no matching command",
         }[self]
+
+
+class CodeReviewCommentType(Enum):
+    NITPICK = "nitpick"
+    SUGGESTION = "suggestion"
+    ISSUE = "issue"
+    TODO = "todo"
+    THOUGHT = "thought"
+    CHORE = "chore"
+    NOTE = "note"
+    PRAISE = "praise"
+
+    def description(self) -> str:
+        return {
+            CodeReviewCommentType.NITPICK: "Trivial preference-based request",
+            CodeReviewCommentType.SUGGESTION: "Propose an improvement",
+            CodeReviewCommentType.ISSUE: "Highlight a specific problem that should be addressed",
+            CodeReviewCommentType.TODO: "Small, tedious, but necessary changes",
+            CodeReviewCommentType.THOUGHT: "Share a non-actionable thought or idea",
+            CodeReviewCommentType.CHORE: "Simple mechanical changes",
+            CodeReviewCommentType.NOTE: "Highlight something important",
+            CodeReviewCommentType.PRAISE: "Highlight something positive",
+        }[self]
