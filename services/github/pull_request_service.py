@@ -4,7 +4,9 @@ import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import pathspec
 import requests
+from github.Repository import Repository
 
 from libs import constants
 from libs.github import repo
@@ -204,16 +206,38 @@ def add_pull_request_if_not_exist(
     return pull_request
 
 
-def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDiff]]:
-    """Get pull request model and file diffs for code review"""
+def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec:
+    """
+    Get gitignore patterns from root .gitignore only
+    TODO: Ignore gitignores from nested dirs too.
+    """
     try:
-        pr = repo.get_pull(pull_request_id)
+        gitignore_files = repo_ref.get_contents(".gitignore")
+        if not isinstance(gitignore_files, list):
+            gitignore_files = [gitignore_files]
+
+        all_patterns = []
+        for file in gitignore_files:
+            content = file.decoded_content.decode("utf-8")
+            all_patterns.extend(content.splitlines())
+        return pathspec.PathSpec.from_lines("gitwildmatch", all_patterns)
+    except Exception:
+        return pathspec.PathSpec.from_lines("gitwildmatch", [])
+
+
+def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[PullRequest, list[PRDiff]]:
+    try:
+        pr = repo_ref.get_pull(pull_request_id)
         all_files = list(pr.get_files())
+
+        gitignore_spec = _get_gitignore_spec(repo_ref)
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
-        files = [f.filename for f in all_files]
+
+        files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
+        files = [f.filename for f in files_without_ignored]
 
         pull_request_model = PullRequest(
             id=pr.number,
@@ -226,7 +250,7 @@ def get_pull_request_diffs(pull_request_id: int) -> tuple[PullRequest, list[PRDi
         )
 
         pr_diffs = []
-        for file in all_files:
+        for file in files_without_ignored:
             pr_diff = PRDiff(
                 filename=file.filename,
                 status=file.status,
@@ -303,10 +327,12 @@ def _add_line_numbers_to_patch(patch: str) -> str:
     return "\n".join(numbered_lines)
 
 
-def create_pull_request_review(pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str) -> None:
-    """Create a single GitHub review with body and multiple line comments"""
+def create_pull_request_review(
+    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_ref: Repository
+) -> None:
+    """Create a single GitHub review with body and multiple line comments for specific repo"""
     try:
-        pr = repo.get_pull(pull_request_id)
+        pr = repo_ref.get_pull(pull_request_id)
 
         review_body = f"{review_data.code_overview}"
 
@@ -326,7 +352,7 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
             logger.info(f"skip for non prod environment. {len(review_comments)}, {review_body}\n {review_comments}")
             return
 
-        commit = repo.get_commit(commit_sha)
+        commit = repo_ref.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
         logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
 
