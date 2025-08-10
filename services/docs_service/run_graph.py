@@ -9,7 +9,12 @@ from .graph import build_graph
 logger = logging.getLogger(__name__)
 
 
-def docs(pull_request_id: int, db: core_sqlite_client.Database, docs_db: docs_sqlite_client.Database, usage_log_id: int | None = None):
+def docs(
+    pull_request_id: int,
+    db: core_sqlite_client.Database,
+    docs_db: docs_sqlite_client.Database,
+    usage_log_id: int | None = None,
+):
     initial_state: State = {
         "pull_request_id": pull_request_id,
         "pull_request": None,
