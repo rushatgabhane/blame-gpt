@@ -20,9 +20,11 @@ Please review this pull request and provide feedback on:
 
 ### Note
 - Be constructive and helpful in your feedback.
+- Focus only on the most important issues - prioritize quality over quantity.
 - Do not make any comments about code format or whitespace.
 - Do not make any comments about import statements.
 - Do not make any assumptions about code you don't have in your context.
+- Be selective - avoid commenting on minor style preferences or trivial issues.
 
 Use conventional comments format (https://conventionalcomments.org/):
 {comment_types}
