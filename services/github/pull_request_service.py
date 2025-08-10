@@ -206,20 +206,19 @@ def add_pull_request_if_not_exist(
     return pull_request
 
 
-def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec | None:
-    """Fetch .gitignore patterns from repository and create PathSpec"""
+def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec:
     try:
-        gitignore_file = repo_ref.get_contents(".gitignore")
-        # Handle both single file and list of files
-        if isinstance(gitignore_file, list):
-            # Multiple files with same name - take first one
-            gitignore_file = gitignore_file[0]
+        gitignore_files = repo_ref.get_contents(".gitignore")
+        if not isinstance(gitignore_files, list):
+            gitignore_files = [gitignore_files]
 
-        content = gitignore_file.decoded_content.decode("utf-8")
-        return pathspec.PathSpec.from_lines("gitwildmatch", content.splitlines())
+        all_patterns = []
+        for file in gitignore_files:
+            content = file.decoded_content.decode("utf-8")
+            all_patterns.extend(content.splitlines())
+        return pathspec.PathSpec.from_lines("gitwildmatch", all_patterns)
     except Exception:
-        logger.debug("No .gitignore found or failed to read")
-        return None
+        return pathspec.PathSpec.from_lines("gitwildmatch", [])
 
 
 def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[PullRequest, list[PRDiff]]:
@@ -233,7 +232,7 @@ def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[
         pr_explanation = _parse_explanation(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
 
-        files_without_ignored = [f for f in all_files if not (gitignore_spec and gitignore_spec.match_file(f.filename))]
+        files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
         files = [f.filename for f in files_without_ignored]
 
         pull_request_model = PullRequest(
