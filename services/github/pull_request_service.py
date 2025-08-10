@@ -319,7 +319,8 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
                 }
             )
 
-        pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit_sha)  # type: ignore[arg-type]
+        commit = repo.get_commit(commit_sha)
+        pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
         logger.info(f"Created PR review for #{pull_request_id} with {len(review_comments)} comments")
 
     except Exception as e:
