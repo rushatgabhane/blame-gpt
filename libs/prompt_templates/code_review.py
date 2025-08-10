@@ -24,7 +24,6 @@ Please review this pull request and provide feedback on:
 - Do not make any assumptions about code you don't have in your context.
 
 Use conventional comments format (https://conventionalcomments.org/):
-- praise: Highlight something positive
 - nitpick: Trivial preference-based request  
 - suggestion: Propose an improvement
 - issue: Highlight a specific problem that should be addressed
