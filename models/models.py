@@ -152,7 +152,7 @@ class CodeReviewComment(BaseModel):
     start_line: int = Field(description="The starting line number for the comment")
     end_line: int = Field(description="The ending line number for the comment")
     content: str = Field(description="The review comment content")
-    label: str = Field(description="Conventional comment label: 'praise', 'nitpick', 'suggestion', 'issue', 'todo', 'question', 'thought', 'chore', 'note'")
+    label: str = Field(description="Conventional comment label")
     category: str = Field(description="Comment category: 'bug', 'security', 'performance', 'quality', 'test'")
 
 
@@ -167,7 +167,9 @@ class PRDiff(BaseModel):
 class LineByLineCodeReview(BaseModel):
     pr_number: int = Field(description="Pull request number")
     comments: list[CodeReviewComment] = Field(description="List of review comments")
-    summary: str = Field(description="Brief summary of the review findings")
+    code_overview: str = Field(
+        description="Brief description of the pull request in markdown format with ### headers and bullet points."
+    )
     files_reviewed: list[str] | None = Field(default=None, description="List of files that were reviewed")
 
 

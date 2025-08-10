@@ -251,7 +251,7 @@ def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
         formatted_diff = f"## File: {diff.filename}\n"
         formatted_diff += f"Status: {diff.status}\n"
         formatted_diff += f"Changes: +{diff.additions} -{diff.deletions}\n\n"
-        
+
         numbered_patch = _add_line_numbers_to_patch(diff.patch)
         formatted_diff += numbered_patch
 
@@ -261,43 +261,43 @@ def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
 
 
 def _add_line_numbers_to_patch(patch: str) -> str:
-    lines = patch.split('\n')
+    lines = patch.split("\n")
     numbered_lines = []
     current_new_line = None
-    
+
     for line in lines:
         # Parse hunk headers to get starting line numbers
-        if line.startswith('@@'):
+        if line.startswith("@@"):
             # Extract new file line number from hunk header like "@@ -10,7 +10,8 @@"
-            match = re.search(r'@@\s*-\d+,?\d*\s*\+(\d+),?\d*\s*@@', line)
+            match = re.search(r"@@\s*-\d+,?\d*\s*\+(\d+),?\d*\s*@@", line)
             if match:
                 current_new_line = int(match.group(1))
             numbered_lines.append(line)  # Keep hunk headers as is
             continue
-        
+
         # Skip file headers
-        if line.startswith('+++') or line.startswith('---'):
+        if line.startswith("+++") or line.startswith("---"):
             numbered_lines.append(line)
             continue
-            
+
         # Only process if we have a valid starting line number
         if current_new_line is None:
             numbered_lines.append(line)
             continue
-        
+
         # Add line numbers: "109 +    some_code_here"
-        if line.startswith('+'):
+        if line.startswith("+"):
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
-        elif line.startswith('-'):
+        elif line.startswith("-"):
             numbered_lines.append(line)  # Don't number removed lines
             # Don't increment for deleted lines
         else:
             # Context line (unchanged) - add line number and increment
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
-    
-    return '\n'.join(numbered_lines)
+
+    return "\n".join(numbered_lines)
 
 
 def create_pull_request_review(pull_request_id: int, review_data: LineByLineCodeReview) -> None:
@@ -307,7 +307,7 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
 
         review_body = f"""
 ### Code review
-{review_data.summary}
+{review_data.code_overview}
 """
 
         review_comments = []

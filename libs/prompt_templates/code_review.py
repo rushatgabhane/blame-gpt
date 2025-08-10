@@ -6,18 +6,21 @@ from models.models import LineByLineCodeReview
 line_by_line_review_parser = PydanticOutputParser(pydantic_object=LineByLineCodeReview)
 
 
-def format_line_by_line_review_prompt(pr_data: dict) -> str:
+def code_review_prompt(pr_data: dict) -> str:
     """Format the line-by-line code review prompt"""
 
-    template = """Please review this pull request and provide feedback on:
+    template = """
+Please review this pull request and provide feedback on:
 - Code quality and best practices
 - Potential bugs or issues  
 - Performance considerations
 - Security concerns
 - Test coverage
 
-Be constructive and helpful in your feedback.
-Do not make any comments about code format or whitespace.
+### Note
+- Be constructive and helpful in your feedback.
+- Do not make any comments about code format or whitespace.
+- Ignore missing imports unless you have the entire file from line number 1. 
 
 Use conventional comments format (https://conventionalcomments.org/):
 - praise: Highlight something positive
@@ -30,10 +33,11 @@ Use conventional comments format (https://conventionalcomments.org/):
 - note: Highlight something important
 
 IMPORTANT FORMATTING RULES:
-1. Set the label in the "label" field (praise, nitpick, etc.)  
-2. Do NOT include the label prefix in the "content" field
-3. Only comment on lines with changes (marked with + or -)
-4. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
+1. Set the label only in the "label" field.
+2. Do not set the label in in content field.
+3. For the code overview field: Keep it brief in markdown format using ### headers and bullet points (-). Just summarize what the PR does. Do not include recommendations or findings.
+4. Only comment on lines with changes (marked with + or -)
+5. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
 
 PR Title: {pr_title}
 PR Description: {pr_description}
@@ -45,7 +49,8 @@ The diff shows line numbers as prefixes like "109 +    some_code_here".
 Use these exact line numbers in your start_line and end_line fields.
 Focus on new code (lines marked with +) and provide specific, actionable feedback.
 
-{format_instructions}"""
+{format_instructions}
+"""
 
     prompt = PromptTemplate(
         template=template,

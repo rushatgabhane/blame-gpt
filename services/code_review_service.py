@@ -2,8 +2,8 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 
-from libs.llm import ModelNames, llmCheap
-from libs.prompt_templates.line_by_line_code_review import format_line_by_line_review_prompt, line_by_line_review_parser
+from libs.llm import ModelNames, llm, llmCheap
+from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
 from libs.prompt_templates.repository_overview import format_repository_overview_prompt, repository_overview_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import LineByLineCodeReview
@@ -74,7 +74,6 @@ async def generate_code_review():
 
     except Exception as e:
         logger.error(f"Code review generation failed: {e}")
-        logger.error(f"Error type: {type(e).__name__}")
         raise
 
 
@@ -96,21 +95,20 @@ async def run_line_by_line_review(
 
         yield "generating review using AI..."
 
-        prompt = format_line_by_line_review_prompt(pr_data)
+        prompt = code_review_prompt(pr_data)
         logger.info(f"Generated prompt with {len(prompt)} characters")
 
-        response = await llmCheap.ainvoke(prompt)
+        response = await llm.ainvoke(prompt)
 
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5_MINI)
 
         yield "parsing AI response..."
-
         parsed_response = line_by_line_review_parser.invoke(response)
 
         review = LineByLineCodeReview(
             pr_number=pull_request_id,
             comments=parsed_response.comments,
-            summary=parsed_response.summary,
+            code_overview=parsed_response.summary,
             files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
         )
 
@@ -122,10 +120,8 @@ async def run_line_by_line_review(
         yield "review complete!"
 
     except Exception as e:
-        logger.error(f"Line-by-line review failed for PR #{pull_request_id}: {e}")
-        logger.error(f"Error type: {type(e).__name__}")
+        logger.exception(f"Line-by-line review failed for PR #{pull_request_id}: {e}")
         yield f"error: {str(e)}"
-        raise
 
 
 def _filter_call_graph_for_key_components(call_graph: dict, key_components: list[dict]) -> dict:
