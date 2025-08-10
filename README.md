@@ -155,6 +155,8 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] The solver can then use these tests to see if solution is correct, and run in a loop.
 
 - **Review bot**
+  - [x] Code review bot
+  - [ ] Improvements (custom context, re-review, better code context etc)
   - [ ] Analyze old performance improvement PRs. And build a review bot that catches and suggests the improvements. (see [problem statement here](https://expensify.slack.com/archives/C05LX9D6E07/p1752231564356839))
   - [ ] Analyze past deploy blockers and build a **review bot** to prevent new deploy blockers
 
