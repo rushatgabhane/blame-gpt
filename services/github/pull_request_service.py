@@ -8,6 +8,7 @@ import requests
 
 from libs import constants
 from libs.github import repo
+from libs.helpers import is_production_environment
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
@@ -321,10 +322,14 @@ def create_pull_request_review(pull_request_id: int, review_data: LineByLineCode
                     }
                 )
 
+        if not is_production_environment():
+            logger.info(f"skip for non prod environment. {len(review_comments)}, {review_body}\n {review_comments}")
+            return
+
         commit = repo.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
-        logger.info(f"Created PR review for #{pull_request_id} with {len(review_comments)} comments")
+        logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
 
     except Exception as e:
-        logger.error(f"Failed to create PR review for #{pull_request_id}: {e}")
+        logger.error(f"failed to create PR review for #{pull_request_id}: {e}")
         raise
