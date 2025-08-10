@@ -207,6 +207,10 @@ def add_pull_request_if_not_exist(
 
 
 def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec:
+    """
+    Get gitignore patterns from root .gitignore only
+    TODO: Ignore gitignores from nested dirs too.
+    """
     try:
         gitignore_files = repo_ref.get_contents(".gitignore")
         if not isinstance(gitignore_files, list):
