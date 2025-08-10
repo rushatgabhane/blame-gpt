@@ -17,7 +17,7 @@ from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
 from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from models.models import CommandClassification
-from services import blame_pipeline, user_service
+from services import blame_pipeline, code_review_pipeline, user_service
 from services.docs_service import run_graph
 from services.github.comment_service import (
     create_thinking_comment,
@@ -244,6 +244,14 @@ async def _run_command(
         )
         async for step in test_step_pipeline.run(
             issue_or_pull_request_id, core_db, usage_log_id, thinking_comment, should_process_again=should_process_again
+        ):
+            # we don't wanna print the yield logs
+            logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
+        return
+
+    if command_name == CommandName.CODE_REVIEW and n.subject.type == "PullRequest":
+        async for step in code_review_pipeline.run(
+            pull_request_id=issue_or_pull_request_id, db=core_db, usage_log_id=usage_log_id
         ):
             # we don't wanna print the yield logs
             logger.debug(f"PR #{issue_or_pull_request_id}: {step}")
