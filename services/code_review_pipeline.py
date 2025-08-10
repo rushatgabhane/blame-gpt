@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import AsyncGenerator
 
@@ -19,23 +20,21 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
     try:
         yield f"starting review for PR #{pull_request_id}"
 
-        yield "fetching PR data"
         pull_request, pr_diffs = get_pull_request_diffs(pull_request_id)
         logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs")
 
-        yield f"analyzing {len(pr_diffs)} files"
-
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
-
         pr_data = {"title": pull_request.title, "description": pull_request.explanation, "file_diffs": formatted_diffs}
-
-        yield "generating review"
-
         prompt = code_review_prompt(pr_data)
         logger.info(f"Generated prompt with {len(prompt)} characters")
 
-        response = await llm.ainvoke(prompt)
+        llm_task = asyncio.create_task(llm.ainvoke(prompt))
 
+        while not llm_task.done():
+            await asyncio.sleep(20)
+            yield "generating code review... this might take a minute."
+
+        response = await llm_task
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
         parsed_response = line_by_line_review_parser.invoke(response)
@@ -57,7 +56,7 @@ async def run(pull_request_id: int, db: Database, usage_log_id: int | None = Non
 
         create_pull_request_review(pull_request_id, review, pull_request.commit_sha)
 
-        yield "review complete"
+        yield "celebrating! code review is complete"
 
     except Exception as e:
         logger.exception(f"code review failed for PR #{pull_request_id}: {e}")
