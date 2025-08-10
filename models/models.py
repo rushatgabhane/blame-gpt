@@ -148,8 +148,6 @@ class UsageLog(BaseModel):
 
 
 class CodeReviewComment(BaseModel):
-    """Individual code review comment with conventional comment labels"""
-    
     file: str = Field(description="The file path where the comment applies")
     start_line: int = Field(description="The starting line number for the comment")
     end_line: int = Field(description="The ending line number for the comment")
@@ -159,8 +157,6 @@ class CodeReviewComment(BaseModel):
 
 
 class PRDiff(BaseModel):
-    """Pull request diff information"""
-    
     filename: str = Field(description="Name of the file")
     status: str = Field(description="Status of the file: 'added', 'modified', 'deleted'")
     additions: int = Field(description="Number of lines added")
@@ -169,11 +165,8 @@ class PRDiff(BaseModel):
 
 
 class LineByLineCodeReview(BaseModel):
-    """Complete line-by-line code review"""
-    
     pr_number: int = Field(description="Pull request number")
     comments: list[CodeReviewComment] = Field(description="List of review comments")
-    overall_score: int = Field(description="Overall code quality score from 1-10")
     summary: str = Field(description="Brief summary of the review findings")
     files_reviewed: list[str] = Field(description="List of files that were reviewed")
 

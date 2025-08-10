@@ -2,13 +2,17 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 
-from libs.llm import ModelNames, llm, llmCheap
+from libs.llm import ModelNames, llmCheap
 from libs.prompt_templates.line_by_line_code_review import format_line_by_line_review_prompt, line_by_line_review_parser
 from libs.prompt_templates.repository_overview import format_repository_overview_prompt, repository_overview_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import LineByLineCodeReview
 from services.code_index_pipeline import run
-from services.github.pull_request_service import format_pr_diffs_for_review, get_pull_request_diffs
+from services.github.pull_request_service import (
+    create_pull_request_review,
+    format_pr_diffs_for_review,
+    get_pull_request_diffs,
+)
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -77,56 +81,46 @@ async def generate_code_review():
 async def run_line_by_line_review(
     pull_request_id: int, db: Database, usage_log_id: int | None = None
 ) -> AsyncGenerator[str]:
-    """Generate line-by-line code review for a pull request with progress updates"""
     try:
         yield f"starting line-by-line review for PR #{pull_request_id}..."
-        
-        # Get PR data and diffs
+
         yield "fetching pull request data and file diffs..."
         pull_request, pr_diffs = get_pull_request_diffs(pull_request_id)
         logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs")
-        
+
         yield f"analyzing {len(pr_diffs)} changed files..."
-        
-        # Format diffs for LLM review
+
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
-        
-        # Prepare data for prompt
-        pr_data = {
-            "title": pull_request.title,
-            "description": pull_request.explaination,
-            "file_diffs": formatted_diffs
-        }
-        
+
+        pr_data = {"title": pull_request.title, "description": pull_request.explaination, "file_diffs": formatted_diffs}
+
         yield "generating review using AI..."
-        
-        # Generate review using LLM
+
         prompt = format_line_by_line_review_prompt(pr_data)
         logger.info(f"Generated prompt with {len(prompt)} characters")
-        
-        response = await llm.ainvoke(prompt)
-        
-        # Track LLM usage
-        if usage_log_id:
-            track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5_MINI)
-        
+
+        response = await llmCheap.ainvoke(prompt)
+
+        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5_MINI)
+
         yield "parsing AI response..."
-        
-        # Parse response
+
         parsed_response = line_by_line_review_parser.invoke(response)
-        
-        # Create final review model
+
         review = LineByLineCodeReview(
             pr_number=pull_request_id,
             comments=parsed_response.comments,
-            overall_score=parsed_response.overall_score,
             summary=parsed_response.summary,
-            files_reviewed=[diff.filename for diff in pr_diffs if diff.patch]
+            files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
         )
-        
-        logger.info(f"Generated review with {len(review.comments)} comments, score: {review.overall_score}")
-        yield f"review complete! found {len(review.comments)} comments with overall score: {review.overall_score}/10"
-        
+
+        logger.info(f"Generated review with {len(review.comments)} comments")
+        yield "adding review comment to PR"
+
+        create_pull_request_review(pull_request_id, review)
+
+        yield "review complete!"
+
     except Exception as e:
         logger.error(f"Line-by-line review failed for PR #{pull_request_id}: {e}")
         logger.error(f"Error type: {type(e).__name__}")
@@ -200,7 +194,7 @@ def _optimize_file_analyses(file_analyses: list, codebase_path: str) -> list:
 
         if optimized_entities:
             # Trim codebase prefix from file path
-            file_path = analysis["file_path"][len(prefix):]
+            file_path = analysis["file_path"][len(prefix) :]
             optimized_analyses.append({"file_path": file_path, "entities": optimized_entities})
 
     return optimized_analyses
@@ -239,9 +233,9 @@ def _optimize_key_components(key_components: list, codebase_path: str) -> list:
     optimized_components = []
     for component in key_components:
         optimized_component = {
-            "file": component["file"][len(prefix):],
-            "top_functions": [func["id"].split(":")[-1] for func in component.get("top_functions", [])]
+            "file": component["file"][len(prefix) :],
+            "top_functions": [func["id"].split(":")[-1] for func in component.get("top_functions", [])],
         }
         optimized_components.append(optimized_component)
-    
+
     return optimized_components
