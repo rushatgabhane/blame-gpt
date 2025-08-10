@@ -17,6 +17,7 @@ def format_line_by_line_review_prompt(pr_data: dict) -> str:
 - Test coverage
 
 Be constructive and helpful in your feedback.
+Do not make any comments about code format or whitespace.
 
 Use conventional comments format (https://conventionalcomments.org/):
 - praise: Highlight something positive
