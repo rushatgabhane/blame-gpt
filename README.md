@@ -148,7 +148,7 @@ This is a rough roadmap. Please suggest **small ideas, big ideas**, anything and
   - [ ] Q&A / “Chat with the codebase”
 
 - **Auto revert**
-  - [ ] Revert a PR, resolve conflicts and add them to the body.
+  - [x] Revert a PR, resolve conflicts and add them to the body. ([@kevinam99](https://github.com/kevinam99))
       
 - **Test generator for evaluating agent**
   - [ ] For a given issue, we won't know if solution is correct. So write tests (similar to [swe-lancer](https://github.com/openai/SWELancer-Benchmark/blob/6fee3b0200d90f5b24aab36de6c787ec849e76aa/issues/102/test.py#L97) for frontend), and figure out for backend too.
