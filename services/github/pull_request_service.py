@@ -8,7 +8,6 @@ import pathspec
 import requests
 from github.Repository import Repository
 
-from libs import constants
 from libs.helpers import is_production_environment
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
