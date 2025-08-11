@@ -2,7 +2,8 @@ import json
 import logging
 import os
 
-from fastapi import APIRouter, Header, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Header, Request, Response
+from pydantic import SecretStr
 
 from libs import constants, helpers
 from services.webhook_service import process_webhook_comment
@@ -13,12 +14,11 @@ webhook_router = APIRouter()
 
 
 @webhook_router.post("/api/webhook/github")
-async def github_webhook(request: Request, x_hub_signature_256: str = Header(None)):
+async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_hub_signature_256: str = Header(None)):
     body = await request.body()
-    webhook_secret = os.getenv("GITHUB_WEBHOOK_SECRET") or ""
+    webhook_secret = SecretStr(os.getenv("GITHUB_WEBHOOK_SECRET") or "")
 
     if not helpers.is_valid_signature(x_hub_signature_256, webhook_secret, body):
-        logger.warning("invalid webhook signature received")
         return Response(status_code=403, content="Invalid signature")
 
     try:
@@ -43,13 +43,8 @@ async def github_webhook(request: Request, x_hub_signature_256: str = Header(Non
     if not issue_or_pr:
         return Response(status_code=200, content="No issue or pull request found")
 
-    try:
-        core_db = request.app.state.db
-        docs_db = request.app.state.docs_db
+    core_db = request.app.state.db
+    docs_db = request.app.state.docs_db
 
-        await process_webhook_comment(payload, core_db, docs_db, installation_id)
-        return Response(status_code=200, content="Webhook processed successfully")
-
-    except Exception as e:
-        logger.exception(f"Error processing webhook: {e}")
-        return Response(status_code=500, content="Internal server error")
+    background_tasks.add_task(process_webhook_comment, payload, core_db, docs_db, installation_id)
+    return Response(status_code=200, content="Webhook processed successfully")
