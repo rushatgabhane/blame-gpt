@@ -6,7 +6,7 @@ from models.models import PullRequestIntent
 pull_request_intent_parser = PydanticOutputParser(pydantic_object=PullRequestIntent)
 
 template = """
-You are an expert in Expensify's App repository. 
+You are an expert in Expensify's App repository.
 
 # Instructions:
 1. You are given PR details. Provide a summary of the main purpose of the PR.

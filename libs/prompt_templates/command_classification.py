@@ -14,7 +14,7 @@ Your task is to classify the comment into one of the following commands:
 
 {available_commands}
 
-The comment may contain additional content like PR descriptions, or other discussions. 
+The comment may contain additional content like PR descriptions, or other discussions.
 Look for specific command keywords that match the available commands above.
 Pay attention to text near "{user_tag}" mentions.
 

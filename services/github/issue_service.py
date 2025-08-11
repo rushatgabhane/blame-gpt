@@ -1,7 +1,8 @@
 import logging
 import re
 
-from libs.github import repo
+from github.Repository import Repository
+
 from libs.llm import embedding_model
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import Issue
@@ -9,9 +10,9 @@ from models.models import Issue
 logger = logging.getLogger(__name__)
 
 
-async def add_issue(issue_id: int, db: Database) -> Issue:
+async def add_issue(issue_id: int, repo_client: Repository, db: Database) -> Issue:
     try:
-        gh_issue = repo.get_issue(number=issue_id)
+        gh_issue = repo_client.get_issue(number=issue_id)
         labels = [label.name for label in gh_issue.labels] or []
         steps = _extract_steps_from_description(gh_issue.body or "")
         title = gh_issue.title or ""
@@ -55,12 +56,12 @@ def get_all_issues(db: Database) -> list[Issue]:
     return db.get_all_issues()
 
 
-async def add_issue_if_not_exists(issue_id: int, db: Database) -> Issue | None:
+async def add_issue_if_not_exists(issue_id: int, repo_client: Repository, db: Database) -> Issue | None:
     try:
         existing_issue = db.get_issue_by_id(issue_id)
         if existing_issue:
             return existing_issue
-        return await add_issue(issue_id, db)
+        return await add_issue(issue_id, repo_client, db)
     except Exception as e:
         logger.error(f"error fetching issue #{issue_id} from db: {e}")
         raise

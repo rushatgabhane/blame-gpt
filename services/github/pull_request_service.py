@@ -9,7 +9,6 @@ import requests
 from github.Repository import Repository
 
 from libs import constants
-from libs.github import repo
 from libs.helpers import is_production_environment
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
@@ -22,8 +21,8 @@ logger = logging.getLogger(__name__)
 _add_new_prs_lock = threading.Lock()
 
 
-def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
-    comparison = repo.compare(base=base, head=head)
+def _get_pull_requests_between(base: str, head: str, repo_client: Repository) -> list[int] | None:
+    comparison = repo_client.compare(base=base, head=head)
 
     pr_numbers = set()
     for commit in comparison.commits:
@@ -36,10 +35,10 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
 
 
 def add_new_pull_requests_between(
-    base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None
+    base: str, head: str, issue_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
 ) -> None:
     with _add_new_prs_lock:
-        new_ids = _get_pull_requests_between(base, head)
+        new_ids = _get_pull_requests_between(base, head, repo_client)
         if not new_ids:
             return
 
@@ -50,7 +49,8 @@ def add_new_pull_requests_between(
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = {
-                executor.submit(_get_pr_with_embeddings, pr_id, db, usage_log_id): pr_id for pr_id in new_ids_to_process
+                executor.submit(_get_pr_with_embeddings, pr_id, repo_client, db, usage_log_id): pr_id
+                for pr_id in new_ids_to_process
             }
             for future in as_completed(futures):
                 pull_request = future.result()
@@ -92,9 +92,11 @@ def _get_code_diff(diff_url: str) -> str:
         return ""
 
 
-def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
+def _get_pr_with_embeddings(
+    pull_request_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
+) -> PullRequest | None:
     try:
-        pr = repo.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
         all_files = pr.get_files()
 
         files = [f.filename for f in all_files]
@@ -173,10 +175,10 @@ def _parse_explanation(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
+def get_pull_request_patch(pull_request_id: int, repo_client: Repository) -> list[FilePatch]:
     patches: list[FilePatch] = []
 
-    pr = repo.get_pull(pull_request_id)
+    pr = repo_client.get_pull(pull_request_id)
     for file in pr.get_files():
         if not file.patch:
             continue
@@ -191,13 +193,13 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
 
 
 def add_pull_request_if_not_exist(
-    pull_request_id: int, db: Database, usage_log_id: int | None = None
+    pull_request_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
 ) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr
 
-    pull_request = _get_pr_with_embeddings(pull_request_id, db, usage_log_id)
+    pull_request = _get_pr_with_embeddings(pull_request_id, repo_client, db, usage_log_id)
     if not pull_request:
         logging.error(f"failed to fetch pull request {pull_request_id}")
         return None
@@ -206,12 +208,8 @@ def add_pull_request_if_not_exist(
     return pull_request
 
 
-
-
 def get_pull_request_diffs(
-    pull_request_id: int, 
-    repo_ref: Repository, 
-    gitignore_spec: pathspec.PathSpec
+    pull_request_id: int, repo_ref: Repository, gitignore_spec: pathspec.PathSpec
 ) -> tuple[PullRequest, list[PRDiff]]:
     try:
         pr = repo_ref.get_pull(pull_request_id)

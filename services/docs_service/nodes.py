@@ -18,12 +18,19 @@ logger = logging.getLogger(__name__)
 
 def pull_request_node(state: State, db: core_sqlite_client.Database) -> State:
     pull_request_id = state["pull_request_id"]
-    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, None)
+    repo_client = state["repo_client"]
+
+    if not repo_client:
+        logger.error(f"{pull_request_id}: No repo_client in state")
+        state["should_docs_update"] = False
+        return state
+
+    pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, repo_client, db, None)
     if not pull_request:
         state["should_docs_update"] = False
         return state
 
-    file_patches = pull_request_service.get_pull_request_patch(pull_request.id)
+    file_patches = pull_request_service.get_pull_request_patch(pull_request.id, repo_client)
     patch = [p.patch for p in file_patches if p.filename.endswith("en.ts")]
 
     en_patch_str = "\n".join(patch)
@@ -190,10 +197,15 @@ def doc_edit_evaluation_node(state: State, db: core_sqlite_client.Database) -> S
 def add_comment_node(state: State) -> State:
     pull_request_id = state["pull_request_id"]
     comment = state["comment"]
+    repo_client = state["repo_client"]
 
     if not comment or not pull_request_id:
         logger.info(f"{pull_request_id}: no comment to add")
         return state
 
-    add_comment_to_pull_request(pull_request_id, comment)
+    if not repo_client:
+        logger.error(f"{pull_request_id}: No repo_client in state")
+        return state
+
+    add_comment_to_pull_request(pull_request_id, comment, repo_client)
     return state

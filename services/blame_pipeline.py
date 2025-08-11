@@ -3,6 +3,7 @@ import logging
 from collections.abc import AsyncGenerator
 
 from github.IssueComment import IssueComment
+from github.Repository import Repository
 
 from libs import constants
 from libs.helpers import cosine_similarity, thinking_verb
@@ -17,7 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 async def run(
-    issue_id: int, db: Database, usage_log_id: int | None = None, thinking_comment: IssueComment | None = None
+    issue_id: int,
+    repo_client: Repository,
+    db: Database,
+    usage_log_id: int | None = None,
+    thinking_comment: IssueComment | None = None,
 ) -> AsyncGenerator[str]:
     try:
         yield "starting the blame pipeline..."
@@ -29,7 +34,7 @@ async def run(
             comment_service.edit_comment(thinking_comment, "This issue is already processed. Skipping blame.")
             return
 
-        issue = await issue_service.add_issue(issue_id, db)
+        issue = await issue_service.add_issue(issue_id, repo_client, db)
         logger.info(f"{issue_id}: added to database")
 
         if constants.LABELS["DeployBlockerCash"] not in issue.labels:
@@ -47,6 +52,7 @@ async def run(
                 base="production",
                 head="staging",
                 issue_id=issue_id,
+                repo_client=repo_client,
                 db=db,
                 usage_log_id=usage_log_id,
             )
@@ -115,7 +121,9 @@ async def run(
             result_comment = comment_service.format_blame_comment(culprit_pull_requests)
             comment_service.edit_comment(thinking_comment, result_comment)
         else:
-            await comment_service.add_comment(issue_number=issue.id, culprit_pull_requests=culprit_pull_requests)
+            await comment_service.add_comment(
+                issue_number=issue.id, culprit_pull_requests=culprit_pull_requests, repo_client=repo_client
+            )
 
         yield "Added a comment on the issue."
 

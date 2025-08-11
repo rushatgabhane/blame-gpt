@@ -13,7 +13,7 @@ def code_review_prompt(pr_data: dict) -> str:
     template = """
 Please review this pull request and provide feedback on:
 - Code quality and best practices
-- Potential bugs or issues  
+- Potential bugs or issues
 - Performance considerations
 - Security concerns
 - Test coverage
@@ -42,7 +42,7 @@ PR Description: {pr_description}
 File Changes:
 {file_diffs}
 
-The diff shows line numbers as prefixes like "109 +    some_code_here". 
+The diff shows line numbers as prefixes like "109 +    some_code_here".
 Use these exact line number in line field.
 Focus on new code (lines marked with +) and provide specific, actionable feedback.
 

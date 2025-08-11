@@ -22,7 +22,7 @@ A issue body may contain a precondition, action performed, actual outcome and ex
 ### Example test steps:
 
 Precondition: At least one workspace member is assigned a VISA card and WS is connected to QBO.
-Title: Verify that QBO export works for VISA card transactions. 
+Title: Verify that QBO export works for VISA card transactions.
 1. Login to App
 2. Go to workspace settings → Members
 3. Click on the member with VISA card

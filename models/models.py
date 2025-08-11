@@ -1,5 +1,7 @@
 from typing import TypedDict
 
+from github import Github
+from github.Repository import Repository
 from pydantic import BaseModel, Field
 
 from models.enums import CodeReviewCommentType, CommandName
@@ -100,6 +102,9 @@ class State(TypedDict):
     update_reason: str | None
     comment: str | None
     usage_log_id: int | None
+    installation_id: int | None
+    gh_client: Github | None
+    repo_client: Repository | None
 
 
 class CodeDiffSummary(BaseModel):

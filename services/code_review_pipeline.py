@@ -2,12 +2,13 @@ import asyncio
 import logging
 from collections.abc import AsyncGenerator
 
-from libs.github import gh
+from github.Repository import Repository
+
 from libs.llm import ModelNames, llm
 from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import LineByLineCodeReview
-from services.github.local_repository import LocalRepository, with_local_repo
+from services.github.local_repository import LocalRepository
 from services.github.pull_request_service import (
     create_pull_request_review,
     format_pr_diffs_for_review,
@@ -18,58 +19,66 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
-@with_local_repo
 async def run(
     pull_request_id: int,
     repo_owner: str,
     repo_name: str,
     db: Database,
+    repo_client: Repository,
     usage_log_id: int | None = None,
-    local_repo: LocalRepository,
 ) -> AsyncGenerator[str]:
     try:
         yield f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}"
+        logger.info(f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}")
 
-        repo = gh.get_repo(f"{repo_owner}/{repo_name}")
+        with LocalRepository(pull_request_id, repo_client) as local_repo:
+            if local_repo is None:
+                yield "error: failed to setup repository"
+                return
 
-        gitignore_spec = local_repo.get_gitignore_spec()
-        pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo, gitignore_spec)
-        logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs with gitignore filtering")
+            gitignore_spec = local_repo.get_gitignore_spec()
+            pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo_client, gitignore_spec)
+            logger.info("retrieved PR data")
+            logger.info(f"ignore spec {gitignore_spec}")
 
-        formatted_diffs = format_pr_diffs_for_review(pr_diffs)
-        pr_data = {"title": pull_request.title, "description": pull_request.explanation, "file_diffs": formatted_diffs}
-        prompt = code_review_prompt(pr_data)
-        logger.info(f"Generated prompt with {len(prompt)} characters")
+            formatted_diffs = format_pr_diffs_for_review(pr_diffs)
+            pr_data = {
+                "title": pull_request.title,
+                "description": pull_request.explanation,
+                "file_diffs": formatted_diffs,
+            }
+            prompt = code_review_prompt(pr_data)
+            logger.info(f"Generated prompt with {len(prompt)} characters")
 
-        llm_task = asyncio.create_task(llm.ainvoke(prompt))
+            llm_task = asyncio.create_task(llm.ainvoke(prompt))
 
-        while not llm_task.done():
-            await asyncio.sleep(20)
-            yield "generating code review... this might take a minute."
+            while not llm_task.done():
+                await asyncio.sleep(20)
+                yield "generating code review... this might take a minute."
 
-        response = await llm_task
-        track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
+            response = await llm_task
+            track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
-        parsed_response = line_by_line_review_parser.invoke(response)
+            parsed_response = line_by_line_review_parser.invoke(response)
 
-        review = LineByLineCodeReview(
-            pr_number=pull_request_id,
-            comments=parsed_response.comments,
-            code_overview=parsed_response.code_overview,
-            files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
-        )
+            review = LineByLineCodeReview(
+                pr_number=pull_request_id,
+                comments=parsed_response.comments,
+                code_overview=parsed_response.code_overview,
+                files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
+            )
 
-        logger.info(f"Generated review with {len(review.comments)} comments")
-        yield "adding review to PR"
+            logger.info(f"generated review with {len(review.comments)} comments")
+            yield "adding review to PR"
 
-        if not pull_request.commit_sha:
-            logger.error(f"Missing commit SHA for PR #{pull_request_id}")
-            yield "error: missing commit SHA"
-            return
+            if not pull_request.commit_sha:
+                logger.error(f"Missing commit SHA for PR #{pull_request_id}")
+                yield "error: missing commit SHA"
+                return
 
-        create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo)
+            create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo_client)
 
-        yield "celebrating! code review is complete"
+            yield "celebrating! code review is complete"
 
     except Exception as e:
         logger.exception(f"code review failed for PR #{pull_request_id}: {e}")

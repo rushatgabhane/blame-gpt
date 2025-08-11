@@ -4,6 +4,7 @@ import random
 from collections.abc import AsyncGenerator
 
 from github.IssueComment import IssueComment
+from github.Repository import Repository
 
 from libs.helpers import cosine_similarity, thinking_verb
 from libs.llm import ModelNames, llm
@@ -30,6 +31,7 @@ _sassy_titles = [
 
 async def run(
     pull_request_id: int,
+    repo_client: Repository,
     db: Database,
     usage_log_id: int | None = None,
     thinking_comment: IssueComment | None = None,
@@ -45,7 +47,9 @@ async def run(
             return
 
         yield f"{thinking_verb()} pull request details and context..."
-        pull_request = pull_request_service.add_pull_request_if_not_exist(pull_request_id, db, usage_log_id)
+        pull_request = pull_request_service.add_pull_request_if_not_exist(
+            pull_request_id, repo_client, db, usage_log_id
+        )
         if not pull_request:
             logger.error(f"PR #{pull_request_id}: failed to fetch.")
             yield "Couldn't fetch pull request details - this PR might not exist or be accessible."
@@ -62,7 +66,7 @@ async def run(
         yield f"{thinking_verb()} context from linked issues..."
 
         task_linked_issues = asyncio.create_task(
-            _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, db, usage_log_id)
+            _get_test_steps_from_linked_issues(pull_request.linked_issue_ids, repo_client, db, usage_log_id)
         )
 
         # Heartbeat until task is done to keep the connection alive
@@ -116,7 +120,7 @@ async def run(
         if thinking_comment:
             comment_service.edit_comment(thinking_comment, comment)
         else:
-            comment_service.add_comment_to_pull_request(pull_request_id, comment)
+            comment_service.add_comment_to_pull_request(pull_request_id, comment, repo_client)
 
         db.add_pull_request_test_steps(pull_request_id, comment)
 
@@ -144,12 +148,12 @@ def _find_similar_test_steps(pr_embedding: list[float], db: Database) -> list[Te
 
 
 async def _get_test_steps_from_linked_issues(
-    linked_issue_ids: list[int] | None, db: Database, usage_log_id: int | None = None
+    linked_issue_ids: list[int] | None, repo_client: Repository, db: Database, usage_log_id: int | None = None
 ) -> list[GeneratedTestSteps] | None:
     if not linked_issue_ids:
         return None
 
-    issue_tasks = [issue_service.add_issue_if_not_exists(issue_id, db=db) for issue_id in linked_issue_ids]
+    issue_tasks = [issue_service.add_issue_if_not_exists(issue_id, repo_client, db=db) for issue_id in linked_issue_ids]
     issues = await asyncio.gather(*issue_tasks)
     linked_issues = [issue for issue in issues if issue]
 

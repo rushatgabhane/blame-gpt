@@ -4,7 +4,8 @@ import subprocess
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
-from libs.github import repo
+from github.Repository import Repository
+
 from libs.helpers import is_production_environment
 from libs.sqlite.docs.docs_sqlite_client import Database
 from services.docs_service.sync import CLONE_DIR, sync_docs
@@ -14,7 +15,7 @@ tracked_pull_requests = set()
 logger = logging.getLogger(__name__)
 
 
-async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
+async def run(pull_request_id: int, repo_client: Repository, db: Database) -> AsyncGenerator[str]:
     # 1. problematic PR is always closed, so get the merge commit SHA from the PR
     # 2. git checkout -b revert-{pr_id}
     # 3. git revert the commit from 1
@@ -29,7 +30,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
     new_dir = Path.joinpath(CLONE_DIR, f"../revert-{pull_request_id}")
     try:
         yield "starting the revert pipeline, syncing repo"
-        pull_request = repo.get_pull(pull_request_id)
+        pull_request = repo_client.get_pull(pull_request_id)
 
         if not pull_request.merged:
             yield "PR is not merged. Skipping..."
@@ -67,7 +68,7 @@ async def run(pull_request_id: int, db: Database) -> AsyncGenerator[str]:
             logger.info("Opening PR with changes...")
             subprocess.run(["git", "-C", str(new_dir), "push", "origin", local_revert_branch], check=True)
             logger.info(f"Branch {local_revert_branch} pushed to remote.")
-            created_pull_request = repo.create_pull(
+            created_pull_request = repo_client.create_pull(
                 base=pull_request.base.ref,
                 head=local_revert_branch,
                 title=f"Revert PR #{pull_request_id}",

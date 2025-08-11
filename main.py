@@ -10,14 +10,11 @@ logging.basicConfig(level=logging.INFO)
 import asyncio
 import os
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import FastAPI
 
-from controllers._deprecated_deploy_blocker_controller import deploy_blocker_router
 from controllers.blame_controller import blame_router
 from controllers.code_review_controller import router as code_review_router
 from controllers.docs_controller import docs_router
@@ -25,12 +22,12 @@ from controllers.issue_controller import issue_router
 from controllers.revert_controller import revert_router
 from controllers.test_steps_controller import test_steps_router
 from controllers.user_controller import user_router
+from controllers.webhook_controller import webhook_router
 from libs import constants
 from libs.helpers import is_production_environment
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from services.docs_service.sync import sync_docs
-from services.github.notification_service import listen_notifications
 from services.test_step import test_ingestion
 
 logger = logging.getLogger(__name__)
@@ -62,16 +59,6 @@ async def lifespan(app: FastAPI):
     if is_production_environment():
         asyncio.create_task(test_ingestion.ingest_test_steps(app.state.db))
 
-    app.state.last_checked = datetime.now(UTC)  # thread safe across multiple fastapi workers. so not a global variable
-    scheduler.add_job(
-        func=listen_notifications,
-        args=(app.state.db, app.state.docs_db, app),
-        trigger=IntervalTrigger(seconds=5),
-        id="listen_notifications",
-        name="listen to github notifications",
-        max_instances=25,
-    )
-
     scheduler.start()
 
     logger.info(f"ENVIRONMENT set as: {os.getenv('ENVIRONMENT')}.")
@@ -87,9 +74,9 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(blame_router)
 app.include_router(issue_router)
-app.include_router(deploy_blocker_router)
 app.include_router(docs_router)
 app.include_router(user_router)
 app.include_router(test_steps_router)
 app.include_router(revert_router)
 app.include_router(code_review_router)
+app.include_router(webhook_router)

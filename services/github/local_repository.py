@@ -43,7 +43,13 @@ class LocalRepository:
     def __enter__(self):
         try:
             pr = self.repo.get_pull(self.pull_request_id)
-            clone_url = pr.head.repo.clone_url if pr.head.repo.id != pr.base.repo.id else pr.base.repo.clone_url
+            repo_to_clone = pr.head.repo if pr.head.repo.id != pr.base.repo.id else pr.base.repo
+
+            # Get installation auth from the repo's GitHub client
+            installation_auth = self.repo._requester.auth
+            if not installation_auth:
+                return None
+            clone_url = f"https://{installation_auth.token}@github.com/{repo_to_clone.full_name}.git"
             branch_name = pr.head.ref
 
             base_name = f"blamegpt-{self.repo.full_name}"
@@ -147,6 +153,7 @@ class LocalRepository:
         self.worktree_path = None
 
         try:
+            logger.info("cleaning up worktree")
             subprocess.run(
                 ["git", "worktree", "remove", cleanup_worktree_path, "--force"],
                 cwd=self.clone_path,

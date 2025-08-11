@@ -3,9 +3,10 @@
 from typing import cast
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
+from libs.github import get_github_client, get_installation_id_for_repo
 from libs.sqlite.core.core_sqlite_client import Database
 from middlewares import auth_middleware
 from services import code_review_pipeline
@@ -23,9 +24,21 @@ class ReviewRequest(BaseModel):
 async def review_pull_request(request: Request, data: ReviewRequest):
     db = cast(Database, request.app.state.db)
 
+    installation_id = await get_installation_id_for_repo(data.repo_owner, data.repo_name)
+    if not installation_id:
+        return Response(status_code=400, content=f"BlameGPT app not installed on {data.repo_owner}/{data.repo_name}")
+
+    gh_client = get_github_client(installation_id)
+    repo_client = gh_client.get_repo(f"{data.repo_owner}/{data.repo_name}")
+
     async def generate_review():
         async for message in code_review_pipeline.run(
-            pull_request_id=data.pull_request_id, repo_owner=data.repo_owner, repo_name=data.repo_name, db=db
+            pull_request_id=data.pull_request_id,
+            repo_owner=data.repo_owner,
+            repo_name=data.repo_name,
+            db=db,
+            gh_client=gh_client,
+            repo_client=repo_client,
         ):
             yield f"#{data.pull_request_id}: {message}\n"
 
