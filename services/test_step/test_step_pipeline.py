@@ -169,7 +169,7 @@ async def _generate_test_step_for_issue(
     )
 
     try:
-        response = llm.invoke(prompt)
+        response = await llm.ainvoke(prompt)
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
         generated_steps = issue_steps_for_bug_parser.invoke(response)
         assert isinstance(generated_steps, GeneratedTestSteps)
@@ -210,7 +210,7 @@ async def _generate_test_steps(
     )
 
     try:
-        response = llm.invoke(prompt)
+        response = await llm.ainvoke(prompt)
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
         steps = test_steps_generation_parser.invoke(response)
         assert isinstance(steps, GeneratedTestStepsList)
@@ -236,7 +236,7 @@ async def _consolidate_test_steps(
 
         prompt = consolidate_test_steps_prompt.format(original_test_steps=original_test_steps_str)
 
-        response = llm.invoke(prompt)
+        response = await llm.ainvoke(prompt)
         track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
         consolidated_steps = consolidate_test_steps_parser.invoke(response)
         assert isinstance(consolidated_steps, GeneratedTestStepsList)
