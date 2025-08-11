@@ -102,7 +102,7 @@ def _get_pr_with_embeddings(
         files = [f.filename for f in all_files]
 
         pr_test = _parse_test_steps(pr.body or "")
-        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
         pr_explanation = _parse_explanation(pr.body or "")
 
         code_diff = _get_code_diff(pr.diff_url)
@@ -152,11 +152,11 @@ def _parse_test_steps(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def _parse_linked_issue_ids(body: str) -> list[int] | None:
+def _parse_linked_issue_ids(body: str, repo_name: str) -> list[int] | None:
     pattern = (
         rf"\$\s*#(\d+)"  # $ #1234
-        rf"|\$\s*https://[^\s]*/{constants.REPO_NAME}/issues/(\d+)"  # $ https://.../issues/1234
-        rf"|\$\s*\[#(\d+)\]\(https://[^\s]*/{constants.REPO_NAME}/issues/\d+\)"  # $ [#1234](https://.../issues/1234)
+        rf"|\$\s*https://[^\s]*/{re.escape(repo_name)}/issues/(\d+)"  # $ https://.../issues/1234
+        rf"|\$\s*\[#(\d+)\]\(https://[^\s]*/{re.escape(repo_name)}/issues/\d+\)"  # $ [#1234](https://.../issues/1234)
     )
     matches = re.findall(pattern, body)
     return [int(m[0] or m[1] or m[2]) for m in matches] if matches else None
@@ -209,15 +209,15 @@ def add_pull_request_if_not_exist(
 
 
 def get_pull_request_diffs(
-    pull_request_id: int, repo_ref: Repository, gitignore_spec: pathspec.PathSpec
+    pull_request_id: int, repo_client: Repository, gitignore_spec: pathspec.PathSpec
 ) -> tuple[PullRequest, list[PRDiff]]:
     try:
-        pr = repo_ref.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
         all_files = list(pr.get_files())
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
-        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
 
         files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
         files = [f.filename for f in files_without_ignored]
@@ -311,11 +311,11 @@ def _add_line_numbers_to_patch(patch: str) -> str:
 
 
 def create_pull_request_review(
-    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_ref: Repository
+    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_client: Repository
 ) -> None:
     """Create a single GitHub review with body and multiple line comments for specific repo"""
     try:
-        pr = repo_ref.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
 
         review_body = f"{review_data.code_overview}"
 
@@ -335,7 +335,7 @@ def create_pull_request_review(
             logger.info(f"skip for non prod environment. {len(review_comments)}, {review_body}\n {review_comments}")
             return
 
-        commit = repo_ref.get_commit(commit_sha)
+        commit = repo_client.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
         logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
 

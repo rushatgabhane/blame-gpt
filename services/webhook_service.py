@@ -36,7 +36,13 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
         issue_or_pr_url = issue_or_pr.get("url", "")
 
         # Determine if this is an issue or pull request
-        subject_type = "Issue" if payload.get("issue") else "PullRequest"
+        if payload.get("issue"):
+            subject_type = "Issue"
+        elif payload.get("pull_request"):
+            subject_type = "PullRequest"
+        else:
+            logger.error("Neither issue nor pull_request found in webhook payload")
+            return
 
         logger.info(f"Processing webhook comment for {subject_type} #{issue_or_pr_number}")
 

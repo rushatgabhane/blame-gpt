@@ -62,7 +62,6 @@ async def lifespan(app: FastAPI):
     scheduler.start()
 
     logger.info(f"ENVIRONMENT set as: {os.getenv('ENVIRONMENT')}.")
-    logger.info("Make sure to set the .env file from .env.example before running the app.")
     yield
 
     scheduler.shutdown(wait=False)
