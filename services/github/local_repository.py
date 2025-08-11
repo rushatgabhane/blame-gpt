@@ -7,29 +7,31 @@ import shutil
 import subprocess
 import tempfile
 
+import pathspec
 from github.Repository import Repository
 
 logger = logging.getLogger(__name__)
 
 
-class BranchClone:
+class LocalRepository:
     """
-    Context manager for safely cloning GitHub PR branches with automatic cleanup.
+    Context manager for local repository operations with automatic cleanup.
 
     Features:
-    - Handles both same-repo and fork PRs
+    - Clones GitHub PR branches (same-repo and forks)
     - Uses efficient shallow cloning + git worktrees
     - Race condition protection with file locking
     - Path injection prevention with sanitization
+    - File system operations (gitignore, file reading, etc.)
     - Guaranteed cleanup on success, failure, or exception
     - Returns None if repo/branch names are invalid
 
     Usage:
-        with BranchClone(pr_id, repo) as clone:
-            if clone is None:
+        with LocalRepository(pr_id, repo) as local_repo:
+            if local_repo is None:
                 continue
-            # Use clone.worktree_path for file operations
-        # Automatic after out of scope
+            # Use local_repo.worktree_path for file operations
+        # Automatic cleanup after out of scope
     """
 
     def __init__(self, pull_request_id: int, repo: Repository):
@@ -158,3 +160,27 @@ class BranchClone:
 
     def __exit__(self, _exc_type, _exc_val, _exc_tb):
         self._cleanup()
+
+    def get_gitignore_spec(self) -> pathspec.PathSpec:
+        patterns: list[str] = []
+
+        if not self.worktree_path:
+            return pathspec.PathSpec.from_lines("gitwildmatch", patterns)
+
+        result = subprocess.run(
+            ["git", "ls-files", ".gitignore", "**/.gitignore"],
+            cwd=self.worktree_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        gitignore_files = [os.path.join(self.worktree_path, f.strip()) for f in result.stdout.split("\n") if f.strip()]
+
+        for gitignore_path in gitignore_files:
+            try:
+                with open(gitignore_path, encoding="utf-8", errors="ignore") as f:
+                    patterns.extend(line.strip() for line in f if line.strip() and not line.startswith("#"))
+            except Exception:
+                continue
+        return pathspec.PathSpec.from_lines("gitwildmatch", patterns)

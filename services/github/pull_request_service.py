@@ -206,31 +206,16 @@ def add_pull_request_if_not_exist(
     return pull_request
 
 
-def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec:
-    """
-    Get gitignore patterns from root .gitignore only
-    TODO: Ignore gitignores from nested dirs too.
-    """
-    try:
-        gitignore_files = repo_ref.get_contents(".gitignore")
-        if not isinstance(gitignore_files, list):
-            gitignore_files = [gitignore_files]
-
-        all_patterns = []
-        for file in gitignore_files:
-            content = file.decoded_content.decode("utf-8")
-            all_patterns.extend(content.splitlines())
-        return pathspec.PathSpec.from_lines("gitwildmatch", all_patterns)
-    except Exception:
-        return pathspec.PathSpec.from_lines("gitwildmatch", [])
 
 
-def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[PullRequest, list[PRDiff]]:
+def get_pull_request_diffs(
+    pull_request_id: int, 
+    repo_ref: Repository, 
+    gitignore_spec: pathspec.PathSpec
+) -> tuple[PullRequest, list[PRDiff]]:
     try:
         pr = repo_ref.get_pull(pull_request_id)
         all_files = list(pr.get_files())
-
-        gitignore_spec = _get_gitignore_spec(repo_ref)
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")

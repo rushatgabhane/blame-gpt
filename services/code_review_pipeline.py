@@ -7,6 +7,7 @@ from libs.llm import ModelNames, llm
 from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
 from libs.sqlite.core.core_sqlite_client import Database
 from models.models import LineByLineCodeReview
+from services.github.local_repository import LocalRepository, with_local_repo
 from services.github.pull_request_service import (
     create_pull_request_review,
     format_pr_diffs_for_review,
@@ -17,19 +18,23 @@ from services.user_service import track_llm_usage
 logger = logging.getLogger(__name__)
 
 
+@with_local_repo
 async def run(
     pull_request_id: int,
     repo_owner: str,
     repo_name: str,
     db: Database,
     usage_log_id: int | None = None,
+    local_repo: LocalRepository,
 ) -> AsyncGenerator[str]:
     try:
         yield f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}"
 
         repo = gh.get_repo(f"{repo_owner}/{repo_name}")
-        pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo)
-        logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs")
+
+        gitignore_spec = local_repo.get_gitignore_spec()
+        pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo, gitignore_spec)
+        logger.info(f"Retrieved PR data and {len(pr_diffs)} file diffs with gitignore filtering")
 
         formatted_diffs = format_pr_diffs_for_review(pr_diffs)
         pr_data = {"title": pull_request.title, "description": pull_request.explanation, "file_diffs": formatted_diffs}
