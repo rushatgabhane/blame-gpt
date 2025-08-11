@@ -63,5 +63,4 @@ llmNano = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
 
 if bool(os.getenv("USE_CHEAP_LLM_ONLY")):
-    # Reassign the main model to use the cheaper model
     llm = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)

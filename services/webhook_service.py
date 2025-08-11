@@ -19,10 +19,9 @@ logger = logging.getLogger(__name__)
 async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db: DocsDatabase, installation_id: int):
     """Process a GitHub webhook comment event."""
     try:
-        # Get repository from payload
         repository = payload.get("repository", {})
-        repo_owner = repository.get("owner", {}).get("login")
-        repo_name = repository.get("name")
+        repo_owner = repository.get("owner", {}).get("login", "")
+        repo_name = repository.get("name", "")
 
         # Extract comment and issue/PR data
         comment = payload.get("comment") or {}
@@ -38,11 +37,6 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
 
         # Determine if this is an issue or pull request
         subject_type = "Issue" if payload.get("issue") else "PullRequest"
-
-        # Get repository info
-        repository = payload.get("repository", {})
-        repo_owner = repository.get("owner", {}).get("login", "")
-        repo_name = repository.get("name", "")
 
         logger.info(f"Processing webhook comment for {subject_type} #{issue_or_pr_number}")
 

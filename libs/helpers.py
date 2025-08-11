@@ -7,6 +7,7 @@ from datetime import datetime
 from email.utils import format_datetime
 
 import numpy as np
+from pydantic import SecretStr
 
 from libs.constants import ENVIRONMENT_PRODUCTION, THINKING_VERBS
 
@@ -55,11 +56,11 @@ def thinking_verb() -> str:
     return random.choice(THINKING_VERBS)
 
 
-def is_valid_signature(signature: str | None, secret: str, body: bytes) -> bool:
-    if not secret:
+def is_valid_signature(signature: str | None, secret: SecretStr, body: bytes) -> bool:
+    if not secret or not secret.get_secret_value():
         return False
     if signature is None:
         return False
 
-    expected_signature = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    expected_signature = "sha256=" + hmac.new(secret.get_secret_value().encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected_signature, signature)
