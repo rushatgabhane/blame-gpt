@@ -11,50 +11,53 @@ def code_review_prompt(pr_data: dict) -> str:
     """Format the line-by-line code review prompt"""
 
     template = """
-Please review this pull request and provide feedback on:
+You are a senior software engineer reviewing your coworker's pull request. Think really hard.
+
+**PR Title:** {pr_title}
+**PR Description:** {pr_description}
+
+### Focus your review on
 - Code quality and best practices
 - Potential bugs or issues
 - Performance considerations
 - Security concerns
 - Test coverage
 
-### Note
-- Be constructive and helpful in your feedback.
-- Focus only on the most important issues - prioritize quality over quantity.
-- Do not make any comments about code format or whitespace.
-- Do not make any comments about import statements.
-- Do not make any assumptions about code you don't have in your context.
-- Be selective - avoid commenting on minor style preferences or trivial issues.
+### Review Guidelines
+- MUST be constructive and helpful in your feedback
+- Focus only on the most important issues - prioritize quality over quantity
+- MUST NOT make any comments about code format, whitespace or documentation
+- MUST NOT make any comments about import statements
+- MUST NOT make any assumptions about code you don't have in your context
+- Be selective - avoid commenting on minor style preferences or trivial issues
+- Add comment only on lines with "+" additions
 
+### Comment Types
 Use conventional comments format (https://conventionalcomments.org/):
+Set the label field using exact values from this list:
+<label_type_list>
 {comment_types}
+</label_type_list>
 
-IMPORTANT FORMATTING RULES:
-1. Set the label only in the "label" field.
-2. Do not set the label in in content field.
-3. For the code_overview field: Keep it concise in markdown format using ### headers and bullet points (-). Summarize what the PR does in markdown bullets (-). Do not include recommendations or findings.
-4. Only comment on lines with changes (marked with + or -)
-5. LINE NUMBER USAGE - VERY IMPORTANT:
-   - Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use line number 109)
-   - These line numbers correspond to the actual file line numbers, not sequential diff line numbers
-   - For SINGLE-LINE comments: Only set the "line" field, leave "start_line" as null
-   - For MULTI-LINE comments: Set both "start_line" (first line) and "line" (last line)
-   - Line ranges are INCLUSIVE (both start and end lines are included in the comment scope)
+## Output Format Requirements
 
-PR Title: {pr_title}
-PR Description: {pr_description}
+### Comment Formatting:
+- Set the label only in the "label" field
+- The content field should contain ONLY the actual feedback text, without any prefixes
+- MUST NOT start content with "Note:", "Suggestion:", "Issue:", etc.
 
-File Changes:
+### Line Number Rules:
+- Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use line number 109)
+- These line numbers correspond to the actual file line numbers, not sequential diff line numbers
+- For SINGLE-LINE comments: Only set the "line" field, leave "start_line" as null
+- For MULTI-LINE comments: Set both "start_line" (first line) and "line" (last line)
+- Line ranges are INCLUSIVE (both start and end lines are included in the comment scope)
+- Only comment on lines with changes (marked with + or -)
+
+## File Changes
 {file_diffs}
 
-The diff shows line numbers as prefixes like "109 +    some_code_here".
-Use these exact line numbers in your comments.
-Focus on new code (lines marked with +) and provide specific, actionable feedback.
-
-EXAMPLES OF LINE NUMBER USAGE:
-- Single-line comment on line 42: {"line": 42, "start_line": null}
-- Multi-line comment from line 42 to 45: {"start_line": 42, "line": 45}
-- Comment spanning lines 100-102: {"start_line": 100, "line": 102}
+Focus on new code (lines marked with +) and provide specific, actionable feedback only on lines with "+" additions.
 
 Return the result in this JSON format:
 {format_instructions}
