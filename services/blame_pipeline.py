@@ -60,7 +60,8 @@ async def run(
 
         while not task_add_pulls.done():
             await asyncio.sleep(5)
-            yield f"{thinking_verb()} pull requests... this might take a minute."  # heartbeat to avoid closing the connection
+            # heartbeat to avoid closing the connection
+            yield f"{thinking_verb()} pull requests... this might take a minute."
 
         await task_add_pulls
 
@@ -209,7 +210,7 @@ Test Steps: {pr.pull_request.test.strip() if pr.pull_request.test else "No test 
 
 Files Changed: {", ".join(pr.pull_request.files) if pr.pull_request.files else "No files listed."}
 
-Code diff summary: {pr.pull_request.code_diff_summary if pr.pull_request.code_diff_summary else "No code diff summary provided."}
+Code diff summary: {pr.pull_request.code_diff_summary or "No code diff summary provided."}
 
 Score: {pr.score:.2f}
 

@@ -46,7 +46,9 @@ The diff shows line numbers as prefixes like "109 +    some_code_here".
 Use these exact line number in line field.
 Focus on new code (lines marked with +) and provide specific, actionable feedback.
 
+Return the result in this JSON format:
 {format_instructions}
+
 """
 
     # Generate comment types list from enum

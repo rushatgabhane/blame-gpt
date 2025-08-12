@@ -29,6 +29,7 @@ def get_github_client(installation_id: int):
 def get_installation_token(installation_id: int):
     """Get installation token for a specific installation."""
     installation_auth = Auth.AppInstallationAuth(app_auth, installation_id)
+    Github(auth=installation_auth)  # do this to avoid init errors
     return installation_auth.token
 
 

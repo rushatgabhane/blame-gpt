@@ -2,11 +2,10 @@ import logging
 
 from libs.llm import LLM_PRICING
 from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
+from models.enums import CommandName
 from models.models import UsageLog, User, UserUsageLog
 
 logger = logging.getLogger(__name__)
-
-from models.enums import CommandName
 
 
 def track_llm_usage(core_db: CoreDatabase, usage_log_id: int | None, llm_response, model_name: str):

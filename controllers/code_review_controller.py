@@ -37,8 +37,8 @@ async def review_pull_request(request: Request, data: ReviewRequest):
             repo_owner=data.repo_owner,
             repo_name=data.repo_name,
             db=db,
-            gh_client=gh_client,
             repo_client=repo_client,
+            installation_id=installation_id,
         ):
             yield f"#{data.pull_request_id}: {message}\n"
 

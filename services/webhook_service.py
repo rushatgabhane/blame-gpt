@@ -35,14 +35,7 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
             return
         issue_or_pr_url = issue_or_pr.get("url", "")
 
-        # Determine if this is an issue or pull request
-        if payload.get("issue"):
-            subject_type = "Issue"
-        elif payload.get("pull_request"):
-            subject_type = "PullRequest"
-        else:
-            logger.error("Neither issue nor pull_request found in webhook payload")
-            return
+        subject_type = "PullRequest" if payload.get("issue") and payload["issue"].get("pull_request") else "Issue"
 
         logger.info(f"Processing webhook comment for {subject_type} #{issue_or_pr_number}")
 
@@ -161,6 +154,7 @@ async def _run_webhook_command(
             repo_name=repo_name,
             db=core_db,
             repo_client=repo_client,
+            installation_id=installation_id,
             usage_log_id=usage_log_id,
         ):
             logger.debug(f"Code review PR #{issue_or_pr_number}: {step}")
