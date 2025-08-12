@@ -39,7 +39,6 @@ async def run(
 
             gitignore_spec = local_repo.get_gitignore_spec()
             pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo_client, gitignore_spec)
-            logger.info(f"ignore spec {gitignore_spec.patterns}")
 
             formatted_diffs = format_pr_diffs_for_review(pr_diffs)
             pr_data = {

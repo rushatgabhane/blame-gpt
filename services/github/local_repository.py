@@ -151,7 +151,6 @@ class LocalRepository:
                 cwd=self.clone_path,
                 capture_output=True,
             )
-            logger.info(f"removed worktree {cleanup_worktree_path}")
         except Exception:
             if not os.path.exists(cleanup_worktree_path):
                 return

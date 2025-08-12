@@ -19,32 +19,32 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_
     webhook_secret = SecretStr(os.getenv("GITHUB_WEBHOOK_SECRET") or "")
 
     if not helpers.is_valid_signature(x_hub_signature_256, webhook_secret, body):
-        return Response(status_code=403, content="Invalid signature")
+        return Response(content="Invalid signature")
 
     try:
         payload = json.loads(body)
     except json.JSONDecodeError as e:
         logger.error(f"failed to parse webhook payload: {e}")
-        return Response(status_code=400, content="Invalid JSON payload")
+        return Response(content="Invalid JSON payload")
 
     if payload.get("action") not in ["created", "edited"]:
-        return Response(status_code=200, content="Not a comment action")
+        return Response(content="Not a comment action")
 
     comment_body = payload.get("comment", {}).get("body", "")
     if constants.USER_TAG.lower() not in comment_body.lower():
-        return Response(status_code=200, content="No @blamegpt mention")
+        return Response(content="No @blamegpt mention")
 
     installation = payload.get("installation", {})
     installation_id = installation.get("id")
     if not installation_id:
-        return Response(status_code=400, content="No installation ID found")
+        return Response(content="No installation ID found")
 
     issue_or_pr = payload.get("issue") or payload.get("pull_request")
     if not issue_or_pr:
-        return Response(status_code=200, content="No issue or pull request found")
+        return Response(content="No issue or pull request found")
 
     core_db = request.app.state.db
     docs_db = request.app.state.docs_db
 
     background_tasks.add_task(process_webhook_comment, payload, core_db, docs_db, installation_id)
-    return Response(status_code=200, content="Webhook processed successfully")
+    return Response(content="processing webhook")
