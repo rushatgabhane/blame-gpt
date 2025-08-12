@@ -7,6 +7,7 @@ LABELS = {
 }
 
 USER_TAG = "@blamegpt"
+SIGNATURE = "\n<!-- https://blamegpt.ai code reviewer -->"
 
 ENVIRONMENT_PRODUCTION = "production"
 ENVIRONMENT_DEVELOPMENT = "development"
