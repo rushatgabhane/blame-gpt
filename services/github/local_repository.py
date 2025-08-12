@@ -10,6 +10,8 @@ import tempfile
 import pathspec
 from github.Repository import Repository
 
+from libs.github import get_installation_token
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,26 +36,26 @@ class LocalRepository:
         # Automatic cleanup after out of scope
     """
 
-    def __init__(self, pull_request_id: int, repo: Repository):
+    def __init__(self, pull_request_id: int, repo: Repository, installation_id: int):
         self.pull_request_id = pull_request_id
         self.repo = repo
+        self.installation_id = installation_id
         self.clone_path: str | None = None
         self.worktree_path: str | None = None
 
     def __enter__(self):
         try:
             pr = self.repo.get_pull(self.pull_request_id)
-            repo_to_clone = pr.head.repo if pr.head.repo.id != pr.base.repo.id else pr.base.repo
+            repo_to_clone = pr.base.repo
 
-            # Get installation auth from the repo's GitHub client
-            installation_auth = self.repo._requester.auth
-            if not installation_auth:
-                return None
-            clone_url = f"https://{installation_auth.token}@github.com/{repo_to_clone.full_name}.git"
-            branch_name = pr.head.ref
+            token = get_installation_token(self.installation_id)
+            clone_url = f"https://x-access-token:{token}@github.com/{repo_to_clone.full_name}.git"
+
+            sanitized_branch = pr.head.ref.replace("/", "-")
+            local_branch_name = f"pr-{pr.number}-{sanitized_branch}"
 
             base_name = f"blamegpt-{self.repo.full_name}"
-            worktree_name = f"blamegpt-{pr.number}-{branch_name}"
+            worktree_name = f"blamegpt-{pr.number}-{sanitized_branch}"
 
             self.clone_path = self._safe_temp_path(base_name)
             self.worktree_path = self._safe_temp_path(worktree_name)
@@ -61,8 +63,8 @@ class LocalRepository:
             if not self.clone_path or not self.worktree_path:
                 return None
 
-            self._create_or_update_clone(clone_url, branch_name)
-            self._create_worktree(branch_name)
+            self._create_or_update_clone(clone_url, local_branch_name)
+            self._create_worktree(local_branch_name)
             return self
         except Exception as e:
             logger.error(f"Failed to setup branch clone: {e}")
@@ -77,31 +79,21 @@ class LocalRepository:
 
         with open(lock_file_path, "w") as lock_file:
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
-            self._create_or_update_clone_locked(clone_url, branch_name)
+            if not os.path.exists(self.clone_path):
+                shallow_clone_cmd = ["git", "clone", "--no-checkout", "--depth", "1", clone_url, self.clone_path]
+                subprocess.run(shallow_clone_cmd, check=True, capture_output=True)
+                logger.info(f"Created shallow clone at {self.clone_path}")
 
-        # Cleanup lock file
+            fetch_cmd = ["git", "remote", "set-url", "origin", clone_url]
+            subprocess.run(fetch_cmd, cwd=self.clone_path, check=True, capture_output=True)
+            logger.info(f"Updated clone with branch {branch_name}")
+
+            refspec = f"pull/{self.pull_request_id}/head:refs/heads/{branch_name}"
+            fetch_pr_branch_cmd = ["git", "fetch", "origin", refspec, "--force", "--no-tags"]
+            subprocess.run(fetch_pr_branch_cmd, cwd=self.clone_path, check=True, capture_output=True)
+
         with contextlib.suppress(OSError):
             os.unlink(lock_file_path)
-
-    def _create_or_update_clone_locked(self, clone_url: str, branch_name: str):
-        """Handle clone creation/update with lock already acquired"""
-        if not self.clone_path:
-            raise ValueError("Clone path not initialized")
-
-        if not os.path.exists(self.clone_path):
-            subprocess.run(
-                ["git", "clone", "--bare", "--depth", "1", clone_url, self.clone_path], check=True, capture_output=True
-            )
-            logger.info(f"Created bare clone at {self.clone_path}")
-            return
-
-        subprocess.run(
-            ["git", "fetch", "origin", f"{branch_name}:refs/heads/{branch_name}"],
-            cwd=self.clone_path,
-            check=True,
-            capture_output=True,
-        )
-        logger.info(f"Updated clone with branch {branch_name}")
 
     def _create_worktree(self, branch_name: str):
         if not self.clone_path or not self.worktree_path:
@@ -165,7 +157,7 @@ class LocalRepository:
                 return
             shutil.rmtree(cleanup_worktree_path)
 
-    def __exit__(self, _exc_type, _exc_val, _exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self._cleanup()
 
     def get_gitignore_spec(self) -> pathspec.PathSpec:
