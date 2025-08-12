@@ -34,7 +34,12 @@ IMPORTANT FORMATTING RULES:
 2. Do not set the label in in content field.
 3. For the code_overview field: Keep it concise in markdown format using ### headers and bullet points (-). Summarize what the PR does in markdown bullets (-). Do not include recommendations or findings.
 4. Only comment on lines with changes (marked with + or -)
-5. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
+5. LINE NUMBER USAGE - VERY IMPORTANT:
+   - Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use line number 109)
+   - These line numbers correspond to the actual file line numbers, not sequential diff line numbers
+   - For SINGLE-LINE comments: Only set the "line" field, leave "start_line" as null
+   - For MULTI-LINE comments: Set both "start_line" (first line) and "line" (last line)
+   - Line ranges are INCLUSIVE (both start and end lines are included in the comment scope)
 
 PR Title: {pr_title}
 PR Description: {pr_description}
@@ -43,8 +48,13 @@ File Changes:
 {file_diffs}
 
 The diff shows line numbers as prefixes like "109 +    some_code_here".
-Use these exact line number in line field.
+Use these exact line numbers in your comments.
 Focus on new code (lines marked with +) and provide specific, actionable feedback.
+
+EXAMPLES OF LINE NUMBER USAGE:
+- Single-line comment on line 42: {"line": 42, "start_line": null}
+- Multi-line comment from line 42 to 45: {"start_line": 42, "line": 45}
+- Comment spanning lines 100-102: {"start_line": 100, "line": 102}
 
 Return the result in this JSON format:
 {format_instructions}
