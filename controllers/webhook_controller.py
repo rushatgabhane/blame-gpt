@@ -32,7 +32,7 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_
 
     comment_body = payload.get("comment", {}).get("body", "")
     if constants.USER_TAG.lower() not in comment_body.lower():
-        return Response(content="No @blamegpt mention")
+        return Response(content=f"No {constants.USER_TAG.lower()} mention")
 
     installation = payload.get("installation", {})
     installation_id = installation.get("id")

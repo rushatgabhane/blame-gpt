@@ -7,14 +7,11 @@ from models.models import LineByLineCodeReview
 line_by_line_review_parser = PydanticOutputParser(pydantic_object=LineByLineCodeReview)
 
 
-def code_review_prompt(pr_data: dict) -> str:
+def code_review_prompt(pr_number: int, title: str, description: str, file_diffs: str) -> str:
     """Format the line-by-line code review prompt"""
 
     template = """
 You are a senior software engineer reviewing your coworker's pull request. Think really hard.
-
-**PR Title:** {pr_title}
-**PR Description:** {pr_description}
 
 ### Focus your review on
 - Code quality and best practices
@@ -42,7 +39,8 @@ Set the label field using exact values from this list:
 ## Output Format Requirements
 
 ### Comment Formatting:
-- Set the label only in the "label" field
+- REQUIRED: Set the "file" field to the exact file path from the diff header (e.g. "libs/github.py")
+- Set the label only in the "label" field using exact values from the list above
 - The content field should contain ONLY the actual feedback text, without any prefixes
 - MUST NOT start content with "Note:", "Suggestion:", "Issue:", etc.
 
@@ -52,7 +50,11 @@ Set the label field using exact values from this list:
 - For SINGLE-LINE comments: Only set the "line" field, leave "start_line" as null
 - For MULTI-LINE comments: Set both "start_line" (first line) and "line" (last line)
 - Line ranges are INCLUSIVE (both start and end lines are included in the comment scope)
-- Only comment on lines with changes (marked with + or -)
+- Only comment on lines with additions (marked with +)
+
+**PR #{pr_number}**
+**PR Title:** {pr_title}
+**PR Description:** {pr_description}
 
 ## File Changes
 {file_diffs}
@@ -69,7 +71,7 @@ Return the result in this JSON format:
 
     prompt = PromptTemplate(
         template=template,
-        input_variables=["pr_title", "pr_description", "file_diffs"],
+        input_variables=["pr_number", "pr_title", "pr_description", "file_diffs"],
         partial_variables={
             "format_instructions": line_by_line_review_parser.get_format_instructions(),
             "comment_types": comment_types,
@@ -77,7 +79,8 @@ Return the result in this JSON format:
     )
 
     return prompt.format(
-        pr_title=pr_data.get("title", ""),
-        pr_description=pr_data.get("description", ""),
-        file_diffs=pr_data.get("file_diffs", ""),
+        pr_number=pr_number,
+        pr_title=title,
+        pr_description=description,
+        file_diffs=file_diffs,
     )

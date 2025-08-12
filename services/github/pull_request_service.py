@@ -8,12 +8,13 @@ import pathspec
 import requests
 from github.Repository import Repository
 
+from libs.constants import SIGNATURE
 from libs.helpers import is_production_environment
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.enums import CodeReviewCommentType
-from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRDiff, PullRequest
+from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRFileDiff, PullRequest
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -209,7 +210,7 @@ def add_pull_request_if_not_exist(
 
 def get_pull_request_diffs(
     pull_request_id: int, repo_client: Repository, gitignore_spec: pathspec.PathSpec
-) -> tuple[PullRequest, list[PRDiff]]:
+) -> tuple[PullRequest, list[PRFileDiff]]:
     try:
         pr = repo_client.get_pull(pull_request_id)
         all_files = list(pr.get_files())
@@ -233,7 +234,7 @@ def get_pull_request_diffs(
 
         pr_diffs = []
         for file in files_without_ignored:
-            pr_diff = PRDiff(
+            pr_diff = PRFileDiff(
                 filename=file.filename,
                 status=file.status,
                 additions=file.additions,
@@ -249,7 +250,7 @@ def get_pull_request_diffs(
         raise
 
 
-def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
+def format_pr_diffs_for_review(pr_diffs: list[PRFileDiff]) -> str:
     """Format PR diffs with embedded line numbers"""
     formatted_diffs = []
 
@@ -271,10 +272,15 @@ def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
 
 def _add_line_numbers_to_patch(patch: str) -> str:
     lines = patch.split("\n")
-    numbered_lines = []
+    numbered_lines: list[str] = []
     current_new_line = None
 
     for line in lines:
+        # Skip empty lines at the end
+        if not line:
+            numbered_lines.append(line)
+            continue
+
         # Parse hunk headers to get starting line numbers
         if line.startswith("@@"):
             # Extract new file line number from hunk header like "@@ -10,7 +10,8 @@"
@@ -294,15 +300,15 @@ def _add_line_numbers_to_patch(patch: str) -> str:
             numbered_lines.append(line)
             continue
 
-        # Add line numbers: "109 +    some_code_here"
-        if line.startswith("+"):
+        if line.startswith("-"):
+            # Don't number removed lines, don't increment counter
+            numbered_lines.append(line)
+        elif line.startswith("+"):
+            # Number added lines with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
-        elif line.startswith("-"):
-            numbered_lines.append(line)  # Don't number removed lines
-            # Don't increment for deleted lines
         else:
-            # Context line (unchanged) - add line number and increment
+            # Context line (unchanged) - number with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
 
@@ -318,17 +324,29 @@ def create_pull_request_review(
 
         review_body = f"{review_data.code_overview}"
 
+        # Get PR files to validate paths and line numbers
+        pr_files = list(pr.get_files())
+        valid_paths = {f.filename for f in pr_files}
+
         review_comments = []
         for comment in review_data.comments:
             if comment.label == CodeReviewCommentType.ISSUE or comment.label == CodeReviewCommentType.SUGGESTION:
-                review_comments.append(
-                    {
-                        "path": comment.file,
-                        "body": f"**{comment.label.value}**: {comment.content}",
-                        "line": comment.line,
-                        "side": "RIGHT",
-                    }
-                )
+                if comment.file not in valid_paths:
+                    continue
+
+                comment_data = {
+                    "path": comment.file,
+                    "body": f"**{comment.label.value}**: {comment.content}{SIGNATURE}",
+                    "line": comment.line,
+                    "side": "RIGHT",
+                }
+
+                # Add start_line if it's a multi-line comment
+                if comment.start_line and comment.start_line < comment.line:
+                    comment_data["start_line"] = comment.start_line
+                    comment_data["start_side"] = "RIGHT"
+
+                review_comments.append(comment_data)
 
         if not is_production_environment():
             logger.info(f"skip for non prod environment. {len(review_comments)}, {review_body}\n {review_comments}")

@@ -1,8 +1,13 @@
+import logging
 import os
 from dataclasses import dataclass
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
+
+from libs.helpers import is_production_environment
+
+logger = logging.getLogger(__name__)
 
 
 class ModelNames:
@@ -62,5 +67,5 @@ llmCheap = ChatOpenAI(model=ModelNames.GPT_5_MINI, api_key=api_key)
 llmNano = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-large", api_key=api_key)
 
-if bool(os.getenv("USE_CHEAP_LLM_ONLY")):
+if os.getenv("USE_CHEAP_LLM_ONLY", "").lower() == "true" and not is_production_environment():
     llm = ChatOpenAI(model=ModelNames.GPT_5_NANO, api_key=api_key)

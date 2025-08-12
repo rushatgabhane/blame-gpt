@@ -41,13 +41,12 @@ async def run(
             pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo_client, gitignore_spec)
 
             formatted_diffs = format_pr_diffs_for_review(pr_diffs)
-            pr_data = {
-                "title": pull_request.title,
-                "description": pull_request.explanation,
-                "file_diffs": formatted_diffs,
-            }
-            prompt = code_review_prompt(pr_data)
-            logger.info(f"Generated prompt with {len(prompt)} characters")
+            prompt = code_review_prompt(
+                pr_number=pull_request_id,
+                title=pull_request.title,
+                description=pull_request.explanation,
+                file_diffs=formatted_diffs,
+            )
 
             llm_task = asyncio.create_task(llm.ainvoke(prompt))
 
