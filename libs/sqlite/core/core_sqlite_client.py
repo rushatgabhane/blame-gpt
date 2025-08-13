@@ -415,21 +415,3 @@ class Database:
             (usage_log_id, llm_model, tokens_used, cost_usd_thousandths),
         )
         self.connection.commit()
-
-    @require_connection
-    def get_pull_request_review_sha(self, pull_request_id: int, repo_id: int) -> str | None:
-        assert self.connection is not None
-        row = self.connection.execute(
-            core_queries.GET_PULL_REQUEST_REVIEW_SHA,
-            (pull_request_id, repo_id),
-        ).fetchone()
-        return row[0] if row else None
-
-    @require_connection
-    def update_pull_request_review(self, pull_request_id: int, repo_id: int, commit_sha: str):
-        assert self.connection is not None
-        self.connection.execute(
-            core_queries.INSERT_OR_UPDATE_PULL_REQUEST_REVIEW,
-            (pull_request_id, repo_id, commit_sha),
-        )
-        self.connection.commit()

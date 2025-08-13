@@ -21,23 +21,16 @@ logger = logging.getLogger(__name__)
 
 async def run(
     pull_request_id: int,
-    repo_id: int,
+    repo_owner: str,
+    repo_name: str,
     db: Database,
     repo_client: Repository,
     installation_id: int,
     usage_log_id: int | None = None,
 ) -> AsyncGenerator[str]:
     try:
-        yield f"starting review for PR #{pull_request_id}"
-        logger.info(f"starting review for PR #{pull_request_id}")
-
-        pr = repo_client.get_pull(pull_request_id)
-        current_commit_sha = pr.head.sha
-
-        last_reviewed_sha = db.get_pull_request_review_sha(pull_request_id, repo_id)
-        if last_reviewed_sha == current_commit_sha:
-            yield f"PR #{pull_request_id} already reviewed at commit {current_commit_sha}, skipping"
-            return
+        yield f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}"
+        logger.info(f"starting review for PR #{pull_request_id} in {repo_owner}/{repo_name}")
 
         with LocalRepository(pull_request_id, repo_client, installation_id) as local_repo:
             if local_repo is None:
@@ -45,9 +38,7 @@ async def run(
                 return
 
             gitignore_spec = local_repo.get_gitignore_spec()
-            pull_request, pr_diffs = get_pull_request_diffs(
-                pull_request_id, repo_client, gitignore_spec, last_reviewed_sha
-            )
+            pull_request, pr_diffs = get_pull_request_diffs(pull_request_id, repo_client, gitignore_spec)
 
             formatted_diffs = format_pr_diffs_for_review(pr_diffs)
             prompt = code_review_prompt(
@@ -84,7 +75,6 @@ async def run(
                 return
 
             create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo_client)
-            db.update_pull_request_review(pull_request_id, repo_id, current_commit_sha)
 
             yield "celebrating! code review is complete"
 

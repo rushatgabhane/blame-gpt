@@ -15,6 +15,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 
+from controllers.blame_controller import blame_router
+from controllers.code_review_controller import router as code_review_router
+from controllers.docs_controller import docs_router
+from controllers.issue_controller import issue_router
+from controllers.revert_controller import revert_router
+from controllers.test_steps_controller import test_steps_router
+from controllers.user_controller import user_router
 from controllers.webhook_controller import webhook_router
 from libs import constants
 from libs.helpers import is_production_environment
@@ -64,4 +71,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(blame_router)
+app.include_router(issue_router)
+app.include_router(docs_router)
+app.include_router(user_router)
+app.include_router(test_steps_router)
+app.include_router(revert_router)
+app.include_router(code_review_router)
 app.include_router(webhook_router)
