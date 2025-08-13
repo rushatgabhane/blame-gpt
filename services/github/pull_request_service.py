@@ -217,17 +217,20 @@ def get_pull_request_diffs(
     try:
         pr = repo_client.get_pull(pull_request_id)
 
+        all_files = list(pr.get_files())
+
         if since_commit_sha:
             comparison = repo_client.compare(since_commit_sha, pr.head.sha)
-            all_files = list(comparison.files)
+            incremental_filenames = {f.filename for f in comparison.files}
+            files_to_review = [f for f in all_files if f.filename in incremental_filenames]
         else:
-            all_files = list(pr.get_files())
+            files_to_review = all_files
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
 
-        files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
+        files_without_ignored = [f for f in files_to_review if not gitignore_spec.match_file(f.filename)]
         files = [f.filename for f in files_without_ignored]
 
         pull_request_model = PullRequest(
