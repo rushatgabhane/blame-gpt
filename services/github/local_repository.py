@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from pathlib import Path
 
 import pathspec
 from github.Repository import Repository
@@ -42,6 +43,7 @@ class LocalRepository:
         self.installation_id = installation_id
         self.clone_path: str | None = None
         self.worktree_path: str | None = None
+        self.git_config_dir = tempfile.TemporaryDirectory(prefix="gitcfg-")
 
     def __enter__(self):
         try:
@@ -62,6 +64,7 @@ class LocalRepository:
             if not self.clone_path or not self.worktree_path:
                 return None
 
+            self._store_credentials(clone_url)
             self._create_or_update_clone(clone_url, local_branch_name)
             self._create_worktree(local_branch_name)
             return self
@@ -70,15 +73,38 @@ class LocalRepository:
             self._cleanup()
             raise
 
+    def _git_env(self):
+        """
+        Create an isolated git environment for secure credential handling.
+
+        This prevents git operations from affecting global configuration and ensures
+        credentials are stored only in the request-scoped temporary directory.
+
+        Returns:
+            dict: Environment variables that isolate git operations
+        """
+        env = os.environ.copy()
+        env["GIT_CONFIG_GLOBAL"] = os.devnull  # disable global config
+        env["GIT_CONFIG_SYSTEM"] = os.devnull  # disable system config
+        env["GIT_CREDENTIAL_HELPER"] = "store"  # only affects this process
+        env["HOME"] = str(Path(self.git_config_dir.name))  # isolated HOME so ~/.git-credentials is per-request
+        return env
+
+    def _store_credentials(self, clone_url: str):
+        token = get_installation_token(self.installation_id)
+        subprocess.run(
+            ["git", "credential", "approve"],
+            input=f"url={clone_url}\nusername=x-access-token\npassword={token}\n\n".encode(),
+            env=self._git_env(),
+            check=True,
+        )
+
     def _create_or_update_clone(self, clone_url: str, branch_name: str):
         if not self.clone_path:
             raise ValueError("Clone path not initialized")
 
-        token = get_installation_token(self.installation_id)
-        env = os.environ.copy()
-        env["GIT_HTTP_AUTHHEADER"] = f"Authorization: Bearer {token}"
-
         lock_file_path = f"{self.clone_path}.lock"
+        env = self._git_env()
 
         with open(lock_file_path, "w") as lock_file:
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
@@ -107,6 +133,7 @@ class LocalRepository:
             cwd=self.clone_path,
             check=True,
             capture_output=True,
+            env=self._git_env(),
         )
 
     def _sanitize_path_component(self, name: str) -> str | None:
@@ -141,6 +168,9 @@ class LocalRepository:
         return full_path
 
     def _cleanup(self):
+        with contextlib.suppress(Exception):
+            self.git_config_dir.cleanup()
+
         if not self.worktree_path or not self.clone_path:
             return
 
