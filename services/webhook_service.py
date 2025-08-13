@@ -20,8 +20,7 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
     """Process a GitHub webhook comment event."""
     try:
         repository = payload.get("repository", {})
-        repo_owner = repository.get("owner", {}).get("login", "")
-        repo_name = repository.get("name", "")
+        repo_id = repository.get("id")
 
         # Extract comment and issue/PR data
         comment = payload.get("comment") or {}
@@ -68,8 +67,7 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
             command_name=command_name,
             subject_type=subject_type,
             issue_or_pr_number=issue_or_pr_number,
-            repo_owner=repo_owner,
-            repo_name=repo_name,
+            repo_id=repo_id,
             core_db=core_db,
             docs_db=docs_db,
             usage_log_id=usage_log_id,
@@ -88,8 +86,7 @@ async def _run_webhook_command(
     command_name,
     subject_type: str,
     issue_or_pr_number: int,
-    repo_owner: str,
-    repo_name: str,
+    repo_id: int,
     core_db: CoreDatabase,
     docs_db: DocsDatabase,
     usage_log_id: int | None,
@@ -100,7 +97,7 @@ async def _run_webhook_command(
     if command_name == CommandName.BLAME and subject_type == "Issue":
         # Get GitHub clients for the installation
         gh_client = get_github_client(installation_id)
-        repo_client = gh_client.get_repo(f"{repo_owner}/{repo_name}")
+        repo_client = gh_client.get_repo(repo_id)
 
         thinking_comment = create_thinking_comment(
             issue_number=issue_or_pr_number, thinking_text=f"{thinking_verb()}...", repo_client=repo_client
@@ -117,7 +114,7 @@ async def _run_webhook_command(
 
     if command_name == CommandName.OHMYDOCS:
         async for step in _docs_with_progress_webhook(
-            issue_or_pr_number, repo_owner, repo_name, core_db, docs_db, installation_id, usage_log_id
+            issue_or_pr_number, repo_id, core_db, docs_db, installation_id, usage_log_id
         ):
             logger.debug(f"Docs #{issue_or_pr_number}: {step}")
         return
@@ -125,7 +122,7 @@ async def _run_webhook_command(
     if command_name == CommandName.TEST_STEPS and subject_type == "PullRequest":
         # Get GitHub clients for the installation
         gh_client = get_github_client(installation_id)
-        repo_client = gh_client.get_repo(f"{repo_owner}/{repo_name}")
+        repo_client = gh_client.get_repo(repo_id)
 
         thinking_comment = create_thinking_comment_for_pr(
             pull_request_id=issue_or_pr_number,
@@ -146,12 +143,11 @@ async def _run_webhook_command(
     if command_name == CommandName.CODE_REVIEW and subject_type == "PullRequest":
         # Get GitHub clients for the installation
         gh_client = get_github_client(installation_id)
-        repo_client = gh_client.get_repo(f"{repo_owner}/{repo_name}")
+        repo_client = gh_client.get_repo(repo_id)
 
         async for step in code_review_pipeline.run(
             pull_request_id=issue_or_pr_number,
-            repo_owner=repo_owner,
-            repo_name=repo_name,
+            repo_id=repo_id,
             db=core_db,
             repo_client=repo_client,
             installation_id=installation_id,
@@ -165,8 +161,7 @@ async def _run_webhook_command(
 
 async def _docs_with_progress_webhook(
     pull_request_id: int,
-    repo_owner: str,
-    repo_name: str,
+    repo_id: int,
     core_db: CoreDatabase,
     docs_db: DocsDatabase,
     installation_id: int,
@@ -178,7 +173,7 @@ async def _docs_with_progress_webhook(
 
     def run_docs():
         result.append(
-            run_graph.docs(pull_request_id, core_db, docs_db, installation_id, repo_owner, repo_name, usage_log_id)
+            run_graph.docs(pull_request_id, core_db, docs_db, installation_id, repo_id, usage_log_id)
         )
 
     thread = threading.Thread(target=run_docs)
