@@ -6,7 +6,7 @@ LABELS = {
     "DeployBlocker": "DeployBlocker",
 }
 
-USER_TAG = "/blamegpt"
+USER_TAG = "@blamegpt"
 SIGNATURE = "\n<!-- https://blamegpt.ai code reviewer -->"
 
 ENVIRONMENT_PRODUCTION = "production"
