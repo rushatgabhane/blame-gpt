@@ -14,7 +14,12 @@ webhook_router = APIRouter()
 
 
 @webhook_router.post("/api/webhook/github")
-async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_hub_signature_256: str = Header(None), x_github_event: str = Header(None)):
+async def github_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    x_hub_signature_256: str = Header(None),
+    x_github_event: str = Header(None),
+):
     body = await request.body()
     webhook_secret = SecretStr(os.getenv("GITHUB_WEBHOOK_SECRET") or "")
 
