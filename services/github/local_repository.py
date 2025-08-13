@@ -90,15 +90,19 @@ class LocalRepository:
         env["HOME"] = str(Path(self.git_config_dir.name))  # isolated HOME
         env["GIT_TERMINAL_PROMPT"] = "0"  # disable interactive prompts
         env["GIT_ASKPASS"] = self.askpass_script_path
-        env["GIT_USERNAME"] = "x-access-token"
         env["SSH_AUTH_SOCK"] = ""  # disable SSH agent
         env["DISPLAY"] = ""  # disable GUI prompts
         return env
 
     def _create_askpass_script(self) -> str:
         token = get_installation_token(self.installation_id)
-        askpass_script = f'#!/bin/bash\necho "{token}"\n'
-
+        askpass_script = f"""#!/bin/bash
+if [[ "$1" == *"Username"* ]]; then
+    echo "x-access-token"
+else
+    echo "{token}"
+fi
+"""
         askpass_path = Path(self.git_config_dir.name) / "git-askpass.sh"
         with open(askpass_path, "w") as f:
             f.write(askpass_script)
@@ -122,7 +126,6 @@ class LocalRepository:
 
             fetch_cmd = ["git", "remote", "set-url", "origin", clone_url]
             subprocess.run(fetch_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
-            logger.info(f"Updated clone with branch {branch_name}")
 
             refspec = f"pull/{self.pull_request_id}/head:refs/heads/{branch_name}"
             fetch_pr_branch_cmd = ["git", "fetch", "origin", refspec, "--force", "--no-tags"]
