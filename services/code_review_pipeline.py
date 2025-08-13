@@ -84,7 +84,7 @@ async def run(
                 yield "error: missing commit SHA"
                 return
 
-            create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo_client)
+            create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo_client, last_reviewed_sha)
             db.update_pull_request_review(pull_request_id, repo_id, pull_request.commit_sha)
 
             yield "celebrating! code review is complete"

@@ -172,9 +172,7 @@ async def _docs_with_progress_webhook(
     result = []
 
     def run_docs():
-        result.append(
-            run_graph.docs(pull_request_id, core_db, docs_db, installation_id, repo_id, usage_log_id)
-        )
+        result.append(run_graph.docs(pull_request_id, core_db, docs_db, installation_id, repo_id, usage_log_id))
 
     thread = threading.Thread(target=run_docs)
     thread.start()

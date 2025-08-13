@@ -327,13 +327,22 @@ def _add_line_numbers_to_patch(patch: str) -> str:
 
 
 def create_pull_request_review(
-    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_client: Repository
+    pull_request_id: int,
+    review_data: LineByLineCodeReview,
+    commit_sha: str,
+    repo_client: Repository,
+    last_reviewed_sha: str | None = None,
 ) -> None:
     """Create a single GitHub review with body and multiple line comments for specific repo"""
     try:
         pr = repo_client.get_pull(pull_request_id)
 
-        review_body = f"{review_data.code_overview}{SIGNATURE}"
+        incremental_notice = (
+            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\n\n"
+            if last_reviewed_sha
+            else ""
+        )
+        review_body = f"{incremental_notice}{review_data.code_overview}{SIGNATURE}"
 
         # Get PR files to validate paths and line numbers
         pr_files = list(pr.get_files())
