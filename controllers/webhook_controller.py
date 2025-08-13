@@ -14,7 +14,7 @@ webhook_router = APIRouter()
 
 
 @webhook_router.post("/api/webhook/github")
-async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_hub_signature_256: str = Header(None)):
+async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_hub_signature_256: str = Header(None), x_github_event: str = Header(None)):
     body = await request.body()
     webhook_secret = SecretStr(os.getenv("GITHUB_WEBHOOK_SECRET") or "")
 
@@ -26,6 +26,9 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks, x_
     except json.JSONDecodeError as e:
         logger.error(f"failed to parse webhook payload: {e}")
         return Response(content="Invalid JSON payload")
+
+    if x_github_event not in ["issue_comment"]:
+        return Response(content="Unsupported event type")
 
     if payload.get("action") not in ["created", "edited"]:
         return Response(content="Not a comment action")

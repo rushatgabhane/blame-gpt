@@ -48,8 +48,7 @@ class LocalRepository:
             pr = self.repo.get_pull(self.pull_request_id)
             repo_to_clone = pr.base.repo
 
-            token = get_installation_token(self.installation_id)
-            clone_url = f"https://x-access-token:{token}@github.com/{repo_to_clone.full_name}.git"
+            clone_url = f"https://github.com/{repo_to_clone.full_name}.git"
 
             sanitized_branch = pr.head.ref.replace("/", "-")
             local_branch_name = f"pr-{pr.number}-{sanitized_branch}"
@@ -75,22 +74,26 @@ class LocalRepository:
         if not self.clone_path:
             raise ValueError("Clone path not initialized")
 
+        token = get_installation_token(self.installation_id)
+        env = os.environ.copy()
+        env["GIT_HTTP_AUTHHEADER"] = f"Authorization: Bearer {token}"
+
         lock_file_path = f"{self.clone_path}.lock"
 
         with open(lock_file_path, "w") as lock_file:
             fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
             if not os.path.exists(self.clone_path):
                 shallow_clone_cmd = ["git", "clone", "--no-checkout", "--depth", "1", clone_url, self.clone_path]
-                subprocess.run(shallow_clone_cmd, check=True, capture_output=True)
+                subprocess.run(shallow_clone_cmd, check=True, capture_output=True, env=env)
                 logger.info(f"Created shallow clone at {self.clone_path}")
 
             fetch_cmd = ["git", "remote", "set-url", "origin", clone_url]
-            subprocess.run(fetch_cmd, cwd=self.clone_path, check=True, capture_output=True)
+            subprocess.run(fetch_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
             logger.info(f"Updated clone with branch {branch_name}")
 
             refspec = f"pull/{self.pull_request_id}/head:refs/heads/{branch_name}"
             fetch_pr_branch_cmd = ["git", "fetch", "origin", refspec, "--force", "--no-tags"]
-            subprocess.run(fetch_pr_branch_cmd, cwd=self.clone_path, check=True, capture_output=True)
+            subprocess.run(fetch_pr_branch_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
 
         with contextlib.suppress(OSError):
             os.unlink(lock_file_path)

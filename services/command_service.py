@@ -14,7 +14,7 @@ def classify_command(comment_body: str, subject_type: str) -> CommandName:
     words = comment_body.split()
     user_tag_pos = next((i for i, word in enumerate(words) if constants.USER_TAG.lower() in word.lower()), None)
 
-    if user_tag_pos:
+    if user_tag_pos is not None:
         start = max(0, user_tag_pos - 10)
         end = min(len(words), user_tag_pos + 20)
         relevant_words = words[start:end]
