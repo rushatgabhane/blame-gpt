@@ -44,6 +44,7 @@ class LocalRepository:
         self.clone_path: str | None = None
         self.worktree_path: str | None = None
         self.git_config_dir = tempfile.TemporaryDirectory(prefix="gitcfg-")
+        self.askpass_script_path = self._create_askpass_script()
 
     def __enter__(self):
         try:
@@ -64,7 +65,6 @@ class LocalRepository:
             if not self.clone_path or not self.worktree_path:
                 return None
 
-            self._store_credentials(clone_url)
             self._create_or_update_clone(clone_url, local_branch_name)
             self._create_worktree(local_branch_name)
             return self
@@ -86,18 +86,23 @@ class LocalRepository:
         env = os.environ.copy()
         env["GIT_CONFIG_GLOBAL"] = os.devnull  # disable global config
         env["GIT_CONFIG_SYSTEM"] = os.devnull  # disable system config
-        env["GIT_CREDENTIAL_HELPER"] = "store"  # only affects this process
-        env["HOME"] = str(Path(self.git_config_dir.name))  # isolated HOME so ~/.git-credentials is per-request
+        env["GIT_CREDENTIAL_HELPER"] = ""  # disable all credential helpers
+        env["HOME"] = str(Path(self.git_config_dir.name))  # isolated HOME
+        env["GIT_TERMINAL_PROMPT"] = "0"  # disable interactive prompts
+        env["GIT_ASKPASS"] = self.askpass_script_path
+        env["GIT_USERNAME"] = "x-access-token"
         return env
 
-    def _store_credentials(self, clone_url: str):
+    def _create_askpass_script(self) -> str:
         token = get_installation_token(self.installation_id)
-        subprocess.run(
-            ["git", "credential", "approve"],
-            input=f"url={clone_url}\nusername=x-access-token\npassword={token}\n\n".encode(),
-            env=self._git_env(),
-            check=True,
-        )
+        askpass_script = f'#!/bin/bash\necho "{token}"\n'
+
+        askpass_path = Path(self.git_config_dir.name) / "git-askpass.sh"
+        with open(askpass_path, "w") as f:
+            f.write(askpass_script)
+        askpass_path.chmod(0o700)
+
+        return str(askpass_path)
 
     def _create_or_update_clone(self, clone_url: str, branch_name: str):
         if not self.clone_path:
