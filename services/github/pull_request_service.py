@@ -322,7 +322,7 @@ def create_pull_request_review(
     try:
         pr = repo_client.get_pull(pull_request_id)
 
-        review_body = f"{review_data.code_overview}"
+        review_body = f"{review_data.code_overview}{SIGNATURE}"
 
         # Get PR files to validate paths and line numbers
         pr_files = list(pr.get_files())
