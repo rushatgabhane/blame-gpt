@@ -43,7 +43,10 @@ async def run(
                 pull_request_id, repo_client, gitignore_spec, last_reviewed_sha
             )
 
-            if last_reviewed_sha and pull_request.commit_sha and last_reviewed_sha == pull_request.commit_sha:
+            if not pull_request.commit_sha:
+                return
+
+            if last_reviewed_sha == pull_request.commit_sha:
                 yield f"PR #{pull_request_id} already reviewed at commit {pull_request.commit_sha}, skipping"
                 return
 
