@@ -91,6 +91,8 @@ class LocalRepository:
         env["GIT_TERMINAL_PROMPT"] = "0"  # disable interactive prompts
         env["GIT_ASKPASS"] = self.askpass_script_path
         env["GIT_USERNAME"] = "x-access-token"
+        env["SSH_AUTH_SOCK"] = ""  # disable SSH agent
+        env["DISPLAY"] = ""  # disable GUI prompts
         return env
 
     def _create_askpass_script(self) -> str:
