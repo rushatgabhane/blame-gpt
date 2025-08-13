@@ -209,11 +209,19 @@ def add_pull_request_if_not_exist(
 
 
 def get_pull_request_diffs(
-    pull_request_id: int, repo_client: Repository, gitignore_spec: pathspec.PathSpec
+    pull_request_id: int,
+    repo_client: Repository,
+    gitignore_spec: pathspec.PathSpec,
+    since_commit_sha: str | None = None,
 ) -> tuple[PullRequest, list[PRFileDiff]]:
     try:
         pr = repo_client.get_pull(pull_request_id)
-        all_files = list(pr.get_files())
+
+        if since_commit_sha:
+            comparison = repo_client.compare(since_commit_sha, pr.head.sha)
+            all_files = list(comparison.files)
+        else:
+            all_files = list(pr.get_files())
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
