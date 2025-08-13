@@ -31,23 +31,21 @@ async def run(
         yield f"starting review for PR #{pull_request_id}"
         logger.info(f"starting review for PR #{pull_request_id}")
 
-        pr = repo_client.get_pull(pull_request_id)
-        current_commit_sha = pr.head.sha
-
-        last_reviewed_sha = db.get_pull_request_review_sha(pull_request_id, repo_id)
-        if last_reviewed_sha == current_commit_sha:
-            yield f"PR #{pull_request_id} already reviewed at commit {current_commit_sha}, skipping"
-            return
-
         with LocalRepository(pull_request_id, repo_client, installation_id) as local_repo:
             if local_repo is None:
                 yield "error: failed to setup repository"
                 return
 
             gitignore_spec = local_repo.get_gitignore_spec()
+            last_reviewed_sha = db.get_pull_request_review_sha(pull_request_id, repo_id)
+
             pull_request, pr_diffs = get_pull_request_diffs(
                 pull_request_id, repo_client, gitignore_spec, last_reviewed_sha
             )
+
+            if last_reviewed_sha and pull_request.commit_sha and last_reviewed_sha == pull_request.commit_sha:
+                yield f"PR #{pull_request_id} already reviewed at commit {pull_request.commit_sha}, skipping"
+                return
 
             formatted_diffs = format_pr_diffs_for_review(pr_diffs)
             prompt = code_review_prompt(
@@ -84,7 +82,7 @@ async def run(
                 return
 
             create_pull_request_review(pull_request_id, review, pull_request.commit_sha, repo_client)
-            db.update_pull_request_review(pull_request_id, repo_id, current_commit_sha)
+            db.update_pull_request_review(pull_request_id, repo_id, pull_request.commit_sha)
 
             yield "celebrating! code review is complete"
 

@@ -155,6 +155,6 @@ WHERE pull_request_id = ? AND repo_id = ?;
 """
 
 INSERT_OR_UPDATE_PULL_REQUEST_REVIEW = """
-INSERT OR REPLACE INTO pull_request_reviews (pull_request_id, repo_id, last_reviewed_commit_sha)
-VALUES (?, ?, ?);
+INSERT OR REPLACE INTO pull_request_reviews (pull_request_id, repo_id, last_reviewed_commit_sha, updated_at)
+VALUES (?, ?, ?, CURRENT_TIMESTAMP);
 """
