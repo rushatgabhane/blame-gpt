@@ -11,10 +11,10 @@ class CommandName(Enum):
     # Used in LLM prompt to provide descriptions of commands
     def description(self) -> str:
         return {
-            CommandName.BLAME: "find the culprit PR for an issue. find the PR that introduced this bug.",
-            CommandName.OHMYDOCS: "suggest HelpDot docs changes that need updating in this PR. generate documentation updates for a PR.",
-            CommandName.TEST_STEPS: "write test steps a reviewer should follow. generate test steps for a PR for a reviewer or QA.",
-            CommandName.CODE_REVIEW: "perform a code review of a pull request. analyze code changes and provide detailed feedback.",
+            CommandName.BLAME: "find the culprit PR for an issue. find the PR that introduced this bug. Keywords: culprit, which PR, find PR, cause",
+            CommandName.OHMYDOCS: "suggest HelpDot docs changes that need updating in this PR. generate documentation updates for a PR. Keywords: docs, documentation, helpdot",
+            CommandName.TEST_STEPS: "write test steps a reviewer should follow. generate test steps for a PR for a reviewer or QA. Keywords: QA steps, testing steps",
+            CommandName.CODE_REVIEW: "perform a code review of a pull request. analyze code changes and provide detailed feedback. Keywords: review, feedback, analyze PR",
             CommandName.UNKNOWN: "no matching command",
         }[self]
 

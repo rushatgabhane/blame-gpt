@@ -8,22 +8,21 @@ import pathspec
 import requests
 from github.Repository import Repository
 
-from libs import constants
-from libs.github import repo
+from libs.constants import SIGNATURE
 from libs.helpers import is_production_environment
 from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.enums import CodeReviewCommentType
-from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRDiff, PullRequest
+from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRFileDiff, PullRequest
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
 _add_new_prs_lock = threading.Lock()
 
 
-def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
-    comparison = repo.compare(base=base, head=head)
+def _get_pull_requests_between(base: str, head: str, repo_client: Repository) -> list[int] | None:
+    comparison = repo_client.compare(base=base, head=head)
 
     pr_numbers = set()
     for commit in comparison.commits:
@@ -36,10 +35,10 @@ def _get_pull_requests_between(base: str, head: str) -> list[int] | None:
 
 
 def add_new_pull_requests_between(
-    base: str, head: str, issue_id: int, db: Database, usage_log_id: int | None = None
+    base: str, head: str, issue_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
 ) -> None:
     with _add_new_prs_lock:
-        new_ids = _get_pull_requests_between(base, head)
+        new_ids = _get_pull_requests_between(base, head, repo_client)
         if not new_ids:
             return
 
@@ -50,7 +49,8 @@ def add_new_pull_requests_between(
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = {
-                executor.submit(_get_pr_with_embeddings, pr_id, db, usage_log_id): pr_id for pr_id in new_ids_to_process
+                executor.submit(_get_pr_with_embeddings, pr_id, repo_client, db, usage_log_id): pr_id
+                for pr_id in new_ids_to_process
             }
             for future in as_completed(futures):
                 pull_request = future.result()
@@ -92,15 +92,17 @@ def _get_code_diff(diff_url: str) -> str:
         return ""
 
 
-def _get_pr_with_embeddings(pull_request_id: int, db: Database, usage_log_id: int | None = None) -> PullRequest | None:
+def _get_pr_with_embeddings(
+    pull_request_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
+) -> PullRequest | None:
     try:
-        pr = repo.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
         all_files = pr.get_files()
 
         files = [f.filename for f in all_files]
 
         pr_test = _parse_test_steps(pr.body or "")
-        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
         pr_explanation = _parse_explanation(pr.body or "")
 
         code_diff = _get_code_diff(pr.diff_url)
@@ -150,11 +152,11 @@ def _parse_test_steps(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def _parse_linked_issue_ids(body: str) -> list[int] | None:
+def _parse_linked_issue_ids(body: str, repo_name: str) -> list[int] | None:
     pattern = (
         rf"\$\s*#(\d+)"  # $ #1234
-        rf"|\$\s*https://[^\s]*/{constants.REPO_NAME}/issues/(\d+)"  # $ https://.../issues/1234
-        rf"|\$\s*\[#(\d+)\]\(https://[^\s]*/{constants.REPO_NAME}/issues/\d+\)"  # $ [#1234](https://.../issues/1234)
+        rf"|\$\s*https://[^\s]*/{re.escape(repo_name)}/issues/(\d+)"  # $ https://.../issues/1234
+        rf"|\$\s*\[#(\d+)\]\(https://[^\s]*/{re.escape(repo_name)}/issues/\d+\)"  # $ [#1234](https://.../issues/1234)
     )
     matches = re.findall(pattern, body)
     return [int(m[0] or m[1] or m[2]) for m in matches] if matches else None
@@ -173,10 +175,10 @@ def _parse_explanation(body: str) -> str:
     return normalized_spacing.strip()
 
 
-def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
+def get_pull_request_patch(pull_request_id: int, repo_client: Repository) -> list[FilePatch]:
     patches: list[FilePatch] = []
 
-    pr = repo.get_pull(pull_request_id)
+    pr = repo_client.get_pull(pull_request_id)
     for file in pr.get_files():
         if not file.patch:
             continue
@@ -191,13 +193,13 @@ def get_pull_request_patch(pull_request_id: int) -> list[FilePatch]:
 
 
 def add_pull_request_if_not_exist(
-    pull_request_id: int, db: Database, usage_log_id: int | None = None
+    pull_request_id: int, repo_client: Repository, db: Database, usage_log_id: int | None = None
 ) -> PullRequest | None:
     existing_pr = db.get_pull_request_by_id_with_embedding(pull_request_id)
     if existing_pr:
         return existing_pr
 
-    pull_request = _get_pr_with_embeddings(pull_request_id, db, usage_log_id)
+    pull_request = _get_pr_with_embeddings(pull_request_id, repo_client, db, usage_log_id)
     if not pull_request:
         logging.error(f"failed to fetch pull request {pull_request_id}")
         return None
@@ -206,35 +208,16 @@ def add_pull_request_if_not_exist(
     return pull_request
 
 
-def _get_gitignore_spec(repo_ref: Repository) -> pathspec.PathSpec:
-    """
-    Get gitignore patterns from root .gitignore only
-    TODO: Ignore gitignores from nested dirs too.
-    """
+def get_pull_request_diffs(
+    pull_request_id: int, repo_client: Repository, gitignore_spec: pathspec.PathSpec
+) -> tuple[PullRequest, list[PRFileDiff]]:
     try:
-        gitignore_files = repo_ref.get_contents(".gitignore")
-        if not isinstance(gitignore_files, list):
-            gitignore_files = [gitignore_files]
-
-        all_patterns = []
-        for file in gitignore_files:
-            content = file.decoded_content.decode("utf-8")
-            all_patterns.extend(content.splitlines())
-        return pathspec.PathSpec.from_lines("gitwildmatch", all_patterns)
-    except Exception:
-        return pathspec.PathSpec.from_lines("gitwildmatch", [])
-
-
-def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[PullRequest, list[PRDiff]]:
-    try:
-        pr = repo_ref.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
         all_files = list(pr.get_files())
-
-        gitignore_spec = _get_gitignore_spec(repo_ref)
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
-        linked_issue_ids = _parse_linked_issue_ids(pr.body or "")
+        linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
 
         files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
         files = [f.filename for f in files_without_ignored]
@@ -251,7 +234,7 @@ def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[
 
         pr_diffs = []
         for file in files_without_ignored:
-            pr_diff = PRDiff(
+            pr_diff = PRFileDiff(
                 filename=file.filename,
                 status=file.status,
                 additions=file.additions,
@@ -267,7 +250,7 @@ def get_pull_request_diffs(pull_request_id: int, repo_ref: Repository) -> tuple[
         raise
 
 
-def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
+def format_pr_diffs_for_review(pr_diffs: list[PRFileDiff]) -> str:
     """Format PR diffs with embedded line numbers"""
     formatted_diffs = []
 
@@ -289,10 +272,15 @@ def format_pr_diffs_for_review(pr_diffs: list[PRDiff]) -> str:
 
 def _add_line_numbers_to_patch(patch: str) -> str:
     lines = patch.split("\n")
-    numbered_lines = []
+    numbered_lines: list[str] = []
     current_new_line = None
 
     for line in lines:
+        # Skip empty lines at the end
+        if not line:
+            numbered_lines.append(line)
+            continue
+
         # Parse hunk headers to get starting line numbers
         if line.startswith("@@"):
             # Extract new file line number from hunk header like "@@ -10,7 +10,8 @@"
@@ -312,15 +300,15 @@ def _add_line_numbers_to_patch(patch: str) -> str:
             numbered_lines.append(line)
             continue
 
-        # Add line numbers: "109 +    some_code_here"
-        if line.startswith("+"):
+        if line.startswith("-"):
+            # Don't number removed lines, don't increment counter
+            numbered_lines.append(line)
+        elif line.startswith("+"):
+            # Number added lines with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
-        elif line.startswith("-"):
-            numbered_lines.append(line)  # Don't number removed lines
-            # Don't increment for deleted lines
         else:
-            # Context line (unchanged) - add line number and increment
+            # Context line (unchanged) - number with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
 
@@ -328,31 +316,43 @@ def _add_line_numbers_to_patch(patch: str) -> str:
 
 
 def create_pull_request_review(
-    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_ref: Repository
+    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_client: Repository
 ) -> None:
     """Create a single GitHub review with body and multiple line comments for specific repo"""
     try:
-        pr = repo_ref.get_pull(pull_request_id)
+        pr = repo_client.get_pull(pull_request_id)
 
         review_body = f"{review_data.code_overview}"
+
+        # Get PR files to validate paths and line numbers
+        pr_files = list(pr.get_files())
+        valid_paths = {f.filename for f in pr_files}
 
         review_comments = []
         for comment in review_data.comments:
             if comment.label == CodeReviewCommentType.ISSUE or comment.label == CodeReviewCommentType.SUGGESTION:
-                review_comments.append(
-                    {
-                        "path": comment.file,
-                        "body": f"**{comment.label.value}**: {comment.content}",
-                        "line": comment.line,
-                        "side": "RIGHT",
-                    }
-                )
+                if comment.file not in valid_paths:
+                    continue
+
+                comment_data = {
+                    "path": comment.file,
+                    "body": f"**{comment.label.value}**: {comment.content}{SIGNATURE}",
+                    "line": comment.line,
+                    "side": "RIGHT",
+                }
+
+                # Add start_line if it's a multi-line comment
+                if comment.start_line and comment.start_line < comment.line:
+                    comment_data["start_line"] = comment.start_line
+                    comment_data["start_side"] = "RIGHT"
+
+                review_comments.append(comment_data)
 
         if not is_production_environment():
             logger.info(f"skip for non prod environment. {len(review_comments)}, {review_body}\n {review_comments}")
             return
 
-        commit = repo_ref.get_commit(commit_sha)
+        commit = repo_client.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
         logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
 

@@ -8,7 +8,7 @@ culprit_parser = PydanticOutputParser(pydantic_object=CulpritPullRequests)
 template = """
 You are an expert engineer helping diagnose a deploy blocker issue for Expensify's app repository - https://github.com/expensify/App
 You will be given:
-- A issue 
+- A issue
 - A list of candidate pull requests (PRs) that have been merged into staging but not yet deployed to production. These PRs have been filtered to have semantic similarity with the issue title and steps.
 
 Each issue includes:

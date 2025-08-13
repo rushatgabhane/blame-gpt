@@ -7,46 +7,63 @@ from models.models import LineByLineCodeReview
 line_by_line_review_parser = PydanticOutputParser(pydantic_object=LineByLineCodeReview)
 
 
-def code_review_prompt(pr_data: dict) -> str:
+def code_review_prompt(pr_number: int, title: str, description: str, file_diffs: str) -> str:
     """Format the line-by-line code review prompt"""
 
     template = """
-Please review this pull request and provide feedback on:
+You are a senior software engineer reviewing your coworker's pull request. Think really hard.
+
+### Focus your review on
 - Code quality and best practices
-- Potential bugs or issues  
+- Potential bugs or issues
 - Performance considerations
 - Security concerns
 - Test coverage
 
-### Note
-- Be constructive and helpful in your feedback.
-- Focus only on the most important issues - prioritize quality over quantity.
-- Do not make any comments about code format or whitespace.
-- Do not make any comments about import statements.
-- Do not make any assumptions about code you don't have in your context.
-- Be selective - avoid commenting on minor style preferences or trivial issues.
+### Review Guidelines
+- MUST be constructive and helpful in your feedback
+- Focus only on the most important issues - prioritize quality over quantity
+- MUST NOT make any comments about code format, whitespace or documentation
+- MUST NOT make any comments about import statements
+- MUST NOT make any assumptions about code you don't have in your context
+- Be selective - avoid commenting on minor style preferences or trivial issues
+- Add comment only on lines with "+" additions
 
+### Comment Types
 Use conventional comments format (https://conventionalcomments.org/):
+Set the label field using exact values from this list:
+<label_type_list>
 {comment_types}
+</label_type_list>
 
-IMPORTANT FORMATTING RULES:
-1. Set the label only in the "label" field.
-2. Do not set the label in in content field.
-3. For the code_overview field: Keep it concise in markdown format using ### headers and bullet points (-). Summarize what the PR does in markdown bullets (-). Do not include recommendations or findings.
-4. Only comment on lines with changes (marked with + or -)
-5. Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use 109)
+## Output Format Requirements
 
-PR Title: {pr_title}
-PR Description: {pr_description}
+### Comment Formatting:
+- REQUIRED: Set the "file" field to the exact file path from the diff header (e.g. "libs/github.py")
+- Set the label only in the "label" field using exact values from the list above
+- The content field should contain ONLY the actual feedback text, without any prefixes
+- MUST NOT start content with "Note:", "Suggestion:", "Issue:", etc.
 
-File Changes:
+### Line Number Rules:
+- Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use line number 109)
+- These line numbers correspond to the actual file line numbers, not sequential diff line numbers
+- For SINGLE-LINE comments: Only set the "line" field, leave "start_line" as null
+- For MULTI-LINE comments: Set both "start_line" (first line) and "line" (last line)
+- Line ranges are INCLUSIVE (both start and end lines are included in the comment scope)
+- Only comment on lines with additions (marked with +)
+
+**PR #{pr_number}**
+**PR Title:** {pr_title}
+**PR Description:** {pr_description}
+
+## File Changes
 {file_diffs}
 
-The diff shows line numbers as prefixes like "109 +    some_code_here". 
-Use these exact line number in line field.
-Focus on new code (lines marked with +) and provide specific, actionable feedback.
+Focus on new code (lines marked with +) and provide specific, actionable feedback only on lines with "+" additions.
 
+Return the result in this JSON format:
 {format_instructions}
+
 """
 
     # Generate comment types list from enum
@@ -54,7 +71,7 @@ Focus on new code (lines marked with +) and provide specific, actionable feedbac
 
     prompt = PromptTemplate(
         template=template,
-        input_variables=["pr_title", "pr_description", "file_diffs"],
+        input_variables=["pr_number", "pr_title", "pr_description", "file_diffs"],
         partial_variables={
             "format_instructions": line_by_line_review_parser.get_format_instructions(),
             "comment_types": comment_types,
@@ -62,7 +79,8 @@ Focus on new code (lines marked with +) and provide specific, actionable feedbac
     )
 
     return prompt.format(
-        pr_title=pr_data.get("title", ""),
-        pr_description=pr_data.get("description", ""),
-        file_diffs=pr_data.get("file_diffs", ""),
+        pr_number=pr_number,
+        pr_title=title,
+        pr_description=description,
+        file_diffs=file_diffs,
     )

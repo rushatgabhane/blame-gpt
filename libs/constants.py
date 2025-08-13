@@ -1,11 +1,3 @@
-import os
-
-REPO_OWNER = os.getenv("REPO_OWNER")
-REPO_NAME = os.getenv("REPO_NAME")
-
-if not REPO_NAME or not REPO_OWNER:
-    raise RuntimeError("REPO_NAME and REPO_OWNER environment variables must be set")
-
 CACHE_DB_PATH = "data/cache.db"
 DOCS_DB_PATH = "data/docs.db"
 
@@ -15,6 +7,7 @@ LABELS = {
 }
 
 USER_TAG = "@blamegpt"
+SIGNATURE = "\n<!-- https://blamegpt.ai code reviewer -->"
 
 ENVIRONMENT_PRODUCTION = "production"
 ENVIRONMENT_DEVELOPMENT = "development"

@@ -2,7 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Prefer early return, and reduce nesting.
+## Style guide
+- Put imports at top of file.
+- Try to keep things in one function unless composable or reusable
+- AVOID using `any` type
+- DO NOT use `else` statements unless necessary
+- AVOID `else` statements
+- DO NOT do unnecessary destructuring of variables
+- DO NOT use `try`/`catch` if it can be avoided
+- AVOID `try`/`catch` where possible
+- PREFER single word variable names where possible
+- Prefer early return, and reduce nesting.
 
 ## Overview
 

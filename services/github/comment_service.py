@@ -2,9 +2,11 @@ import logging
 import random
 
 import httpx
+from github import Github
 from github.IssueComment import IssueComment
+from github.Repository import Repository
 
-from libs.github import gh_user, github_token, repo
+from libs.github import get_installation_token
 from libs.helpers import is_production_environment
 from models.models import CulpritPullRequest
 
@@ -12,14 +14,16 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-async def add_comment(issue_number: int, culprit_pull_requests: list[CulpritPullRequest]) -> str:
+async def add_comment(
+    issue_number: int, culprit_pull_requests: list[CulpritPullRequest], repo_client: Repository
+) -> str:
     try:
         comment = format_blame_comment(culprit_pull_requests)
         if not is_production_environment():
             logger.info(f"skipping comment creation in non production environment {comment}")
             return comment
 
-        repo.get_issue(number=issue_number).create_comment(comment)
+        repo_client.get_issue(number=issue_number).create_comment(comment)
         return comment
     except Exception as e:
         logger.error(f"error adding comment to issue #{issue_number}: {e}")
@@ -51,10 +55,10 @@ def format_blame_comment(culprit_pull_requests: list[CulpritPullRequest]) -> str
     return comment
 
 
-def add_comment_to_pull_request(pull_request_id: int, comment: str) -> str:
+def add_comment_to_pull_request(pull_request_id: int, comment: str, repo_client: Repository) -> str:
     try:
         if is_production_environment():
-            repo.get_pull(pull_request_id).create_issue_comment(comment)
+            repo_client.get_pull(pull_request_id).create_issue_comment(comment)
             return comment
 
         logger.info("skipping comment creation to PR in non production environment")
@@ -65,14 +69,15 @@ def add_comment_to_pull_request(pull_request_id: int, comment: str) -> str:
         raise
 
 
-async def react_comment(comment_url: str, emoji: str):
+async def react_comment(comment_url: str, emoji: str, installation_id: int):
     if not is_production_environment():
         logger.info(f"skipping reaction to comment {comment_url} in non production environment")
         return
 
+    token = get_installation_token(installation_id)
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"Bearer {github_token.get_secret_value()}",
+        "Authorization": f"Bearer {token}",
     }
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -92,26 +97,26 @@ async def react_comment(comment_url: str, emoji: str):
         logger.error(f"request error while trying to react with {emoji} on comment {comment_url}: {e}")
 
 
-def get_comment(comment_url: str) -> IssueComment | None:
+def get_comment(comment_url: str, gh_client: Github) -> IssueComment | None:
     try:
-        _headers, data = gh_user._requester.requestJsonAndCheck(
+        _headers, data = gh_client.requester.requestJsonAndCheck(
             verb="GET",
             url=comment_url,
         )
-        return IssueComment(requester=gh_user._requester, headers=_headers, attributes=data, completed=True)
+        return IssueComment(requester=gh_client.requester, headers=_headers, attributes=data, completed=True)
     except Exception as e:
         logger.error(f"failed to get comment {comment_url}: {e}")
         return None
 
 
-def create_thinking_comment(issue_number: int, thinking_text: str) -> IssueComment | None:
+def create_thinking_comment(issue_number: int, thinking_text: str, repo_client: Repository) -> IssueComment | None:
     """Create a thinking comment that can be edited later."""
     try:
         if not is_production_environment():
             logger.info(f"skipping thinking comment creation in non production environment: {thinking_text}")
             return None
 
-        comment = repo.get_issue(number=issue_number).create_comment(thinking_text)
+        comment = repo_client.get_issue(number=issue_number).create_comment(thinking_text)
         return comment
     except Exception as e:
         logger.error(f"error creating thinking comment on issue #{issue_number}: {e}")
@@ -134,14 +139,16 @@ def edit_comment(comment: IssueComment | None, new_text: str):
         logger.error(f"error editing comment {comment.id}: {e}")
 
 
-def create_thinking_comment_for_pr(pull_request_id: int, thinking_text: str) -> IssueComment | None:
+def create_thinking_comment_for_pr(
+    pull_request_id: int, thinking_text: str, repo_client: Repository
+) -> IssueComment | None:
     """Create a thinking comment on a pull request that can be edited later."""
     try:
         if not is_production_environment():
             logger.info(f"skipping thinking comment creation in non production environment: {thinking_text}")
             return None
 
-        comment = repo.get_pull(pull_request_id).create_issue_comment(thinking_text)
+        comment = repo_client.get_pull(pull_request_id).create_issue_comment(thinking_text)
         return comment
     except Exception as e:
         logger.error(f"error creating thinking comment on PR #{pull_request_id}: {e}")

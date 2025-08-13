@@ -1,5 +1,7 @@
 from typing import TypedDict
 
+from github import Github
+from github.Repository import Repository
 from pydantic import BaseModel, Field
 
 from models.enums import CodeReviewCommentType, CommandName
@@ -100,6 +102,9 @@ class State(TypedDict):
     update_reason: str | None
     comment: str | None
     usage_log_id: int | None
+    installation_id: int | None
+    gh_client: Github | None
+    repo_client: Repository | None
 
 
 class CodeDiffSummary(BaseModel):
@@ -149,15 +154,23 @@ class UsageLog(BaseModel):
 
 
 class CodeReviewComment(BaseModel):
-    file: str = Field(description="The file path where the comment applies")
-    line: int = Field(description="The line number for the comment")
-    content: str = Field(
-        description="The review comment content. Don't add label here. Be concise. Split in new paragraphs if needed."
+    file: str = Field(..., description="The file path where the comment applies")
+    line: int = Field(
+        ...,
+        description="The relevant line number where the comment ends (inclusive). Should correspond to the line number prefix shown in the diff.",
     )
-    label: CodeReviewCommentType = Field(description="Conventional comment label")
+    start_line: int | None = Field(
+        default=None,
+        description="The relevant line number where the comment starts (inclusive). Should correspond to the line number prefix shown in the diff. Leave empty for single-line comments",
+    )
+    content: str = Field(
+        ...,
+        description="The review comment content. Don't add label here. Be concise. Split in new paragraphs if needed.",
+    )
+    label: CodeReviewCommentType = Field(..., description="Conventional comment label")
 
 
-class PRDiff(BaseModel):
+class PRFileDiff(BaseModel):
     filename: str = Field(description="Name of the file")
     status: str = Field(description="Status of the file: 'added', 'modified', 'deleted'")
     additions: int = Field(description="Number of lines added")
@@ -166,10 +179,10 @@ class PRDiff(BaseModel):
 
 
 class LineByLineCodeReview(BaseModel):
-    pr_number: int = Field(description="Pull request number")
-    comments: list[CodeReviewComment] = Field(description="List of review comments")
+    pr_number: int = Field(..., description="Pull request number")
+    comments: list[CodeReviewComment] = Field(..., description="List of review comments")
     code_overview: str = Field(
-        description="Brief description of the pull request in markdown format with ### headers and bullet points."
+        ..., description="Brief description of the pull request in markdown format with ### headers and bullet points."
     )
     files_reviewed: list[str] | None = Field(default=None, description="List of files that were reviewed")
 

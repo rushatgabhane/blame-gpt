@@ -20,6 +20,6 @@ SELECT path, title, content_hash, embedding, content FROM docs;
 """
 
 GET_DOC_WITH_CONTENT_BY_PATH = """
-SELECT path, title, content_hash, content FROM docs 
+SELECT path, title, content_hash, content FROM docs
 WHERE path = ?;
 """

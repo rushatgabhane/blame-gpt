@@ -1,5 +1,6 @@
 import logging
 
+from libs.github import get_github_client
 from libs.sqlite.core import core_sqlite_client
 from libs.sqlite.docs import docs_sqlite_client
 from models.models import State
@@ -13,8 +14,14 @@ def docs(
     pull_request_id: int,
     db: core_sqlite_client.Database,
     docs_db: docs_sqlite_client.Database,
+    installation_id: int,
+    repo_owner: str,
+    repo_name: str,
     usage_log_id: int | None = None,
 ):
+    gh_client = get_github_client(installation_id)
+    repo_client = gh_client.get_repo(f"{repo_owner}/{repo_name}")
+
     initial_state: State = {
         "pull_request_id": pull_request_id,
         "pull_request": None,
@@ -26,6 +33,9 @@ def docs(
         "doc_edit_suggestions": None,
         "comment": None,
         "usage_log_id": usage_log_id,
+        "installation_id": installation_id,
+        "gh_client": gh_client,
+        "repo_client": repo_client,
     }
 
     graph = build_graph(db, docs_db)

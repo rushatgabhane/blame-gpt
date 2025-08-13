@@ -32,7 +32,7 @@ Precondition: User has admin access and Feature A is available
 3. Enable Feature A
 4. Verify Feature A works
 
-Test 2: Feature B verification  
+Test 2: Feature B verification
 Precondition: User has admin access and Feature A is available
 1. Login to app
 2. Go to Settings
