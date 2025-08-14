@@ -1,22 +1,18 @@
 import asyncio
 import logging
-import threading
 
 from libs.github import get_github_client
 from libs.helpers import thinking_verb
 from libs.sqlite.core.core_sqlite_client import Database as CoreDatabase
-from libs.sqlite.docs.docs_sqlite_client import Database as DocsDatabase
 from models.enums import CommandName
 from services import blame_pipeline, code_review_pipeline, user_service
 from services.command_service import classify_command, has_again_keyword
-from services.docs_service import run_graph
-from services.github.comment_service import create_thinking_comment, create_thinking_comment_for_pr, react_comment
-from services.test_step import test_step_pipeline
+from services.github.comment_service import create_thinking_comment, react_comment
 
 logger = logging.getLogger(__name__)
 
 
-async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db: DocsDatabase, installation_id: int):
+async def process_webhook_comment(payload: dict, core_db: CoreDatabase, installation_id: int):
     """Process a GitHub webhook comment event."""
     try:
         repository = payload.get("repository", {})
@@ -69,7 +65,6 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, docs_db:
             issue_or_pr_number=issue_or_pr_number,
             repo_id=repo_id,
             core_db=core_db,
-            docs_db=docs_db,
             usage_log_id=usage_log_id,
             installation_id=installation_id,
             should_process_again=should_process_again,
@@ -88,7 +83,6 @@ async def _run_webhook_command(
     issue_or_pr_number: int,
     repo_id: int,
     core_db: CoreDatabase,
-    docs_db: DocsDatabase,
     usage_log_id: int | None,
     installation_id: int,
     should_process_again: bool = False,
@@ -112,34 +106,6 @@ async def _run_webhook_command(
             logger.debug(f"Blame #{issue_or_pr_number}: {step}")
         return
 
-    if command_name == CommandName.OHMYDOCS:
-        async for step in _docs_with_progress_webhook(
-            issue_or_pr_number, repo_id, core_db, docs_db, installation_id, usage_log_id
-        ):
-            logger.debug(f"Docs #{issue_or_pr_number}: {step}")
-        return
-
-    if command_name == CommandName.TEST_STEPS and subject_type == "PullRequest":
-        # Get GitHub clients for the installation
-        gh_client = get_github_client(installation_id)
-        repo_client = gh_client.get_repo(repo_id)
-
-        thinking_comment = create_thinking_comment_for_pr(
-            pull_request_id=issue_or_pr_number,
-            thinking_text=f"{thinking_verb()}... <img src='https://github.com/user-attachments/assets/3689d0a2-6ccb-4431-8cd4-3c433c916d4a' height=16>",
-            repo_client=repo_client,
-        )
-        async for step in test_step_pipeline.run(
-            issue_or_pr_number,
-            repo_client,
-            core_db,
-            usage_log_id,
-            thinking_comment,
-            should_process_again=should_process_again,
-        ):
-            logger.debug(f"Test steps PR #{issue_or_pr_number}: {step}")
-        return
-
     if command_name == CommandName.CODE_REVIEW and subject_type == "PullRequest":
         # Get GitHub clients for the installation
         gh_client = get_github_client(installation_id)
@@ -157,29 +123,3 @@ async def _run_webhook_command(
         return
 
     logger.info(f"Unknown command {command_name}, skipping")
-
-
-async def _docs_with_progress_webhook(
-    pull_request_id: int,
-    repo_id: int,
-    core_db: CoreDatabase,
-    docs_db: DocsDatabase,
-    installation_id: int,
-    usage_log_id: int | None,
-):
-    """Handle docs command with progress updates."""
-
-    result = []
-
-    def run_docs():
-        result.append(run_graph.docs(pull_request_id, core_db, docs_db, installation_id, repo_id, usage_log_id))
-
-    thread = threading.Thread(target=run_docs)
-    thread.start()
-
-    # Keep yielding to prevent worker timeout
-    while thread.is_alive():
-        yield "processing..."
-        await asyncio.sleep(10)
-
-    thread.join()

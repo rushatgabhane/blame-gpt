@@ -79,17 +79,6 @@ WHERE id = ?;
 """
 
 
-GET_PULL_REQUEST_TEST_STEPS_ID_BY_ID = """
-SELECT pull_request_id
-FROM pull_request_test_steps
-WHERE pull_request_id = ?;
-"""
-
-ADD_PULL_REQUEST_TEST_STEPS = """
-INSERT OR REPLACE INTO pull_request_test_steps (pull_request_id, test_steps)
-VALUES (?, ?);
-"""
-
 ADD_USER = """
 INSERT OR IGNORE INTO users (username, email, name, avatar_url)
 VALUES (?, ?, ?, ?)
@@ -136,18 +125,6 @@ INSERT INTO llm_calls (usage_log_id, llm_model, tokens_used, cost_usd_thousandth
 VALUES (?, ?, ?, ?);
 """
 
-INSERT_TEST_SUITE = """
-INSERT OR REPLACE INTO test_suite (case_id, title, steps, hash, embedding)
-VALUES (?, ?, ?, ?, ?);
-"""
-
-GET_TEST_SUITE_HASH_BY_CASE_ID = """
-SELECT hash FROM test_suite WHERE case_id = ?;
-"""
-
-GET_ALL_TEST_SUITE = """
-SELECT id, case_id, title, steps, hash, embedding FROM test_suite;
-"""
 
 GET_PULL_REQUEST_REVIEW_SHA = """
 SELECT last_reviewed_commit_sha FROM pull_request_reviews 
