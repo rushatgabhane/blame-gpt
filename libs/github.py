@@ -1,7 +1,6 @@
 import logging
 import os
 
-import httpx
 from github import Auth, Github
 from pydantic import SecretStr
 
@@ -31,28 +30,3 @@ def get_installation_token(installation_id: int):
     installation_auth = Auth.AppInstallationAuth(app_auth, installation_id)
     Github(auth=installation_auth)  # do this to avoid init errors
     return installation_auth.token
-
-
-async def get_installation_id_for_repo(repo_owner: str, repo_name: str) -> int | None:
-    try:
-        jwt_token = app_auth.create_jwt()
-
-        url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/installation"
-        headers = {
-            "Authorization": f"Bearer {jwt_token}",
-            "Accept": "application/vnd.github.v3+json",
-        }
-
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url, headers=headers)
-
-        if response.status_code == 200:
-            installation_data = response.json()
-            return installation_data.get("id")
-        else:
-            logger.error(f"Failed to get installation for {repo_owner}/{repo_name}: {response.status_code}")
-            return None
-
-    except Exception as e:
-        logger.error(f"Could not find installation for {repo_owner}/{repo_name}: {e}")
-        return None

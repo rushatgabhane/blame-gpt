@@ -15,12 +15,11 @@ def docs(
     db: core_sqlite_client.Database,
     docs_db: docs_sqlite_client.Database,
     installation_id: int,
-    repo_owner: str,
-    repo_name: str,
+    repo_id: int,
     usage_log_id: int | None = None,
 ):
     gh_client = get_github_client(installation_id)
-    repo_client = gh_client.get_repo(f"{repo_owner}/{repo_name}")
+    repo_client = gh_client.get_repo(repo_id)
 
     initial_state: State = {
         "pull_request_id": pull_request_id,

@@ -180,7 +180,7 @@ class PRFileDiff(BaseModel):
 
 class LineByLineCodeReview(BaseModel):
     pr_number: int = Field(..., description="Pull request number")
-    comments: list[CodeReviewComment] = Field(..., description="List of review comments")
+    comments: list[CodeReviewComment] = Field(default_factory=list, description="List of review comments")
     code_overview: str = Field(
         ..., description="Brief description of the pull request in markdown format with ### headers and bullet points."
     )

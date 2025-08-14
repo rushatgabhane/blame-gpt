@@ -209,17 +209,28 @@ def add_pull_request_if_not_exist(
 
 
 def get_pull_request_diffs(
-    pull_request_id: int, repo_client: Repository, gitignore_spec: pathspec.PathSpec
+    pull_request_id: int,
+    repo_client: Repository,
+    gitignore_spec: pathspec.PathSpec,
+    since_commit_sha: str | None = None,
 ) -> tuple[PullRequest, list[PRFileDiff]]:
     try:
         pr = repo_client.get_pull(pull_request_id)
+
         all_files = list(pr.get_files())
+
+        if since_commit_sha:
+            comparison = repo_client.compare(since_commit_sha, pr.head.sha)
+            incremental_filenames = {f.filename for f in comparison.files}
+            files_to_review = [f for f in all_files if f.filename in incremental_filenames]
+        else:
+            files_to_review = all_files
 
         pr_test = _parse_test_steps(pr.body or "")
         pr_explanation = _parse_explanation(pr.body or "")
         linked_issue_ids = _parse_linked_issue_ids(pr.body or "", repo_client.name)
 
-        files_without_ignored = [f for f in all_files if not gitignore_spec.match_file(f.filename)]
+        files_without_ignored = [f for f in files_to_review if not gitignore_spec.match_file(f.filename)]
         files = [f.filename for f in files_without_ignored]
 
         pull_request_model = PullRequest(
@@ -316,13 +327,22 @@ def _add_line_numbers_to_patch(patch: str) -> str:
 
 
 def create_pull_request_review(
-    pull_request_id: int, review_data: LineByLineCodeReview, commit_sha: str, repo_client: Repository
+    pull_request_id: int,
+    review_data: LineByLineCodeReview,
+    commit_sha: str,
+    repo_client: Repository,
+    last_reviewed_sha: str | None = None,
 ) -> None:
     """Create a single GitHub review with body and multiple line comments for specific repo"""
     try:
         pr = repo_client.get_pull(pull_request_id)
 
-        review_body = f"{review_data.code_overview}{SIGNATURE}"
+        incremental_notice = (
+            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\n\n"
+            if last_reviewed_sha
+            else ""
+        )
+        review_body = f"{incremental_notice}{review_data.code_overview}{SIGNATURE}"
 
         # Get PR files to validate paths and line numbers
         pr_files = list(pr.get_files())

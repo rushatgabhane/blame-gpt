@@ -43,6 +43,7 @@ Set the label field using exact values from this list:
 - Set the label only in the "label" field using exact values from the list above
 - The content field should contain ONLY the actual feedback text, without any prefixes
 - MUST NOT start content with "Note:", "Suggestion:", "Issue:", etc.
+- Use backticks when referring to code.
 
 ### Line Number Rules:
 - Use the line numbers shown as prefixes in the diff (e.g. if you see "109 +    code", use line number 109)
