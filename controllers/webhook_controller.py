@@ -52,7 +52,6 @@ async def github_webhook(
         return Response(content="No issue or pull request found")
 
     core_db = request.app.state.db
-    docs_db = request.app.state.docs_db
 
-    background_tasks.add_task(process_webhook_comment, payload, core_db, docs_db, installation_id)
+    background_tasks.add_task(process_webhook_comment, payload, core_db, installation_id)
     return Response(content="processing webhook")

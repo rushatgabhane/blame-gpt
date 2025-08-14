@@ -14,7 +14,7 @@ from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.enums import CodeReviewCommentType
-from models.models import CodeDiffSummary, FilePatch, LineByLineCodeReview, PRFileDiff, PullRequest
+from models.models import CodeDiffSummary, LineByLineCodeReview, PRFileDiff, PullRequest
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -173,23 +173,6 @@ def _parse_explanation(body: str) -> str:
     normalized_spacing = re.sub(r"\n{3,}", "\n\n", without_comments)
 
     return normalized_spacing.strip()
-
-
-def get_pull_request_patch(pull_request_id: int, repo_client: Repository) -> list[FilePatch]:
-    patches: list[FilePatch] = []
-
-    pr = repo_client.get_pull(pull_request_id)
-    for file in pr.get_files():
-        if not file.patch:
-            continue
-
-        patches.append(
-            FilePatch(
-                filename=file.filename,
-                patch=file.patch or "",
-            )
-        )
-    return patches
 
 
 def add_pull_request_if_not_exist(

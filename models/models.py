@@ -1,7 +1,3 @@
-from typing import TypedDict
-
-from github import Github
-from github.Repository import Repository
 from pydantic import BaseModel, Field
 
 from models.enums import CodeReviewCommentType, CommandName
@@ -15,7 +11,6 @@ class PullRequest(BaseModel):
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
-    generated_test_steps: str | None = None
     code_diff: str | None = None
     linked_issue_ids: list[int] | None = None
     commit_sha: str | None = None
@@ -48,85 +43,8 @@ class PullRequestWithScore(BaseModel):
     score: float
 
 
-class Doc(BaseModel):
-    path: str
-    title: str
-    content_hash: str
-    embedding: list[float] | None = None
-    raw_content: str | None = None
-
-
-class DocWithScore(BaseModel):
-    doc: Doc
-    score: float
-
-
-class FilePatch(BaseModel):
-    filename: str
-    patch: str
-
-
-class PullRequestIntent(BaseModel):
-    intent: str
-    is_bug_fix: bool = False
-
-
-class Edits(BaseModel):
-    before: str = Field(..., description="original text that should be replaced.")
-    after: str = Field(..., description="suggested text to replace it with. Empty string means deletion.")
-
-
-class DocUpdateDiff(BaseModel):
-    path: str = Field(..., description="relative path of the article")
-    edits: list[Edits] = Field(
-        ..., description="list of edits to be applied to the article. Empty list means no edits needed."
-    )
-
-
-class DocEditEvaluation(BaseModel):
-    should_docs_update: bool = Field(..., description="true if any user facing help articles need updates.")
-    update_reason: str = Field(..., description="explanation for the decision.")
-    edits_to_apply: list[DocUpdateDiff] = Field(
-        ..., description="list of articles that need updates and the suggested edits to apply."
-    )
-
-
-class State(TypedDict):
-    pull_request_id: int
-    pull_request: PullRequest | None
-    en_patch: str | None
-    intent: str | None
-    relevant_docs: list[Doc] | None
-    doc_edit_suggestions: list[DocUpdateDiff] | None
-    should_docs_update: bool | None
-    update_reason: str | None
-    comment: str | None
-    usage_log_id: int | None
-    installation_id: int | None
-    gh_client: Github | None
-    repo_client: Repository | None
-
-
 class CodeDiffSummary(BaseModel):
     pull_request_description: str
-
-
-class GeneratedTestSteps(BaseModel):
-    title: str = Field(
-        ..., description="a really short title for what to verify. For example: you can remove a workspace member"
-    )
-    precondition: str | None = Field(
-        ...,
-        description="a precondition is usually setup like workspace settings that you need to enable.",
-    )
-    steps: str = Field(
-        ...,
-        description="a numbered list of steps to verify the PR. For example: 1. Login to Expensify App. 2. Go to workspace settings > Members. 3. Click on the member with VISA card. 4. Click on the card. 5. Click QuickBooks Online credit card export. 6. Verify that the export is successful and the VISA card transactions are exported to QBO.",
-    )
-
-
-class GeneratedTestStepsList(BaseModel):
-    test: list[GeneratedTestSteps]
 
 
 class CommandClassification(BaseModel):
@@ -200,12 +118,3 @@ class UserUsageLog(BaseModel):
     user: User
     usage_log: UsageLog
     llm_calls: list[LLMCall] = []
-
-
-class TestSuite(BaseModel):
-    id: int
-    case_id: int
-    title: str
-    steps: str
-    hash: str
-    embedding: list[float] | None = None

@@ -1,5 +1,4 @@
 CACHE_DB_PATH = "data/cache.db"
-DOCS_DB_PATH = "data/docs.db"
 
 LABELS = {
     "DeployBlockerCash": "DeployBlockerCash",

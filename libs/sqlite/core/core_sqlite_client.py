@@ -9,7 +9,7 @@ from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
 from models.enums import CommandName
-from models.models import CulpritPullRequest, Issue, LLMCall, PullRequest, TestSuite, UsageLog, User, UserUsageLog
+from models.models import CulpritPullRequest, Issue, LLMCall, PullRequest, UsageLog, User, UserUsageLog
 
 
 def require_connection(method):
@@ -219,26 +219,6 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def has_generated_test_steps(self, pull_request_id: int) -> bool:
-        assert self.connection is not None
-
-        row = self.connection.execute(core_queries.GET_PULL_REQUEST_TEST_STEPS_ID_BY_ID, (pull_request_id,)).fetchone()
-        return bool(row and row["pull_request_id"])
-
-    @require_connection
-    def add_pull_request_test_steps(self, pull_request_id: int, test_steps: str):
-        assert self.connection is not None
-        try:
-            self.connection.execute(
-                core_queries.ADD_PULL_REQUEST_TEST_STEPS,
-                (pull_request_id, test_steps),
-            )
-            self.connection.commit()
-        except Exception as e:
-            self.connection.rollback()
-            raise e
-
-    @require_connection
     def add_user(self, username: str, email: str, name: str, avatar_url: str) -> int | None:
         assert self.connection is not None
         try:
@@ -370,39 +350,6 @@ class Database:
                 output=row[4],
                 issue_or_pull_request_url=row[5],
                 created_at=row[6],
-            )
-            for row in rows
-        ]
-
-    @require_connection
-    def add_test_suite(self, case_id: int, title: str, steps: str, hash: str, embedding: list[float]):
-        assert self.connection is not None
-        self.connection.execute(
-            core_queries.INSERT_TEST_SUITE,
-            (case_id, title, steps, hash, pickle.dumps(embedding)),
-        )
-        self.connection.commit()
-
-    @require_connection
-    def get_hash_by_case_id(self, case_id: int) -> str | None:
-        assert self.connection is not None
-        row = self.connection.execute(core_queries.GET_TEST_SUITE_HASH_BY_CASE_ID, (case_id,)).fetchone()
-        if not row:
-            return None
-        return row[0]
-
-    @require_connection
-    def get_all_test_suites(self) -> list[TestSuite]:
-        assert self.connection is not None
-        rows = self.connection.execute(core_queries.GET_ALL_TEST_SUITE).fetchall()
-        return [
-            TestSuite(
-                id=row[0],
-                case_id=row[1],
-                title=row[2],
-                steps=row[3],
-                hash=row[4],
-                embedding=pickle.loads(row[5]) if row[5] else None,
             )
             for row in rows
         ]
