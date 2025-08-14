@@ -9,6 +9,7 @@ asttokens==3.0.0
 async-lru==2.0.5
 attrs==25.3.0
 babel==2.17.0
+bandit==1.8.6
 beautifulsoup4==4.13.4
 bleach==6.2.0
 bs4==0.0.2
@@ -67,10 +68,6 @@ langchain==0.3.25
 langchain-core==0.3.61
 langchain-openai==0.3.18
 langchain-text-splitters==0.3.8
-langgraph==0.4.8
-langgraph-checkpoint==2.0.26
-langgraph-prebuilt==0.2.2
-langgraph-sdk==0.1.70
 langsmith==0.3.42
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
@@ -96,6 +93,7 @@ pandas-stubs==2.3.0.250703
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
+pbr==6.1.1
 pexpect==4.9.0
 pillow==11.2.1
 platformdirs==4.3.8
@@ -139,6 +137,7 @@ SQLAlchemy==2.0.41
 sqlparse==0.5.3
 stack-data==0.6.3
 starlette==0.46.2
+stevedore==5.4.1
 tabulate==0.9.0
 tenacity==9.1.2
 terminado==0.18.1
@@ -147,6 +146,7 @@ tinycss2==1.4.0
 tornado==6.5.1
 tqdm==4.67.1
 traitlets==5.14.3
+tree-format==0.1.2
 tree-sitter==0.24.0
 tree-sitter-python==0.23.4
 tree-sitter-typescript==0.23.2
