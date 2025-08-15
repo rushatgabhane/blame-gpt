@@ -7,15 +7,13 @@ from github.Repository import Repository
 from libs.llm import ModelNames, llm
 from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
 from libs.sqlite.core.core_sqlite_client import Database
-from models.enums import CodeReviewCommentType
-from models.models import CodeReviewComment, LineByLineCodeReview
+from models.models import LineByLineCodeReview
 from services.github.local_repository import LocalRepository
 from services.github.pull_request_service import (
     create_pull_request_review,
     format_pr_diffs_for_review,
     get_pull_request_diffs,
 )
-from services.security_service import run_security_analysis
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -61,41 +59,24 @@ async def run(
             )
 
             llm_task = asyncio.create_task(llm.ainvoke(prompt))
-            security_task = asyncio.create_task(run_security_analysis(local_repo.worktree_path, pr_diffs))
 
-            while not llm_task.done() or not security_task.done():
-                await asyncio.sleep(10)
-                yield "generating code review..."
+            while not llm_task.done():
+                await asyncio.sleep(20)
+                yield "generating code review... this might take a minute."
 
             response = await llm_task
-            security_findings = await security_task
-
             track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
             parsed_response = line_by_line_review_parser.invoke(response)
 
-            security_comments = []
-            for finding in security_findings:
-                security_comment = CodeReviewComment(
-                    file=finding.file_path,
-                    line=finding.line,
-                    start_line=finding.start_line,
-                    content=f"{finding.description} (Rule: {finding.rule_id})",
-                    label=CodeReviewCommentType.ISSUE,
-                )
-                security_comments.append(security_comment)
-
-            all_comments = parsed_response.comments + security_comments
-
             review = LineByLineCodeReview(
                 pr_number=pull_request_id,
-                comments=all_comments,
+                comments=parsed_response.comments,
                 code_overview=parsed_response.code_overview,
                 files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
             )
 
-            logger.info(f"generated review with {len(review.comments)} ")
-            logger.info(f"found {len(security_findings)} security findings")
+            logger.info(f"generated review with {len(review.comments)} comments")
             yield "adding review to PR"
 
             if not pull_request.commit_sha:
