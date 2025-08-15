@@ -110,6 +110,18 @@ fi
 
         return str(askpass_path)
 
+    def _ensure_remote_origin(self, clone_url: str, env: dict):
+        try:
+            check_remote_cmd = ["git", "remote", "get-url", "origin"]
+            subprocess.run(check_remote_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
+
+            set_url_cmd = ["git", "remote", "set-url", "origin", clone_url]
+            subprocess.run(set_url_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
+
+        except subprocess.CalledProcessError:
+            add_remote_cmd = ["git", "remote", "add", "origin", clone_url]
+            subprocess.run(add_remote_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
+
     def _create_or_update_clone(self, clone_url: str, branch_name: str):
         if not self.clone_path:
             raise ValueError("Clone path not initialized")
@@ -124,8 +136,7 @@ fi
                 subprocess.run(shallow_clone_cmd, check=True, capture_output=True, env=env)
                 logger.info(f"Created shallow clone at {self.clone_path}")
 
-            fetch_cmd = ["git", "remote", "set-url", "origin", clone_url]
-            subprocess.run(fetch_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
+            self._ensure_remote_origin(clone_url, env)
 
             refspec = f"pull/{self.pull_request_id}/head:refs/heads/{branch_name}"
             fetch_pr_branch_cmd = ["git", "fetch", "origin", refspec, "--force", "--no-tags"]
