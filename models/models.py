@@ -114,6 +114,18 @@ class LLMCall(BaseModel):
     created_at: str
 
 
+class SecurityFinding(BaseModel):
+    file_path: str = Field(description="Path to the file with security issue")
+    line: int = Field(description="Line number where issue ends (inclusive)")
+    start_line: int | None = Field(
+        default=None, description="Line number where issue starts (inclusive). Leave empty for single-line issues"
+    )
+    severity: str = Field(description="Severity level: 'high', 'medium'")
+    rule_id: str = Field(description="Security rule ID from the tool")
+    description: str = Field(description="Description of the security issue")
+    tool: str = Field(description="Security tool that found the issue: 'bandit', 'gosec'")
+
+
 class UserUsageLog(BaseModel):
     user: User
     usage_log: UsageLog
