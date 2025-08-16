@@ -333,7 +333,7 @@ def create_pull_request_review(
 
         review_comments = []
         for comment in review_data.comments:
-            if comment.label == CodeReviewCommentType.ISSUE or comment.label == CodeReviewCommentType.SUGGESTION:
+            if _is_allowed_comment_type(comment.label):
                 if comment.file not in valid_paths:
                     continue
 
@@ -362,3 +362,11 @@ def create_pull_request_review(
     except Exception as e:
         logger.error(f"failed to create PR review for #{pull_request_id}: {e}")
         raise
+
+
+def _is_allowed_comment_type(comment_type: CodeReviewCommentType):
+    return (
+        comment_type == CodeReviewCommentType.SECURITY
+        or comment_type == CodeReviewCommentType.ISSUE
+        or comment_type == CodeReviewCommentType.SUGGESTION
+    )
