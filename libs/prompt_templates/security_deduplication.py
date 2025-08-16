@@ -43,13 +43,13 @@ Task: Remove code review comments that duplicate or overlap with security commen
 ## Security Comments (for reference):
 {security_comments}
 
-Return ONLY a valid JSON object matching the schema filtered list of code review comments that should be kept. Do not include any extra text, explanations, or markdown.
+Return a filtered list of code review comments that should be kept in a valid JSON object matching the schema:
 {format_instructions}
 """
 
     def format_comments_as_json(comments: list[CodeReviewComment]) -> str:
         if not comments:
-            return ""
+            return "[]"
 
         comments_data = [comment.model_dump(mode="json") for comment in comments]
         return json.dumps(comments_data, indent=2)
