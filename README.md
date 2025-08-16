@@ -38,10 +38,8 @@ To run the notebooks run `jupyter lab`.
 ```
 blame-gpt/
 ├── controllers/          # FastAPI route handlers
-│   ├── blame_controller.py
-│   ├── issue_controller.py
-│   ├── test_steps_controller.py
-│   └── docs_controller.py
+│   ├── webhook_controller.py
+│   ├── user_controller.py
 ├── frontend/            # React TypeScript frontend
 │   ├── src/
 │   ├── public/
@@ -54,13 +52,12 @@ blame-gpt/
 ├── middlewares/
 ├── models/              # Pydantic data models
 ├── services/            # Business logic layer
+│   ├── code_review_pipeline.py
 │   ├── blame_pipeline.py
 │   ├── github/
 |       ├──notification_service.py
 |       ├──pull_request_service.py
 |       ├──issue_service.py
-│   ├── docs_service/
-│   └── test_step/
 ├── main.py              # FastAPI application entry point
 └── requirements.txt
 ```
@@ -79,28 +76,13 @@ Naming convention
 ```
 
 ## Flows
-
-### Notification service
-
-The notification service listens for GitHub notifications and processes `@blamegpt` mentions to trigger various commands.
-
-Pipeline:
-- Polls GitHub notifications API for new mentions
-- Validates notifications are from configured repositories
-- Classifies the command type using LLM (blame, test steps, documentation, etc.)
-- Creates user records and LLM token usage logs for tracking
-- Routes to appropriate pipeline (blame_pipeline, test_step_pipeline, etc.)
-- Provides real-time feedback via comment reactions and status updates
-- Unsubscribes from processed notifications to avoid duplicates
-
 ### Code review
 
 Automated code review triggered by `@blamegpt` mentions on pull requests. Reviews code changes for quality, bugs, performance, and security issues, then posts structured feedback as GitHub PR reviews with line-by-line comments.
 
 ### Blame pipeline
 
-When a new issue is created, a [github action](https://github.com/Blame-GPT/action/blob/main/action.yml) installed on a repo invokes `api/blame` endpoint.
-`blame_pipeline` streams the logs to the action, gets all relevant pull requests, and performs RAG over the issue description and pull requests to rank them.
+When a new issue is created, `blame` gets all relevant pull requests, and performs RAG over the issue description and pull requests to rank them.
 #### Example
 Input: Issue
 ```
@@ -113,20 +95,3 @@ Pipeline:
 - And then finds the relevant PRs using cosine similarity between the issue embedding and PR embedding.
 - ~Top 20 similar PRs are sent to LLM to find the top 3 culprit PRs.
 - Using blamegpt's personal github token, we add a comment to the issue.
-
-### Test step pipeline
-
-When a PR author or reviewer requests test steps, the `test_step_pipeline` generates comprehensive QA test steps for the pull request.
-#### Example
-Input: Pull request with linked issues
-```
-PR: "Add user authentication endpoints"
-Linked issue: "Users need to be able to login and logout"
-```
-Pipeline:
-- Fetches the pull request details and linked issues
-- Extracts test steps from linked issues to understand requirements
-- Finds similar test patterns from past PRs using embedding similarity
-- Uses LLM to generate comprehensive test steps based on code changes
-- Consolidates similar test steps to remove repetition
-- Posts formatted test steps as a comment on the PR for authors to refine
