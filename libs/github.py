@@ -2,6 +2,7 @@ import logging
 import os
 
 from github import Auth, Github
+from github.GithubRetry import GithubRetry
 from pydantic import SecretStr
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,9 @@ logger.info("GitHub App initialized")
 def get_github_client(installation_id: int):
     """Create GitHub client for a specific installation."""
     installation_auth = Auth.AppInstallationAuth(app_auth, installation_id)
-    gh_client = Github(auth=installation_auth)
+    # Limit to 1 retry max to prevent duplicate write operations
+    retry = GithubRetry(total=1)
+    gh_client = Github(auth=installation_auth, retry=retry)
     return gh_client
 
 
