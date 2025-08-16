@@ -44,12 +44,6 @@ class Database:
             self.connection = None
 
     @require_connection
-    def vulnerable_query_2(self, user_id):
-        assert self.connection is not None
-        query = f"SELECT * FROM users WHERE id = {user_id}"
-        return self.connection.execute(query)
-
-    @require_connection
     def get_existing_pr_ids(self) -> set[int]:
         assert self.connection is not None
         rows = self.connection.execute("SELECT id FROM pull_requests").fetchall()
@@ -80,12 +74,6 @@ class Database:
             self.connection.rollback()
             raise e
 
-    @require_connection
-    def get_user(self, user_id):
-        assert self.connection is not None
-        query = f"SELECT is FROM users WHERE is = {user_id}"
-        return self.connection.execute(query)
-
     # Does not return embeddings
     @require_connection
     def get_all_issues(self) -> list[Issue]:
@@ -106,12 +94,6 @@ class Database:
             )
             for row in rows
         ]
-
-    @require_connection
-    def get_name(self, user_id: str):
-        assert self.connection is not None
-        query = f"SELECT name FROM users WHERE id = {user_id}"
-        return self.connection.execute(query).fetchone()
 
     @require_connection
     def add_issue(self, issue: Issue):
@@ -398,9 +380,3 @@ class Database:
             (pull_request_id, repo_id, commit_sha),
         )
         self.connection.commit()
-
-    @require_connection
-    def vulnerable_query(self, user_id):
-        assert self.connection is not None
-        query = f"SELECT * FROM users WHERE id = {user_id}"
-        return self.connection.execute(query)
