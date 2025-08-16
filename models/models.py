@@ -11,7 +11,6 @@ class PullRequest(BaseModel):
     files: list[str]
     embedding: list[float] | None = None
     code_diff_summary: str | None = None
-    code_diff: str | None = None
     linked_issue_ids: list[int] | None = None
     commit_sha: str | None = None
 

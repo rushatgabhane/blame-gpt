@@ -129,7 +129,6 @@ def _get_pr_with_embeddings(
             files=files,
             embedding=pr_embedding,
             code_diff_summary=code_diff_summary.pull_request_description,
-            code_diff=code_diff,
             linked_issue_ids=linked_issue_ids,
         )
     except Exception as e:
