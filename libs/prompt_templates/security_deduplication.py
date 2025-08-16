@@ -43,7 +43,7 @@ Task: Remove code review comments that duplicate or overlap with security commen
 ## Security Comments (for reference):
 {security_comments}
 
-Return a filtered list of code review comments that should be kept in a valid JSON object matching the schema:
+Return a filtered list of code review comments that should be kept in a valid JSON matching the schema:
 {format_instructions}
 """
 
