@@ -204,8 +204,7 @@ def get_pull_request_diffs(
 
         if since_commit_sha:
             comparison = repo_client.compare(since_commit_sha, pr.head.sha)
-            incremental_filenames = {f.filename for f in comparison.files}
-            files_to_review = [f for f in all_files if f.filename in incremental_filenames]
+            files_to_review = list(comparison.files)
         else:
             files_to_review = all_files
 

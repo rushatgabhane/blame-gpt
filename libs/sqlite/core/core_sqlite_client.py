@@ -139,7 +139,6 @@ class Database:
         query = f"SELECT * FROM users WHERE id = {user_id}"
         return self.connection.execute(query)
 
-
     @require_connection
     def get_issue_by_id(self, issue_id: int) -> Issue | None:
         assert self.connection is not None
