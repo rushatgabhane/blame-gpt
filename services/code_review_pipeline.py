@@ -28,6 +28,7 @@ async def run(
     repo_client: Repository,
     installation_id: int,
     usage_log_id: int | None = None,
+    should_review_again: bool = False,
 ) -> AsyncGenerator[str]:
     try:
         yield f"starting review for PR #{pull_request_id}"
@@ -39,7 +40,9 @@ async def run(
                 return
 
             gitignore_spec = local_repo.get_gitignore_spec()
-            last_reviewed_sha = db.get_pull_request_review_sha(pull_request_id, repo_id)
+            last_reviewed_sha = (
+                db.get_pull_request_review_sha(pull_request_id, repo_id) if not should_review_again else None
+            )
 
             pull_request, pr_diffs = get_pull_request_diffs(
                 pull_request_id, repo_client, gitignore_spec, last_reviewed_sha
@@ -48,7 +51,7 @@ async def run(
             if not pull_request.commit_sha:
                 return
 
-            if last_reviewed_sha == pull_request.commit_sha:
+            if not should_review_again and last_reviewed_sha == pull_request.commit_sha:
                 yield f"PR #{pull_request_id} already reviewed at commit {pull_request.commit_sha}, skipping"
                 return
 
@@ -73,15 +76,14 @@ async def run(
             track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
             parsed_response = line_by_line_review_parser.invoke(response)
-
             security_comments = []
             for finding in security_findings:
                 security_comment = CodeReviewComment(
                     file=finding.file_path,
                     line=finding.line,
                     start_line=finding.start_line,
-                    content=f"{finding.description} (Rule: {finding.rule_id})",
-                    label=CodeReviewCommentType.ISSUE,
+                    content=f"{finding.severity.value.upper()}: {finding.description} (Rule: {finding.tool} {finding.rule_id})",
+                    label=CodeReviewCommentType.SECURITY,
                 )
                 security_comments.append(security_comment)
 
@@ -95,7 +97,7 @@ async def run(
             )
 
             logger.info(f"generated review with {len(review.comments)} ")
-            logger.info(f"found {len(security_findings)} security findings")
+            logger.info(f"found {len(security_comments)} security comments")
             yield "adding review to PR"
 
             if not pull_request.commit_sha:
