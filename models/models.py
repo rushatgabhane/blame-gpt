@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from models.enums import CodeReviewCommentType, CommandName
+from models.enums import CodeReviewCommentType, CommandName, SecuritySeverity
 
 
 class PullRequest(BaseModel):
@@ -120,7 +120,7 @@ class SecurityFinding(BaseModel):
     start_line: int | None = Field(
         default=None, description="Line number where issue starts (inclusive). Leave empty for single-line issues"
     )
-    severity: str = Field(description="Severity level: 'high', 'medium'")
+    severity: SecuritySeverity = Field(description="Severity level")
     rule_id: str = Field(description="Security rule ID from the tool")
     description: str = Field(description="Description of the security issue")
     tool: str = Field(description="Security tool that found the issue: 'bandit', 'gosec'")
