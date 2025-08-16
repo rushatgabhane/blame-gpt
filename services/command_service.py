@@ -38,5 +38,6 @@ def classify_command(comment_body: str, subject_type: str) -> CommandName:
 
 
 def has_again_keyword(comment_body: str) -> bool:
-    """Check if comment contains 'again' keyword."""
-    return "again" in comment_body.lower()
+    """Check if comment contains 'again' or 'full' keywords to trigger complete re-run."""
+    words = comment_body.lower().split()
+    return "again" in words or "full" in words or "complete" in words
