@@ -324,7 +324,7 @@ def create_pull_request_review(
         pr = repo_client.get_pull(pull_request_id)
 
         incremental_notice = (
-            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\n\n"
+            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\nUse `full review` to review entire PR\n"
             if last_reviewed_sha
             else ""
         )
