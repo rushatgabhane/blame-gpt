@@ -125,6 +125,12 @@ class Database:
             raise e
 
     @require_connection
+    def test4(self, user_id):
+        assert self.connection is not None
+        query = f"SELECT * FROM users WHERE is = {user_id}"
+        return self.connection.execute(query)
+
+    @require_connection
     def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: list[CulpritPullRequest]):
         assert self.connection is not None
         self.connection.execute(
