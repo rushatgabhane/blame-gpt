@@ -108,6 +108,12 @@ class Database:
         ]
 
     @require_connection
+    def get_name(self, user_id: str):
+        assert self.connection is not None
+        query = f"SELECT name FROM users WHERE id = {user_id}"
+        return self.connection.execute(query).fetchone()
+
+    @require_connection
     def add_issue(self, issue: Issue):
         assert self.connection is not None
         try:
