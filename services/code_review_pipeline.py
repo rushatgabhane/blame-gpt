@@ -4,8 +4,9 @@ from collections.abc import AsyncGenerator
 
 from github.Repository import Repository
 
-from libs.llm import ModelNames, llm
+from libs.llm import ModelNames, llm, llmCheap
 from libs.prompt_templates.code_review import code_review_prompt, line_by_line_review_parser
+from libs.prompt_templates.security_deduplication import security_deduplication_parser, security_deduplication_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.enums import CodeReviewCommentType
 from models.models import CodeReviewComment, LineByLineCodeReview
@@ -60,11 +61,13 @@ async def run(
                 pr_number=pull_request_id,
                 title=pull_request.title,
                 description=pull_request.explanation,
-                file_diffs=formatted_diffs,
+                file_diffs=formatted_diffs.diff,
             )
 
             llm_task = asyncio.create_task(llm.ainvoke(prompt))
-            security_task = asyncio.create_task(run_security_analysis(local_repo.worktree_path, pr_diffs))
+            security_task = asyncio.create_task(
+                run_security_analysis(local_repo.worktree_path, pr_diffs, formatted_diffs.file_line_number_changed_map)
+            )
 
             while not llm_task.done() or not security_task.done():
                 await asyncio.sleep(10)
@@ -75,8 +78,8 @@ async def run(
 
             track_llm_usage(db, usage_log_id, response, ModelNames.GPT_5)
 
-            parsed_response = line_by_line_review_parser.invoke(response)
-            security_comments = []
+            code_review_response: LineByLineCodeReview = line_by_line_review_parser.invoke(response)
+            security_comments: list[CodeReviewComment] = []
             for finding in security_findings:
                 security_comment = CodeReviewComment(
                     file=finding.file_path,
@@ -87,16 +90,19 @@ async def run(
                 )
                 security_comments.append(security_comment)
 
-            all_comments = parsed_response.comments + security_comments
+            filtered_code_review_comments = await _filter_duplicate_security_comments(
+                code_review_response.comments, security_comments, db, usage_log_id
+            )
+            all_comments = security_comments + filtered_code_review_comments
 
             review = LineByLineCodeReview(
                 pr_number=pull_request_id,
                 comments=all_comments,
-                code_overview=parsed_response.code_overview,
+                code_overview=code_review_response.code_overview,
                 files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
             )
 
-            logger.info(f"generated review with {len(review.comments)} ")
+            logger.info(f"found {len(review.comments)} review comments")
             logger.info(f"found {len(security_comments)} security comments")
             yield "adding review to PR"
 
@@ -113,3 +119,20 @@ async def run(
     except Exception as e:
         logger.exception(f"code review failed for PR #{pull_request_id}: {e}")
         yield f"some error occurred please report it with PR id #{pull_request_id}"
+
+
+async def _filter_duplicate_security_comments(
+    code_comments: list[CodeReviewComment],
+    security_comments: list[CodeReviewComment],
+    db: Database,
+    usage_log_id: int | None,
+) -> list[CodeReviewComment]:
+    if not security_comments or not code_comments:
+        return code_comments
+
+    dedup_prompt = security_deduplication_prompt(code_comments, security_comments)
+    dedup_response = await llmCheap.ainvoke(dedup_prompt)
+    track_llm_usage(db, usage_log_id, dedup_response, ModelNames.GPT_5_MINI)
+
+    filtered_result = security_deduplication_parser.invoke(dedup_response)
+    return filtered_result.filtered_code_review_comments

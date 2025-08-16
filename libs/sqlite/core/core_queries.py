@@ -25,6 +25,10 @@ GET_ALL_ISSUES = """
 SELECT * FROM issues;
 """
 
+GET_ALL_PULL_REQUEST_IDS = """
+SELECT id FROM pull_requests
+"""
+
 INSERT_ISSUE_PULL_REQUEST = """
 INSERT OR IGNORE INTO issue_pull_request (issue_id, pull_request_id)
 VALUES (?, ?);

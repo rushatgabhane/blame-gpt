@@ -47,6 +47,11 @@ class CodeDiffSummary(BaseModel):
     pull_request_description: str
 
 
+class FormattedDiffs(BaseModel):
+    diff: str
+    file_line_number_changed_map: dict[str, set[int]]  # file name -> lines changed map
+
+
 class CommandClassification(BaseModel):
     command_name: CommandName
 

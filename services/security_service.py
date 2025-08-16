@@ -9,7 +9,9 @@ from models.models import PRFileDiff, SecurityFinding
 logger = logging.getLogger(__name__)
 
 
-async def run_security_analysis(repo_path: str | None, pr_diffs: list[PRFileDiff]) -> list[SecurityFinding]:
+async def run_security_analysis(
+    repo_path: str | None, pr_diffs: list[PRFileDiff], file_line_number_changed_map: dict[str, set[int]]
+) -> list[SecurityFinding]:
     if not repo_path:
         return []
 
@@ -21,7 +23,14 @@ async def run_security_analysis(repo_path: str | None, pr_diffs: list[PRFileDiff
     gosec_task = asyncio.create_task(_run_gosec(repo_path, changed_files))
 
     python_findings, go_findings = await asyncio.gather(bandit_task, gosec_task)
-    return python_findings + go_findings
+    all_findings = python_findings + go_findings
+
+    filtered_findings = []
+    for finding in all_findings:
+        file_changed_lines = file_line_number_changed_map.get(finding.file_path, set())
+        if finding.line in file_changed_lines:
+            filtered_findings.append(finding)
+    return filtered_findings
 
 
 async def _run_bandit(repo_path: str, changed_files: list[str]) -> list[SecurityFinding]:

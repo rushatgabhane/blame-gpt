@@ -14,7 +14,7 @@ from libs.llm import ModelNames, embedding_model, llm
 from libs.prompt_templates.code_diff_summary import code_diff_summary_parser, code_diff_summary_prompt
 from libs.sqlite.core.core_sqlite_client import Database
 from models.enums import CodeReviewCommentType
-from models.models import CodeDiffSummary, LineByLineCodeReview, PRFileDiff, PullRequest
+from models.models import CodeDiffSummary, FormattedDiffs, LineByLineCodeReview, PRFileDiff, PullRequest
 from services.user_service import track_llm_usage
 
 logger = logging.getLogger(__name__)
@@ -204,8 +204,7 @@ def get_pull_request_diffs(
 
         if since_commit_sha:
             comparison = repo_client.compare(since_commit_sha, pr.head.sha)
-            incremental_filenames = {f.filename for f in comparison.files}
-            files_to_review = [f for f in all_files if f.filename in incremental_filenames]
+            files_to_review = list(comparison.files)
         else:
             files_to_review = all_files
 
@@ -244,9 +243,10 @@ def get_pull_request_diffs(
         raise
 
 
-def format_pr_diffs_for_review(pr_diffs: list[PRFileDiff]) -> str:
-    """Format PR diffs with embedded line numbers"""
+def format_pr_diffs_for_review(pr_diffs: list[PRFileDiff]) -> FormattedDiffs:
+    """Format PR diffs with embedded line numbers and track changed lines"""
     formatted_diffs = []
+    changed_lines_map: dict[str, set[int]] = {}
 
     for diff in pr_diffs:
         if not diff.patch:
@@ -256,17 +256,19 @@ def format_pr_diffs_for_review(pr_diffs: list[PRFileDiff]) -> str:
         formatted_diff += f"Status: {diff.status}\n"
         formatted_diff += f"Changes: +{diff.additions} -{diff.deletions}\n\n"
 
-        numbered_patch = _add_line_numbers_to_patch(diff.patch)
-        formatted_diff += numbered_patch
+        numbered_patch, changed_lines = _add_line_numbers_to_patch(diff.patch)
 
+        changed_lines_map[diff.filename] = changed_lines
+        formatted_diff += numbered_patch
         formatted_diffs.append(formatted_diff)
 
-    return "\n\n".join(formatted_diffs)
+    return FormattedDiffs(diff="\n\n".join(formatted_diffs), file_line_number_changed_map=changed_lines_map)
 
 
-def _add_line_numbers_to_patch(patch: str) -> str:
+def _add_line_numbers_to_patch(patch: str) -> tuple[str, set[int]]:
     lines = patch.split("\n")
     numbered_lines: list[str] = []
+    changed_lines: set[int] = set()
     current_new_line = None
 
     for line in lines:
@@ -300,13 +302,14 @@ def _add_line_numbers_to_patch(patch: str) -> str:
         elif line.startswith("+"):
             # Number added lines with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
+            changed_lines.add(current_new_line)
             current_new_line += 1
         else:
             # Context line (unchanged) - number with actual file line number
             numbered_lines.append(f"{current_new_line} {line}")
             current_new_line += 1
 
-    return "\n".join(numbered_lines)
+    return "\n".join(numbered_lines), changed_lines
 
 
 def create_pull_request_review(
@@ -321,7 +324,7 @@ def create_pull_request_review(
         pr = repo_client.get_pull(pull_request_id)
 
         incremental_notice = (
-            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\n\n"
+            f"**This review covers only the changes made since the last review (commit {last_reviewed_sha[:7]}), not the entire PR.**\nUse `full review` to review entire PR\n"
             if last_reviewed_sha
             else ""
         )
@@ -357,7 +360,7 @@ def create_pull_request_review(
 
         commit = repo_client.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
-        logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
+        logger.info(f"created review for #{pull_request_id} with {len(review_comments)} comments")
 
     except Exception as e:
         logger.error(f"failed to create PR review for #{pull_request_id}: {e}")
