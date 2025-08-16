@@ -81,9 +81,9 @@ class Database:
             raise e
 
     @require_connection
-    def test5(self, user_id):
+    def get_user(self, user_id):
         assert self.connection is not None
-        query = f"SELECT * FROM users WHERE is = {user_id}"
+        query = f"SELECT is FROM users WHERE is = {user_id}"
         return self.connection.execute(query)
 
     # Does not return embeddings
