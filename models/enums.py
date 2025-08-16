@@ -15,6 +15,13 @@ class CommandName(Enum):
         }[self]
 
 
+class SecuritySeverity(Enum):
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
 class CodeReviewCommentType(Enum):
     NITPICK = "nitpick"
     SUGGESTION = "suggestion"
@@ -24,6 +31,7 @@ class CodeReviewCommentType(Enum):
     CHORE = "chore"
     NOTE = "note"
     PRAISE = "praise"
+    SECURITY = "security"
 
     def description(self) -> str:
         return {
@@ -35,4 +43,5 @@ class CodeReviewCommentType(Enum):
             CodeReviewCommentType.CHORE: "Simple mechanical changes",
             CodeReviewCommentType.NOTE: "Highlight something important",
             CodeReviewCommentType.PRAISE: "Highlight something positive",
+            CodeReviewCommentType.SECURITY: "Security issue found by automated tools",
         }[self]

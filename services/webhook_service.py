@@ -118,6 +118,7 @@ async def _run_webhook_command(
             repo_client=repo_client,
             installation_id=installation_id,
             usage_log_id=usage_log_id,
+            should_review_again=should_process_again,
         ):
             logger.debug(f"Code review PR #{issue_or_pr_number}: {step}")
         return

@@ -67,8 +67,10 @@ Return the result in this JSON format:
 
 """
 
-    # Generate comment types list from enum
-    comment_types = "\n".join([f"- {ct.value}: {ct.description()}" for ct in CodeReviewCommentType])
+    # Generate comment types list from enum. Exclude security label because we have static analysis for it.
+    comment_types = "\n".join(
+        [f"- {ct.value}: {ct.description()}" for ct in CodeReviewCommentType if ct != CodeReviewCommentType.SECURITY]
+    )
 
     prompt = PromptTemplate(
         template=template,

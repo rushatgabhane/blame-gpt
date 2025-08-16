@@ -43,6 +43,7 @@ class LocalRepository:
         self.installation_id = installation_id
         self.clone_path: str | None = None
         self.worktree_path: str | None = None
+        self.branch_name: str | None = None
         self.git_config_dir = tempfile.TemporaryDirectory(prefix="gitcfg-")
         self.askpass_script_path = self._create_askpass_script()
 
@@ -61,10 +62,12 @@ class LocalRepository:
 
             self.clone_path = self._safe_temp_path(base_name)
             self.worktree_path = self._safe_temp_path(worktree_name)
+            self.branch_name = local_branch_name
 
             if not self.clone_path or not self.worktree_path:
                 return None
 
+            self._cleanup()
             self._create_or_update_clone(clone_url, local_branch_name)
             self._create_worktree(local_branch_name)
             return self
@@ -129,7 +132,14 @@ fi
 
             refspec = f"pull/{self.pull_request_id}/head:refs/heads/{branch_name}"
             fetch_pr_branch_cmd = ["git", "fetch", "origin", refspec, "--force", "--no-tags"]
-            subprocess.run(fetch_pr_branch_cmd, cwd=self.clone_path, check=True, capture_output=True, env=env)
+            result = subprocess.run(fetch_pr_branch_cmd, cwd=self.clone_path, capture_output=True, env=env)
+
+            if result.returncode != 0:
+                stderr_output = result.stderr.decode() if result.stderr else "No stderr"
+                logger.error(f"Git fetch failed: {stderr_output}")
+                raise subprocess.CalledProcessError(
+                    result.returncode, fetch_pr_branch_cmd, result.stdout, result.stderr
+                )
 
         with contextlib.suppress(OSError):
             os.unlink(lock_file_path)
@@ -178,29 +188,32 @@ fi
         return full_path
 
     def _cleanup(self):
-        with contextlib.suppress(Exception):
-            self.git_config_dir.cleanup()
+        logger.info(f"cleanup up {self.worktree_path}")
 
         if not self.worktree_path or not self.clone_path:
             return
 
-        cleanup_worktree_path = self.worktree_path
-        self.worktree_path = None
+        result = subprocess.run(
+            ["git", "worktree", "remove", self.worktree_path, "--force"],
+            cwd=self.clone_path,
+            capture_output=True,
+            env=self._git_env(),
+        )
+        if result.returncode != 0 and os.path.exists(self.worktree_path):
+            shutil.rmtree(self.worktree_path)
 
-        try:
-            logger.info("cleaning up worktree")
+        if self.branch_name:
             subprocess.run(
-                ["git", "worktree", "remove", cleanup_worktree_path, "--force"],
+                ["git", "branch", "-D", self.branch_name],
                 cwd=self.clone_path,
                 capture_output=True,
+                env=self._git_env(),
             )
-        except Exception:
-            if not os.path.exists(cleanup_worktree_path):
-                return
-            shutil.rmtree(cleanup_worktree_path)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._cleanup()
+        with contextlib.suppress(Exception):
+            self.git_config_dir.cleanup()
 
     def get_gitignore_spec(self) -> pathspec.PathSpec:
         patterns: list[str] = []
