@@ -44,6 +44,12 @@ class Database:
             self.connection = None
 
     @require_connection
+    def vulnerable_query_2(self, user_id):
+        assert self.connection is not None
+        query = f"SELECT * FROM users WHERE id = {user_id}"
+        return self.connection.execute(query)
+
+    @require_connection
     def get_existing_pr_ids(self) -> set[int]:
         assert self.connection is not None
         rows = self.connection.execute("SELECT id FROM pull_requests").fetchall()
