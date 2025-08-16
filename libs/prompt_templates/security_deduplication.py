@@ -52,7 +52,7 @@ Return a filtered list of code review comments that should be kept in a valid JS
             return "[]"
 
         comments_data = [comment.model_dump(mode="json") for comment in comments]
-        return json.dumps(comments_data, indent=2)
+        return json.dumps(comments_data, separators=(",", ":"))
 
     formatted_code_review = format_comments_as_json(code_review_comments)
     formatted_security = format_comments_as_json(security_comments)
