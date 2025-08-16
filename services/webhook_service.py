@@ -23,6 +23,12 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, installa
         comment_body = comment.get("body", "")
         comment_url = comment.get("url", "")
 
+        comment_user = comment.get("user", {})
+        user_type = comment_user.get("type", "").lower()
+        user_login = comment_user.get("login", "").lower()
+        if user_type == "bot" or user_login.endswith("[bot]"):
+            return
+
         issue_or_pr = payload.get("issue") or payload.get("pull_request") or {}
         issue_or_pr_number = issue_or_pr.get("number")
         if not issue_or_pr_number:
@@ -38,7 +44,6 @@ async def process_webhook_comment(payload: dict, core_db: CoreDatabase, installa
         command_name = classify_command(comment_body, subject_type)
 
         # Add user to database
-        comment_user = comment.get("user", {})
         user_id = user_service.add_user_if_not_exists(
             username=comment_user.get("login", ""),
             email=comment_user.get("email") or "",
