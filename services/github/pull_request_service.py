@@ -360,7 +360,7 @@ def create_pull_request_review(
 
         commit = repo_client.get_commit(commit_sha)
         pr.create_review(body=review_body, event="COMMENT", comments=review_comments, commit=commit)  # type: ignore[arg-type]
-        logger.info(f"created PR review for #{pull_request_id} with {len(review_comments)} comments")
+        logger.info(f"created review for #{pull_request_id} with {len(review_comments)} comments")
 
     except Exception as e:
         logger.error(f"failed to create PR review for #{pull_request_id}: {e}")

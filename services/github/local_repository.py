@@ -188,8 +188,6 @@ fi
         return full_path
 
     def _cleanup(self):
-        logger.info(f"cleanup up {self.worktree_path}")
-
         if not self.worktree_path or not self.clone_path:
             return
 

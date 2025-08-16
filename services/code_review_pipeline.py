@@ -102,7 +102,7 @@ async def run(
                 files_reviewed=[diff.filename for diff in pr_diffs if diff.patch],
             )
 
-            logger.info(f"generated review with {len(review.comments)} ")
+            logger.info(f"found {len(review.comments)} review comments")
             logger.info(f"found {len(security_comments)} security comments")
             yield "adding review to PR"
 
