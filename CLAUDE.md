@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Style guide
+
 - Put imports at top of file.
 - Try to keep things in one function unless composable or reusable
 - AVOID using `any` type
@@ -21,6 +22,7 @@ BlameGPT is a FastAPI-based AI tool that helps workflows of engineers that use g
 ## Development Commands
 
 ### Backend (Python FastAPI)
+
 - Start development server: `uvicorn main:app --reload`
 - Run linting: `ruff check`
 - Run type checking: `mypy`
@@ -28,7 +30,10 @@ BlameGPT is a FastAPI-based AI tool that helps workflows of engineers that use g
 - Run database migrations: `./migrate.sh`
 - Run notebooks: `jupyter lab`
 
+MUST: ALWAYS RUN typecheck and lint
+
 ### Frontend (React TypeScript)
+
 - Start development server: `cd frontend && npm run dev`
 - Build production: `cd frontend && npm run build`
 - Run linting: `cd frontend && npm run lint`
@@ -37,6 +42,7 @@ BlameGPT is a FastAPI-based AI tool that helps workflows of engineers that use g
 ## Architecture
 
 ### Backend Structure
+
 ```
 blame-gpt/
 ├── main.py              # FastAPI application entry point with lifespan management
@@ -91,16 +97,19 @@ blame-gpt/
 ### Key Components
 
 **Blame Pipeline (`services/blame_pipeline.py`)**: The core algorithm that analyzes issues and finds culprit PRs using:
+
 - Embedding-based similarity search between issues and PRs
 - LLM-powered ranking of potential culprit PRs
 - Streams results back to GitHub Actions
 
 **Database Management**: Uses SQLite with custom migration system:
+
 - `libs/sqlite/core/` - Main application data (issues, PRs, embeddings, users, usage tracking, code reviews)
 - Migrations auto-apply on startup and can be run manually with `./migrate.sh`
 - Database file stored in `data/` directory: `cache.db`
 
 **GitHub Integration**: Comprehensive GitHub API integration for:
+
 - Issue and PR retrieval
 - Comment posting and management
 - Webhook handling
@@ -108,6 +117,7 @@ blame-gpt/
 - User authentication and management
 
 **LLM Integration**: Centralized LLM handling with:
+
 - Prompt templates in `libs/prompt_templates/` for various use cases
 - Usage tracking and cost calculation
 - Support for multiple LLM models with pricing information
@@ -127,6 +137,7 @@ Store embedding as blob
 ### Key Workflows
 
 **Issue Processing**: When GitHub Action triggers `/api/blame`:
+
 1. User authentication and usage tracking
 2. Issue converted to embedding
 3. Recent PRs retrieved and embedded
@@ -138,17 +149,20 @@ Store embedding as blob
 **Database Migrations**: Pure SQL migrations in `libs/sqlite/core/migrations/` with naming pattern `000001_description.sql`
 
 **User Management**: Comprehensive user tracking system:
+
 - User registration and authentication
 - Usage logging for all API calls
 - Cost tracking per user and command
 - Admin endpoints for user management
 
 **Code Review**: Automated code review functionality:
+
 - Line-by-line code analysis
 - Contextual feedback and suggestions
 - Integration with GitHub PR workflows
 
 **Notification System**: Real-time GitHub notification processing:
+
 - Polls GitHub notifications every 5 seconds
 - Processes issues, PRs, and comments
 - Automated responses and analysis
@@ -156,6 +170,7 @@ Store embedding as blob
 ## Frontend
 
 React TypeScript application built with Vite, located in `frontend/` directory:
+
 - Modern React with TypeScript
 - Vite for fast development and building
 - ESLint configuration for code quality
@@ -165,23 +180,27 @@ React TypeScript application built with Vite, located in `frontend/` directory:
 ## Key Features
 
 ### AI-Powered Blame Detection
+
 - Embedding-based similarity matching between issues and PRs
 - LLM-powered analysis for identifying culprit PRs
 - Contextual understanding of code changes and their impact
 
 ### Code Review Automation
+
 - Line-by-line code analysis with contextual feedback
 - Automated review comments with actionable suggestions
 - Integration with GitHub PR workflows
 - Support for multiple programming languages
 
 ### User Management & Analytics
+
 - GitHub-based user authentication
 - Usage tracking for all API endpoints
 - Cost calculation and monitoring
 - Admin dashboard for user management
 
 ### GitHub Integration
+
 - Real-time notification processing
 - Automated comment posting
 - Webhook handling for various GitHub events
@@ -190,6 +209,7 @@ React TypeScript application built with Vite, located in `frontend/` directory:
 ## Database Schema
 
 ### Core Database (`cache.db`)
+
 - **users**: User profiles and authentication data
 - **usage_logs**: API usage tracking per user
 - **llm_calls**: LLM usage and cost tracking
@@ -200,12 +220,14 @@ React TypeScript application built with Vite, located in `frontend/` directory:
 ## Configuration
 
 ### Environment Variables
+
 - `GITHUB_TOKEN`: GitHub API authentication
 - `OPENAI_API_KEY`: OpenAI API access
 - `ENVIRONMENT`: Deployment environment (development/production)
 - `INTERNAL_AUTH_TOKEN`: Internal API authentication
 
 ### Database Paths
+
 - Core database: `data/cache.db`
 
 ## Deployment
