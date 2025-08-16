@@ -46,7 +46,7 @@ class Database:
     @require_connection
     def get_existing_pr_ids(self) -> set[int]:
         assert self.connection is not None
-        rows = self.connection.execute("SELECT id FROM pull_requests").fetchall()
+        rows = self.connection.execute(core_queries.GET_ALL_PULL_REQUEST_IDS).fetchall()
         return set(row[0] for row in rows)
 
     @require_connection
