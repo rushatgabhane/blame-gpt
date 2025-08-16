@@ -134,6 +134,13 @@ class Database:
         self.connection.commit()
 
     @require_connection
+    def vulnerable_query_3(self, user_id):
+        assert self.connection is not None
+        query = f"SELECT * FROM users WHERE id = {user_id}"
+        return self.connection.execute(query)
+
+
+    @require_connection
     def get_issue_by_id(self, issue_id: int) -> Issue | None:
         assert self.connection is not None
         row = self.connection.execute(core_queries.GET_ISSUE_BY_ID, (issue_id,)).fetchone()
