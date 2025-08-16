@@ -1,7 +1,9 @@
 import asyncio
 import json
 import logging
+import os
 
+from models.enums import SecuritySeverity
 from models.models import PRFileDiff, SecurityFinding
 
 logger = logging.getLogger(__name__)
@@ -19,13 +21,7 @@ async def run_security_analysis(repo_path: str | None, pr_diffs: list[PRFileDiff
     gosec_task = asyncio.create_task(_run_gosec(repo_path, changed_files))
 
     python_findings, go_findings = await asyncio.gather(bandit_task, gosec_task)
-
-    all_findings = python_findings + go_findings
-
-    severity_order = {"high": 0, "medium": 1}
-    all_findings.sort(key=lambda x: severity_order.get(x.severity, 2))
-
-    return all_findings
+    return python_findings + go_findings
 
 
 async def _run_bandit(repo_path: str, changed_files: list[str]) -> list[SecurityFinding]:
@@ -49,28 +45,33 @@ async def _run_bandit(repo_path: str, changed_files: list[str]) -> list[Security
             stderr=asyncio.subprocess.PIPE,
         )
 
-        stdout, stderr = await process.communicate()
+        stdout, _ = await process.communicate()
+        if not stdout:
+            return findings
 
-        if stdout:
-            data = json.loads(stdout.decode())
+        data = json.loads(stdout.decode())
 
-            for issue in data["results"]:
-                severity = issue["issue_severity"].lower()
-                if severity in ["high", "medium"]:
-                    line_range = issue.get("line_range", [issue["line_number"]])
-                    finding = SecurityFinding(
-                        file_path=issue["filename"],
-                        line=max(line_range),
-                        start_line=min(line_range) if len(line_range) > 1 else None,
-                        severity=severity,
-                        rule_id=issue["test_id"],
-                        description=issue["issue_text"],
-                        tool="bandit",
-                    )
-                    findings.append(finding)
+        for issue in data["results"]:
+            severity = SecuritySeverity(issue["issue_severity"].lower())
+            if severity == SecuritySeverity.LOW:
+                continue
+
+            line_range = issue.get("line_range", [issue["line_number"]])
+            file_path = issue["filename"]
+            relative_file_path = file_path[2:] if file_path.startswith("./") else file_path
+            finding = SecurityFinding(
+                file_path=relative_file_path,
+                line=max(line_range),
+                start_line=min(line_range) if len(line_range) > 1 else None,
+                severity=severity,
+                rule_id=issue["test_id"],
+                description=issue["issue_text"],
+                tool="bandit",
+            )
+            findings.append(finding)
 
     except Exception as e:
-        logger.warning(f"Bandit analysis failed: {e}")
+        logger.error(f"python bandit security analysis failed: {e}")
 
     return findings
 
@@ -84,38 +85,56 @@ async def _run_gosec(repo_path: str, changed_files: list[str]) -> list[SecurityF
         return findings
 
     try:
+        gosec = os.path.abspath("./bin/gosec")
+
+        # Run gosec on the entire repo and filter results to changed files
         process = await asyncio.create_subprocess_exec(
-            "gosec",
+            gosec,
             "-fmt=json",
             "-severity=medium",
+            "-exclude-generated",
+            "-tests",
             "./...",
             cwd=repo_path,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
 
-        stdout, stderr = await process.communicate()
+        stdout, _ = await process.communicate()
+        if not stdout:
+            return findings
 
-        if stdout:
-            data = json.loads(stdout.decode())
+        data = json.loads(stdout.decode())
+        for issue in data.get("Issues", []):
+            severity = SecuritySeverity(issue["severity"].lower())
+            if severity == SecuritySeverity.LOW:
+                continue
 
-            for issue in data["Issues"]:
-                if any(issue["file"].endswith(f) for f in go_files):
-                    severity = issue["severity"].lower()
-                    if severity in ["high", "medium"]:
-                        line_num = int(issue["line"])
-                        finding = SecurityFinding(
-                            file_path=issue["file"],
-                            line=line_num,
-                            start_line=None,
-                            severity=severity,
-                            rule_id=issue["rule_id"],
-                            description=issue["details"],
-                            tool="gosec",
-                        )
-                        findings.append(finding)
+            file_path = issue["file"]
+            relative_file_path = file_path[len(repo_path) :].lstrip("/")
+
+            matched_file = None
+            for go_file in go_files:
+                if relative_file_path.endswith(go_file):
+                    matched_file = go_file
+                    break
+
+            if not matched_file:
+                continue
+
+            line_num = int(issue["line"])
+            finding = SecurityFinding(
+                file_path=matched_file,
+                line=line_num,
+                start_line=None,
+                severity=severity,
+                rule_id=issue["rule_id"],
+                description=issue["details"],
+                tool="gosec",
+            )
+            findings.append(finding)
 
     except Exception as e:
-        logger.warning(f"Gosec analysis failed: {e}")
+        logger.error(f"go security analysis failed: {e}")
 
     return findings
