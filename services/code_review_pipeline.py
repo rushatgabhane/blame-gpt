@@ -60,11 +60,13 @@ async def run(
                 pr_number=pull_request_id,
                 title=pull_request.title,
                 description=pull_request.explanation,
-                file_diffs=formatted_diffs,
+                file_diffs=formatted_diffs.diff,
             )
 
             llm_task = asyncio.create_task(llm.ainvoke(prompt))
-            security_task = asyncio.create_task(run_security_analysis(local_repo.worktree_path, pr_diffs))
+            security_task = asyncio.create_task(
+                run_security_analysis(local_repo.worktree_path, pr_diffs, formatted_diffs.file_line_number_changed_map)
+            )
 
             while not llm_task.done() or not security_task.done():
                 await asyncio.sleep(10)
