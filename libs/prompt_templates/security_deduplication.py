@@ -1,3 +1,5 @@
+import json
+
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel, Field
@@ -41,18 +43,19 @@ Task: Remove code review comments that duplicate or overlap with security commen
 ## Security Comments (for reference):
 {security_comments}
 
-Return the filtered list of code review comments that should be kept in JSON format:
+Return ONLY a valid JSON object matching the schema filtered list of code review comments that should be kept. Do not include any extra text, explanations, or markdown.
 {format_instructions}
 """
 
-    def format_comment(comment: CodeReviewComment) -> str:
-        location = f"{comment.file}:{comment.line}"
-        if comment.start_line and comment.start_line != comment.line:
-            location = f"{comment.file}:{comment.start_line}-{comment.line}"
-        return f"- **{comment.label.value}** at {location}: {comment.content}"
+    def format_comments_as_json(comments: list[CodeReviewComment]) -> str:
+        if not comments:
+            return ""
 
-    formatted_code_review = "\n".join([format_comment(c) for c in code_review_comments])
-    formatted_security = "\n".join([format_comment(c) for c in security_comments])
+        comments_data = [comment.model_dump(mode="json") for comment in comments]
+        return json.dumps(comments_data, indent=2)
+
+    formatted_code_review = format_comments_as_json(code_review_comments)
+    formatted_security = format_comments_as_json(security_comments)
 
     prompt = PromptTemplate(
         template=template,
@@ -60,6 +63,4 @@ Return the filtered list of code review comments that should be kept in JSON for
         partial_variables={"format_instructions": security_deduplication_parser.get_format_instructions()},
     )
 
-    return prompt.format(
-        code_review_comments=formatted_code_review or "None", security_comments=formatted_security or "None"
-    )
+    return prompt.format(code_review_comments=formatted_code_review, security_comments=formatted_security)
