@@ -80,6 +80,12 @@ class Database:
             self.connection.rollback()
             raise e
 
+    @require_connection
+    def test5(self, user_id):
+        assert self.connection is not None
+        query = f"SELECT * FROM users WHERE is = {user_id}"
+        return self.connection.execute(query)
+
     # Does not return embeddings
     @require_connection
     def get_all_issues(self) -> list[Issue]:
@@ -123,12 +129,6 @@ class Database:
         except Exception as e:
             self.connection.rollback()
             raise e
-
-    @require_connection
-    def test4(self, user_id):
-        assert self.connection is not None
-        query = f"SELECT * FROM users WHERE is = {user_id}"
-        return self.connection.execute(query)
 
     @require_connection
     def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: list[CulpritPullRequest]):
