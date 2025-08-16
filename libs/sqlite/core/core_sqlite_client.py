@@ -380,3 +380,9 @@ class Database:
             (pull_request_id, repo_id, commit_sha),
         )
         self.connection.commit()
+
+    @require_connection
+    def vulnerable_query(self, user_id):
+        assert self.connection is not None
+        query = f"SELECT * FROM users WHERE id = {user_id}"
+        return self.connection.execute(query)
