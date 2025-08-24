@@ -191,16 +191,17 @@ fi
         if not self.worktree_path or not self.clone_path:
             return
 
-        result = subprocess.run(
-            ["git", "worktree", "remove", self.worktree_path, "--force"],
-            cwd=self.clone_path,
-            capture_output=True,
-            env=self._git_env(),
-        )
-        if result.returncode != 0 and os.path.exists(self.worktree_path):
-            shutil.rmtree(self.worktree_path)
+        if os.path.exists(self.clone_path) and os.path.exists(self.worktree_path):
+            result = subprocess.run(
+                ["git", "worktree", "remove", self.worktree_path, "--force"],
+                cwd=self.clone_path,
+                capture_output=True,
+                env=self._git_env(),
+            )
+            if result.returncode != 0 and os.path.exists(self.worktree_path):
+                shutil.rmtree(self.worktree_path)
 
-        if self.branch_name:
+        if self.branch_name and os.path.exists(self.clone_path):
             subprocess.run(
                 ["git", "branch", "-D", self.branch_name],
                 cwd=self.clone_path,
