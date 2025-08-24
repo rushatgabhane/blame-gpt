@@ -7,7 +7,7 @@ from models.models import LineByLineCodeReview
 line_by_line_review_parser = PydanticOutputParser(pydantic_object=LineByLineCodeReview)
 
 
-def code_review_prompt(pr_number: int, title: str, description: str, file_diffs: str) -> str:
+def code_review_prompt(pr_number: int, title: str, description: str, file_diffs: str, custom_context: str = "") -> str:
     """Format the line-by-line code review prompt"""
 
     template = """
@@ -28,6 +28,8 @@ You are a senior software engineer reviewing your coworker's pull request. Think
 - MUST NOT make any assumptions about code you don't have in your context
 - Be selective - avoid commenting on minor style preferences or trivial issues
 - Add comment only on lines with "+" additions
+
+{custom_context_section}
 
 ### Comment Types
 Use conventional comments format (https://conventionalcomments.org/):
@@ -72,12 +74,22 @@ Return the result in this JSON format:
         [f"- {ct.value}: {ct.description()}" for ct in CodeReviewCommentType if ct != CodeReviewCommentType.SECURITY]
     )
 
+    # Add custom context section if provided
+    custom_context_section = ""
+    if custom_context.strip():
+        custom_context_section = f"""### Custom Context and Learnings
+The following are project-specific guidelines and learnings from BLAMEGPT.md:
+
+{custom_context}
+"""
+
     prompt = PromptTemplate(
         template=template,
         input_variables=["pr_number", "pr_title", "pr_description", "file_diffs"],
         partial_variables={
             "format_instructions": line_by_line_review_parser.get_format_instructions(),
             "comment_types": comment_types,
+            "custom_context_section": custom_context_section,
         },
     )
 
