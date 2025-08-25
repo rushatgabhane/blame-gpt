@@ -33,7 +33,7 @@ jobs:
           remote-organization-name: 'Blame-GPT'
           remote-repository-name: 'CLA'
           path-to-signatures: 'signatures/version1/cla.json'
-          #custom-notsigned-prcomment: 'Thank you for your submission! We really appreciate it. Like many open source projects, we ask that you sign our [Contributor License Agreement](https://github.com/Blame-GPT/CLA) before we can accept your contribution.'
+          custom-notsigned-prcomment: 'Thank you for your submission! We really appreciate it. Like many projects, we ask that you sign our [Contributor License Agreement](https://github.com/rushatgabhane/blame-gpt/blob/main/CLA.md) before we can accept your contribution.'
           #custom-pr-sign-comment: 'I have read the CLA Document and I hereby sign the CLA'
           #custom-allsigned-prcomment: 'All Contributors have signed the CLA.'
           #lock-pullrequest-aftermerge: false - if you don't want this bot to automatically lock the pull request after merging (default - true)
