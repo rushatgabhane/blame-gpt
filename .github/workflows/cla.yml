@@ -22,7 +22,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # the below token should have repo scope and must be manually added by you in the repository's secret
           # This token is required only if you want to store the signatures in a different repository (optional)
-          # PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_PERSONAL_ACCESS_TOKEN }}
         with:
           path-to-document: 'https://github.com/Blame-GPT/CLA/blob/main/CLA.json' # e.g. a CLA or a DCO document
           # branch should not be protected
@@ -30,9 +30,9 @@ jobs:
           allowlist: 'dependabot[bot],renovate[bot]'
 
           # the followings are the optional inputs - If the optional inputs are not given, then default values will be taken
-          #remote-organization-name: enter the remote organization name where the signatures should be stored (Default is storing the signatures in the same repository)
-          #remote-repository-name: enter the remote repository name where the signatures should be stored (Default is storing the signatures in the same repository)
-          #path-to-signatures: 'signatures/version1/cla.json'
+          remote-organization-name: 'Blame-GPT'
+          remote-repository-name: 'CLA'
+          path-to-signatures: 'signatures/version1/cla.json'
           #custom-notsigned-prcomment: 'Thank you for your submission! We really appreciate it. Like many open source projects, we ask that you sign our [Contributor License Agreement](https://github.com/Blame-GPT/CLA) before we can accept your contribution.'
           #custom-pr-sign-comment: 'I have read the CLA Document and I hereby sign the CLA'
           #custom-allsigned-prcomment: 'All Contributors have signed the CLA.'
