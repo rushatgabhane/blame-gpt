@@ -24,7 +24,7 @@ jobs:
           # This token is required only if you want to store the signatures in a different repository (optional)
           PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_PERSONAL_ACCESS_TOKEN }}
         with:
-          path-to-document: 'https://github.com/Blame-GPT/CLA/blob/main/CLA.json' # e.g. a CLA or a DCO document
+          path-to-document: 'https://github.com/rushatgabhane/blame-gpt/blob/main/CLA.md' # e.g. a CLA or a DCO document
           # branch should not be protected
           branch: 'main'
           allowlist: 'dependabot[bot],renovate[bot]'
