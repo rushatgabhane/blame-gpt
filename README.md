@@ -1,6 +1,8 @@
 # [Do things that don't scale](https://www.paulgraham.com/ds.html). 
 Focus on manual, labor intensive tasks in the early stages, even though they wouldn't be sustainable as we grow. Prioritize building a strong foundation through direct customer interaction (TB, EXFY, DB), even if it's **not scalable** in the long run.
 
+# Current goal
+Make financial firms like TB & DB trust the code review bot so they use it on prem.
 
 # BlameGPT
 BlameGPT finds the PR causing a production issue so you can go back to shipping.
