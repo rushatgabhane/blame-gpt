@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Themeable Colors - Updated to Purple Theme */
+    --background: 210 11% 7%; /* #0f1211 */
+    --foreground: 160 14% 93%; /* #e7eceb */
+
+    --muted: 240 2% 16%; /* #27272a */
+    --muted-foreground: 160 14% 93% / 0.7; /* rgba(231, 236, 235, 0.7) */
+    --muted-foreground-light: 160 14% 93% / 0.5; /* rgba(231, 236, 235, 0.5) */
+    --muted-foreground-dark: 160 14% 93% / 0.6; /* rgba(231, 236, 235, 0.6) */
+
+    --card: 220 17% 98% / 0.01;
+    --card-foreground: 160 14% 93%;
+
+    --popover: 210 11% 7%;
+    --popover-foreground: 160 14% 93%;
+
+    /* Updated primary colors to use #6366f1 purple instead of green */
+    --primary: 243 75% 59%; /* #6366f1 */
+    --primary-foreground: 210 40% 98%; /* #f8fafc */
+    --primary-dark: 243 75% 50%; /* Darker shade of #6366f1 */
+    --primary-light: 243 75% 80%; /* Lighter shade for gradients */
+
+    /* Secondary Accent Colors (for buttons, etc.) */
+    --secondary: 160 14% 93%; /* #e7eceb */
+    --secondary-foreground: 165 14% 8%; /* #141a18 */
+
+    --accent: 240 2% 25%; /* #3f3f42 */
+    --accent-foreground: 240 2% 96%; /* #f4f4f5 */
+
+    --border: 240 100% 100% / 0.08; /* rgba(255, 255, 255, 0.08) */
+    --border-light: 210 17% 6% / 0.1; /* rgba(16,24,40,0.1) */
+    --border-dark: 210 17% 6% / 0.05; /* rgba(16,24,40,0.05) */
+
+    --ring: 243 75% 59%; /* #6366f1 */
+
+    --radius: 0.5rem;
+  }
+}
+
+@keyframes breathe {
+  0%, 100% { 
+    transform: scale(1) rotate(0deg);
+    opacity: 0.7;
+    filter: blur(100px) contrast(1.5) saturate(1.2);
+  }
+  50% { 
+    transform: scale(1.03) rotate(1deg);
+    opacity: 0.6;
+    filter: blur(105px) contrast(1.6) saturate(1.25);
+  }
+}
+
+@keyframes drift {
+  0%, 100% { 
+    transform: translateX(0px) translateY(0px);
+  }
+  25% { 
+    transform: translateX(60px) translateY(-80px);
+  }
+  50% { 
+    transform: translateX(-50px) translateY(70px);
+  }
+  75% { 
+    transform: translateX(75px) translateY(40px);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+}
