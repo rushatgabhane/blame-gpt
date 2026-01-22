@@ -29,35 +29,6 @@ See this [document](https://docs.google.com/document/d/10Dh3L7Eir5FpBl4IhhwVS-__
 ### Notebooks
 To run the notebooks run `jupyter lab`.
 
-### Project Structure
-
-```
-blame-gpt/
-├── controllers/          # FastAPI route handlers
-│   ├── webhook_controller.py
-│   ├── user_controller.py
-├── frontend/            # React TypeScript frontend
-│   ├── src/
-│   ├── public/
-│   └── package.json
-├── libs/                # Shared libraries and utilities
-│   ├── github.py
-│   ├── llm.py
-│   ├── prompt_templates/
-│   └── sqlite/          # Database clients
-├── middlewares/
-├── models/              # Pydantic data models
-├── services/            # Business logic layer
-│   ├── code_review_pipeline.py
-│   ├── blame_pipeline.py
-│   ├── github/
-|       ├──notification_service.py
-|       ├──pull_request_service.py
-|       ├──issue_service.py
-├── main.py              # FastAPI application entry point
-└── requirements.txt
-```
-
 ### Database Migrations
 We use Yoyo-migrations to manage database schema changes. 
 - All migrations are written in pure SQL.
