@@ -103,6 +103,7 @@ async def _run_webhook_command(
         )
         async for step in blame_pipeline.run(
             issue_id=issue_or_pr_number,
+            repo_id=repo_id,
             repo_client=repo_client,
             db=core_db,
             usage_log_id=usage_log_id,

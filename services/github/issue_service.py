@@ -10,7 +10,7 @@ from models.models import Issue
 logger = logging.getLogger(__name__)
 
 
-async def add_issue(issue_id: int, repo_client: Repository, db: Database) -> Issue:
+async def add_issue(issue_id: int, repo_id: int, repo_client: Repository, db: Database) -> Issue:
     try:
         gh_issue = repo_client.get_issue(number=issue_id)
         labels = [label.name for label in gh_issue.labels] or []
@@ -26,7 +26,7 @@ async def add_issue(issue_id: int, repo_client: Repository, db: Database) -> Iss
             labels=labels,
             embedding=issue_embedding,
         )
-        db.add_issue(issue)
+        db.add_issue(issue, repo_id)
         return issue
     except Exception as e:
         logger.error(f"error fetching issue #{issue_id}: {e}")
@@ -56,12 +56,12 @@ def get_all_issues(db: Database) -> list[Issue]:
     return db.get_all_issues()
 
 
-async def add_issue_if_not_exists(issue_id: int, repo_client: Repository, db: Database) -> Issue | None:
+async def add_issue_if_not_exists(issue_id: int, repo_id: int, repo_client: Repository, db: Database) -> Issue | None:
     try:
-        existing_issue = db.get_issue_by_id(issue_id)
+        existing_issue = db.get_issue_by_id(issue_id, repo_id)
         if existing_issue:
             return existing_issue
-        return await add_issue(issue_id, repo_client, db)
+        return await add_issue(issue_id, repo_id, repo_client, db)
     except Exception as e:
         logger.error(f"error fetching issue #{issue_id} from db: {e}")
         raise

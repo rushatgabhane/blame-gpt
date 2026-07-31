@@ -42,6 +42,69 @@ Naming convention
 000003_add_index_on_issues.sql
 ```
 
+## Deployment
+
+Deploy the backend once, then connect it to GitHub, Bitbucket, or both:
+
+- **[Option A: GitHub](#option-a-github)** - blame + code review, via a GitHub App
+- **[Option B: Atlassian Bitbucket](#option-b-atlassian-bitbucket--backend)** - code review only, via an Atlassian Forge app
+
+### Deploy the backend (both options)
+
+Clone the repo, copy the env file, and start the server:
+
+```bash
+git clone https://github.com/rushatgabhane/blame-gpt.git
+cd blame-gpt
+cp .env.example .env   # set the keys for your platform, see below
+docker compose up
+```
+
+Common `.env` keys:
+
+- `OPENAI_API_KEY` - OpenAI / Claude API key
+- `ENVIRONMENT=production` - so BlameGPT posts real comments
+
+The server must be reachable over HTTPS (put nginx/Caddy/Cloudflare in front of port 8000).
+
+### Option A: GitHub
+
+1. **Create a GitHub App**
+   - Go to **GitHub Settings → Developer settings → GitHub Apps → New GitHub App**
+   - Set the webhook URL to `https://<your-server>/api/webhook/github`, and set a webhook secret
+   - Permissions: read/write access to **Issues**, **Pull requests**, and **Contents**
+   - Subscribe to events: **Issues**, **Pull request**, **Issue comment**, **Pull request review comment**
+   - Generate a private key (`.pem`) and note the **App ID**
+2. **Configure `.env`**
+   - `GITHUB_APP_ID` - App ID from step 1
+   - `GITHUB_APP_PRIVATE_KEY` - the private key in PEM format
+   - `GITHUB_WEBHOOK_SECRET` - webhook secret from step 1
+3. **Select repositories** - install the GitHub App on your account or organization and choose which repos BlameGPT should monitor. You can change this anytime from the app's **Install App** settings page.
+
+### Option B: Atlassian Bitbucket + backend
+
+Code review only - the blame pipeline is GitHub-only. Bitbucket events are delivered by a small [Atlassian Forge](https://developer.atlassian.com/platform/forge/) app (in [`forge/`](forge/)) that forwards pull request comments to the backend. Forge itself cannot host the backend (JS-only runtime, 25s invocation limit).
+
+1. **Create an access token** - a [workspace or repository access token](https://support.atlassian.com/bitbucket-cloud/docs/access-tokens/) with `repository:read` and `pullrequest:write` scopes
+2. **Configure `.env`**
+   - `BITBUCKET_ACCESS_TOKEN` - token from step 1
+   - `BITBUCKET_WEBHOOK_SECRET` - a shared secret you generate; must match the Forge app's `BLAMEGPT_WEBHOOK_SECRET`
+3. **Deploy the Forge app**
+   ```bash
+   npm install -g @forge/cli
+   cd forge
+   forge login
+   forge register                # fills in app.id in manifest.yml
+   # edit manifest.yml: replace blamegpt.example.com with your backend domain
+   forge variables set --encrypt BLAMEGPT_WEBHOOK_SECRET <shared_secret>
+   forge variables set BLAMEGPT_BACKEND_URL https://<your-server>
+   forge deploy
+   forge install --product bitbucket
+   ```
+4. **Select repositories** - installing the Forge app into your Bitbucket workspace covers all its repos; BlameGPT only acts on PRs where `@blamegpt` is mentioned.
+
+Mention `@blamegpt` in a PR comment to trigger a review. Reviews are incremental - only commits since the last review are reviewed; say `@blamegpt full review` to re-review the whole PR. See [`forge/README.md`](forge/README.md) for details.
+
 ## Flows
 ### Code review
 

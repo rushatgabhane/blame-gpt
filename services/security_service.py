@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 
 from models.enums import SecuritySeverity
 from models.models import PRFileDiff, SecurityFinding
@@ -19,11 +18,7 @@ async def run_security_analysis(
     if not changed_files:
         return []
 
-    bandit_task = asyncio.create_task(_run_bandit(repo_path, changed_files))
-    gosec_task = asyncio.create_task(_run_gosec(repo_path, changed_files))
-
-    python_findings, go_findings = await asyncio.gather(bandit_task, gosec_task)
-    all_findings = python_findings + go_findings
+    all_findings = await _run_bandit(repo_path, changed_files)
 
     filtered_findings = []
     for finding in all_findings:
@@ -81,69 +76,5 @@ async def _run_bandit(repo_path: str, changed_files: list[str]) -> list[Security
 
     except Exception as e:
         logger.error(f"python bandit security analysis failed: {e}")
-
-    return findings
-
-
-async def _run_gosec(repo_path: str, changed_files: list[str]) -> list[SecurityFinding]:
-    """Run Gosec security analysis on changed Go files."""
-    findings: list[SecurityFinding] = []
-
-    go_files = [f for f in changed_files if f.endswith(".go")]
-    if not go_files:
-        return findings
-
-    try:
-        gosec = os.path.abspath("./bin/gosec")
-
-        # Run gosec on the entire repo and filter results to changed files
-        process = await asyncio.create_subprocess_exec(
-            gosec,
-            "-fmt=json",
-            "-severity=medium",
-            "-exclude-generated",
-            "-tests",
-            "./...",
-            cwd=repo_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-
-        stdout, _ = await process.communicate()
-        if not stdout:
-            return findings
-
-        data = json.loads(stdout.decode())
-        for issue in data.get("Issues", []):
-            severity = SecuritySeverity(issue["severity"].lower())
-            if severity == SecuritySeverity.LOW:
-                continue
-
-            file_path = issue["file"]
-            relative_file_path = file_path[len(repo_path) :].lstrip("/")
-
-            matched_file = None
-            for go_file in go_files:
-                if relative_file_path.endswith(go_file):
-                    matched_file = go_file
-                    break
-
-            if not matched_file:
-                continue
-
-            line_num = int(issue["line"])
-            finding = SecurityFinding(
-                file_path=matched_file,
-                line=line_num,
-                start_line=None,
-                severity=severity,
-                rule_id=issue["rule_id"],
-                description=issue["details"],
-                tool="gosec",
-            )
-            findings.append(finding)
-
-    except Exception as e:
-        logger.error(f"go security analysis failed: {e}")
 
     return findings

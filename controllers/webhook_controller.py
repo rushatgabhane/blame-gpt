@@ -24,13 +24,13 @@ async def github_webhook(
     webhook_secret = SecretStr(os.getenv("GITHUB_WEBHOOK_SECRET") or "")
 
     if not helpers.is_valid_signature(x_hub_signature_256, webhook_secret, body):
-        return Response(content="Invalid signature")
+        return Response(content="Invalid signature", status_code=401)
 
     try:
         payload = json.loads(body)
     except json.JSONDecodeError as e:
         logger.error(f"failed to parse webhook payload: {e}")
-        return Response(content="Invalid JSON payload")
+        return Response(content="Invalid JSON payload", status_code=400)
 
     if x_github_event not in ["issue_comment"]:
         return Response(content="Unsupported event type")

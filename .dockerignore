@@ -1,0 +1,14 @@
+.git
+.env
+*.pem
+venv
+data
+bin
+repos
+frontend
+forge
+notebooks
+__pycache__
+*.pyc
+.mypy_cache
+.ruff_cache

@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      # sqlite db + WAL files live in data/, created on first boot
+      - ./data:/app/data
+      # mounted instead of env_file so python-dotenv parses the
+      # multi-line GITHUB_APP_PRIVATE_KEY correctly
+      - ./.env:/app/.env:ro
+    restart: unless-stopped

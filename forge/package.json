@@ -1,0 +1,7 @@
+{
+  "name": "blamegpt-forge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Forge app that forwards Bitbucket PR comment events to the BlameGPT backend",
+  "type": "module"
+}

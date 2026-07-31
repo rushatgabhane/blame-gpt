@@ -127,7 +127,7 @@ class SecurityFinding(BaseModel):
     severity: SecuritySeverity = Field(description="Severity level")
     rule_id: str = Field(description="Security rule ID from the tool")
     description: str = Field(description="Description of the security issue")
-    tool: str = Field(description="Security tool that found the issue: 'bandit', 'gosec'")
+    tool: str = Field(description="Security tool that found the issue: 'bandit'")
 
 
 class UserUsageLog(BaseModel):

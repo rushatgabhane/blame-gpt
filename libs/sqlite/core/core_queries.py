@@ -1,37 +1,37 @@
 INSERT_PULL_REQUEST = """
-INSERT OR REPLACE INTO pull_requests (id, title, test, explanation, files, code_diff_summary, linked_issue_ids)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO pull_requests (id, repo_id, title, test, explanation, files, code_diff_summary, linked_issue_ids)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 """
 
 GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING = """
 SELECT pr.id, pr.title, pr.test, pr.explanation, pr.files, pr.code_diff_summary, pr.linked_issue_ids, pe.embedding
 FROM pull_requests pr
-LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
-WHERE pr.id = ?;
+LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id AND pe.repo_id = pr.repo_id
+WHERE pr.id = ? AND pr.repo_id = ?;
 """
 
 INSERT_ISSUE = """
-INSERT OR REPLACE INTO issues (id, title, steps, raw_body, labels)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO issues (id, repo_id, title, steps, raw_body, labels)
+VALUES (?, ?, ?, ?, ?, ?);
 """
 
 GET_ISSUE_BY_ID = """
 SELECT id, title, steps, raw_body, labels, is_processed, culprit_pull_requests, actual_pull_request_id
 FROM issues
-WHERE id = ?;
+WHERE id = ? AND repo_id = ?;
 """
 
 GET_ALL_ISSUES = """
-SELECT * FROM issues;
+SELECT id, title, steps, raw_body, labels, is_processed, culprit_pull_requests FROM issues;
 """
 
 GET_ALL_PULL_REQUEST_IDS = """
-SELECT id FROM pull_requests
+SELECT id FROM pull_requests WHERE repo_id = ?
 """
 
 INSERT_ISSUE_PULL_REQUEST = """
-INSERT OR IGNORE INTO issue_pull_request (issue_id, pull_request_id)
-VALUES (?, ?);
+INSERT OR IGNORE INTO issue_pull_request (issue_id, pull_request_id, repo_id)
+VALUES (?, ?, ?);
 """
 
 GET_ALL_ISSUE_PULL_REQUESTS = """
@@ -41,45 +41,45 @@ SELECT issue_id, pull_request_id, score from issue_pull_request;
 GET_PULL_REQUESTS_BY_ISSUE_ID = """
 SELECT pr.id, pr.title, pr.test, pr.explanation, pr.files, pr.code_diff_summary, pe.embedding
 FROM pull_requests pr
-JOIN issue_pull_request ipr ON ipr.pull_request_id = pr.id
-LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id
-WHERE ipr.issue_id = ?;
+JOIN issue_pull_request ipr ON ipr.pull_request_id = pr.id AND ipr.repo_id = pr.repo_id
+LEFT JOIN pull_request_embeddings pe ON pe.pull_request_id = pr.id AND pe.repo_id = pr.repo_id
+WHERE ipr.issue_id = ? AND ipr.repo_id = ?;
 """
 
 UPDATE_ISSUE_PROCESSED_AND_CULPRITS = """
 UPDATE issues
 SET is_processed = ?, culprit_pull_requests = ?
-WHERE id = ?;
+WHERE id = ? AND repo_id = ?;
 """
 
 GET_ISSUE_IS_PROCESSED = """
-SELECT is_processed FROM issues WHERE id = ?
+SELECT is_processed FROM issues WHERE id = ? AND repo_id = ?
 """
 
 GET_PULL_REQUEST_EMBEDDING = """
-SELECT embedding FROM pull_request_embeddings WHERE pull_request_id = ?;
+SELECT embedding FROM pull_request_embeddings WHERE pull_request_id = ? AND repo_id = ?;
 """
 
 INSERT_PULL_REQUEST_EMBEDDING = """
-INSERT OR REPLACE INTO pull_request_embeddings (pull_request_id, embedding)
-VALUES (?, ?);
+INSERT OR REPLACE INTO pull_request_embeddings (pull_request_id, repo_id, embedding)
+VALUES (?, ?, ?);
 """
 
 INSERT_ISSUE_EMBEDDING = """
-INSERT OR REPLACE INTO issue_embeddings (issue_id, embedding)
-VALUES (?, ?);
+INSERT OR REPLACE INTO issue_embeddings (issue_id, repo_id, embedding)
+VALUES (?, ?, ?);
 """
 
 UPDATE_ISSUE_PULL_REQUEST_SCORE = """
 UPDATE issue_pull_request
 SET score = ?
-WHERE issue_id = ? AND pull_request_id = ?;
+WHERE issue_id = ? AND pull_request_id = ? AND repo_id = ?;
 """
 
-UPADTE_ISSUE_ACTUAL_PULL_REQUEST = """
+UPDATE_ISSUE_ACTUAL_PULL_REQUEST = """
 UPDATE issues
 SET actual_pull_request_id = ?
-WHERE id = ?;
+WHERE id = ? AND repo_id = ?;
 """
 
 
@@ -131,7 +131,7 @@ VALUES (?, ?, ?, ?);
 
 
 GET_PULL_REQUEST_REVIEW_SHA = """
-SELECT last_reviewed_commit_sha FROM pull_request_reviews 
+SELECT last_reviewed_commit_sha FROM pull_request_reviews
 WHERE pull_request_id = ? AND repo_id = ?;
 """
 

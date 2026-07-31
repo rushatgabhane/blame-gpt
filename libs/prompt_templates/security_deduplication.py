@@ -26,7 +26,7 @@ You are filtering code review comments to avoid duplicates with security tool fi
 
 Given:
 1. **Code Review Comments** (from AI code review)
-2. **Security Comments** (from automated security tools like Bandit/Gosec)
+2. **Security Comments** (from automated security tools like Bandit)
 
 Task: Remove code review comments that duplicate or overlap with security comments.
 

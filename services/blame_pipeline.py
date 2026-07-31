@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 async def run(
     issue_id: int,
+    repo_id: int,
     repo_client: Repository,
     db: Database,
     usage_log_id: int | None = None,
@@ -27,14 +28,14 @@ async def run(
     try:
         yield "starting the blame pipeline..."
 
-        is_processed = db.get_issue_processed_status(issue_id)
+        is_processed = db.get_issue_processed_status(issue_id, repo_id)
         if is_processed:
             yield "this issue is already processed. Skipping blame pipeline."
             logger.info(f"{issue_id}: already processed.")
             comment_service.edit_comment(thinking_comment, "This issue is already processed. Skipping blame.")
             return
 
-        issue = await issue_service.add_issue(issue_id, repo_client, db)
+        issue = await issue_service.add_issue(issue_id, repo_id, repo_client, db)
         logger.info(f"{issue_id}: added to database")
 
         if constants.LABELS["DeployBlockerCash"] not in issue.labels:
@@ -52,6 +53,7 @@ async def run(
                 base="production",
                 head="staging",
                 issue_id=issue_id,
+                repo_id=repo_id,
                 repo_client=repo_client,
                 db=db,
                 usage_log_id=usage_log_id,
@@ -65,7 +67,7 @@ async def run(
 
         await task_add_pulls
 
-        pull_requests = db.get_pull_requests_for_issue(issue_id)
+        pull_requests = db.get_pull_requests_for_issue(issue_id, repo_id)
         if not pull_requests or len(pull_requests) == 0:
             logger.info(f"{issue_id}: no pull requests found to process")
             yield "no pull requests were found to process."
@@ -77,7 +79,7 @@ async def run(
         pull_requests_without_cp = [pr for pr in pull_requests if "cp staging" not in pr.title.lower()]
         logger.info(f"{issue_id}: found {len(pull_requests_without_cp)} pull requests without 'cp staging'")
 
-        prs_with_scores = _add_pull_request_semantic_score(issue, pull_requests_without_cp, db=db)
+        prs_with_scores = _add_pull_request_semantic_score(issue, repo_id, pull_requests_without_cp, db=db)
         if not prs_with_scores or len(prs_with_scores) == 0:
             logger.info(f"{issue_id}: no pull requests with semantic scores found")
             yield "no culprit pull requests were found."
@@ -128,7 +130,7 @@ async def run(
 
         yield "Added a comment on the issue."
 
-        db.update_issue_processed_and_result(issue.id, True, culprit_pull_requests)
+        db.update_issue_processed_and_result(issue.id, repo_id, True, culprit_pull_requests)
         logger.info(f"{issue_id}: blame pipeline completed successfully")
         yield "Celebrating! Blame pipeline completed."
     except Exception as e:
@@ -154,7 +156,7 @@ async def _culprit_task(page, culprits_to_find, issue, prs_with_scores, db, usag
 
 
 def _add_pull_request_semantic_score(
-    issue: Issue, pull_requests: list[PullRequest], db: Database
+    issue: Issue, repo_id: int, pull_requests: list[PullRequest], db: Database
 ) -> list[PullRequestWithScore]:
     scored_prs: list[PullRequestWithScore] = [
         PullRequestWithScore(pull_request=pr, score=cosine_similarity(issue.embedding, pr.embedding))
@@ -162,7 +164,9 @@ def _add_pull_request_semantic_score(
     ]
 
     for _, pr in enumerate(scored_prs):
-        db.update_issue_pull_request_score(issue_id=issue.id, pull_request_id=pr.pull_request.id, score=pr.score)
+        db.update_issue_pull_request_score(
+            issue_id=issue.id, pull_request_id=pr.pull_request.id, repo_id=repo_id, score=pr.score
+        )
 
     return scored_prs if scored_prs else []
 

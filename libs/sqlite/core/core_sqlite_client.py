@@ -1,10 +1,11 @@
 import json
 import os
-import pickle
 import sqlite3
+import threading
 from functools import wraps
 from pathlib import Path
 
+import numpy as np
 from yoyo import get_backend, read_migrations
 
 from libs.sqlite.core import core_queries
@@ -12,12 +13,27 @@ from models.enums import CommandName
 from models.models import CulpritPullRequest, Issue, LLMCall, PullRequest, UsageLog, User, UserUsageLog
 
 
+def _encode_embedding(embedding: list[float] | None) -> bytes | None:
+    if embedding is None:
+        return None
+    return np.asarray(embedding, dtype=np.float64).tobytes()
+
+
+def _decode_embedding(blob: bytes | None) -> list[float] | None:
+    if blob is None:
+        return None
+    return np.frombuffer(blob, dtype=np.float64).tolist()
+
+
 def require_connection(method):
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         if self.connection is None:
             raise ValueError("database connection is not initialized.")
-        return method(self, *args, **kwargs)
+        # one connection is shared across threads; serialize so a commit/rollback
+        # can never affect another thread's in-flight statements
+        with self._lock:
+            return method(self, *args, **kwargs)
 
     return wrapper
 
@@ -31,11 +47,11 @@ class Database:
         migrations = read_migrations(str(migrations_directory))
         backend.apply_migrations(backend.to_apply(migrations))
 
+        self._lock = threading.RLock()
         self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=15.0)
         self.connection.row_factory = sqlite3.Row
         self.connection.execute("PRAGMA journal_mode=WAL;")
         self.connection.execute("PRAGMA synchronous=NORMAL;")
-        self.connection.execute("PRAGMA strict=ON;")
         self.connection.execute("PRAGMA foreign_keys=ON;")
 
     def close(self):
@@ -44,19 +60,20 @@ class Database:
             self.connection = None
 
     @require_connection
-    def get_existing_pr_ids(self) -> set[int]:
+    def get_existing_pr_ids(self, repo_id: int) -> set[int]:
         assert self.connection is not None
-        rows = self.connection.execute(core_queries.GET_ALL_PULL_REQUEST_IDS).fetchall()
+        rows = self.connection.execute(core_queries.GET_ALL_PULL_REQUEST_IDS, (repo_id,)).fetchall()
         return set(row[0] for row in rows)
 
     @require_connection
-    def add_pull_request(self, pr: PullRequest):
+    def add_pull_request(self, pr: PullRequest, repo_id: int):
         assert self.connection is not None
         try:
             self.connection.execute(
                 core_queries.INSERT_PULL_REQUEST,
                 (
                     pr.id,
+                    repo_id,
                     pr.title,
                     pr.test,
                     pr.explanation,
@@ -67,7 +84,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_PULL_REQUEST_EMBEDDING,
-                (pr.id, pickle.dumps(pr.embedding)),
+                (pr.id, repo_id, _encode_embedding(pr.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -96,13 +113,14 @@ class Database:
         ]
 
     @require_connection
-    def add_issue(self, issue: Issue):
+    def add_issue(self, issue: Issue, repo_id: int):
         assert self.connection is not None
         try:
             self.connection.execute(
                 core_queries.INSERT_ISSUE,
                 (
                     issue.id,
+                    repo_id,
                     issue.title,
                     issue.steps,
                     issue.raw_body,
@@ -111,7 +129,7 @@ class Database:
             )
             self.connection.execute(
                 core_queries.INSERT_ISSUE_EMBEDDING,
-                (issue.id, pickle.dumps(issue.embedding)),
+                (issue.id, repo_id, _encode_embedding(issue.embedding)),
             )
             self.connection.commit()
         except Exception as e:
@@ -119,18 +137,20 @@ class Database:
             raise e
 
     @require_connection
-    def update_issue_processed_and_result(self, issue_id: int, is_processed: bool, culprits: list[CulpritPullRequest]):
+    def update_issue_processed_and_result(
+        self, issue_id: int, repo_id: int, is_processed: bool, culprits: list[CulpritPullRequest]
+    ):
         assert self.connection is not None
         self.connection.execute(
             core_queries.UPDATE_ISSUE_PROCESSED_AND_CULPRITS,
-            (is_processed, json.dumps([c.model_dump() for c in culprits]), issue_id),
+            (is_processed, json.dumps([c.model_dump() for c in culprits]), issue_id, repo_id),
         )
         self.connection.commit()
 
     @require_connection
-    def get_issue_by_id(self, issue_id: int) -> Issue | None:
+    def get_issue_by_id(self, issue_id: int, repo_id: int) -> Issue | None:
         assert self.connection is not None
-        row = self.connection.execute(core_queries.GET_ISSUE_BY_ID, (issue_id,)).fetchone()
+        row = self.connection.execute(core_queries.GET_ISSUE_BY_ID, (issue_id, repo_id)).fetchone()
         if not row:
             return None
 
@@ -149,23 +169,23 @@ class Database:
         )
 
     @require_connection
-    def get_issue_processed_status(self, issue_id: int) -> bool:
+    def get_issue_processed_status(self, issue_id: int, repo_id: int) -> bool:
         assert self.connection is not None
-        row = self.connection.execute(core_queries.GET_ISSUE_IS_PROCESSED, (issue_id,)).fetchone()
+        row = self.connection.execute(core_queries.GET_ISSUE_IS_PROCESSED, (issue_id, repo_id)).fetchone()
         if row:
             return row[0]
         return False
 
     @require_connection
-    def add_issue_pull_request(self, issue_id: int, pull_request_id: int):
+    def add_issue_pull_request(self, issue_id: int, pull_request_id: int, repo_id: int):
         assert self.connection is not None
-        self.connection.execute(core_queries.INSERT_ISSUE_PULL_REQUEST, (issue_id, pull_request_id))
+        self.connection.execute(core_queries.INSERT_ISSUE_PULL_REQUEST, (issue_id, pull_request_id, repo_id))
         self.connection.commit()
 
     @require_connection
-    def get_pull_requests_for_issue(self, issue_id: int) -> list[PullRequest]:
+    def get_pull_requests_for_issue(self, issue_id: int, repo_id: int) -> list[PullRequest]:
         assert self.connection is not None
-        rows = self.connection.execute(core_queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id,)).fetchall()
+        rows = self.connection.execute(core_queries.GET_PULL_REQUESTS_BY_ISSUE_ID, (issue_id, repo_id)).fetchall()
         return [
             PullRequest(
                 id=row[0],
@@ -174,7 +194,7 @@ class Database:
                 explanation=row[3],
                 files=json.loads(row[4]),
                 code_diff_summary=row[5] if row[5] else None,
-                embedding=pickle.loads(row[6]) if row[6] else None,
+                embedding=_decode_embedding(row[6]),
             )
             for row in rows
         ]
@@ -186,9 +206,11 @@ class Database:
         return [(row[0], row[1], row[2]) for row in rows]
 
     @require_connection
-    def get_pull_request_by_id_with_embedding(self, pull_request_id: int) -> PullRequest | None:
+    def get_pull_request_by_id_with_embedding(self, pull_request_id: int, repo_id: int) -> PullRequest | None:
         assert self.connection is not None
-        row = self.connection.execute(core_queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id,)).fetchone()
+        row = self.connection.execute(
+            core_queries.GET_PULL_REQUEST_BY_ID_WITH_EMBEDDING, (pull_request_id, repo_id)
+        ).fetchone()
         if not row:
             return None
 
@@ -200,22 +222,22 @@ class Database:
             files=json.loads(row[4]),
             code_diff_summary=row[5] if row[5] else None,
             linked_issue_ids=json.loads(row[6]) if row[6] else [],
-            embedding=pickle.loads(row[7]) if row[7] else None,
+            embedding=_decode_embedding(row[7]),
         )
 
     @require_connection
-    def update_issue_pull_request_score(self, issue_id: int, pull_request_id: int, score: float):
+    def update_issue_pull_request_score(self, issue_id: int, pull_request_id: int, repo_id: int, score: float):
         assert self.connection is not None
         self.connection.execute(
             core_queries.UPDATE_ISSUE_PULL_REQUEST_SCORE,
-            (score, issue_id, pull_request_id),
+            (score, issue_id, pull_request_id, repo_id),
         )
         self.connection.commit()
 
     @require_connection
-    def update_issue_actual_pull_request(self, issue_id: int, pull_request_id: int):
+    def update_issue_actual_pull_request(self, issue_id: int, pull_request_id: int, repo_id: int):
         assert self.connection is not None
-        self.connection.execute(core_queries.UPADTE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id))
+        self.connection.execute(core_queries.UPDATE_ISSUE_ACTUAL_PULL_REQUEST, (pull_request_id, issue_id, repo_id))
         self.connection.commit()
 
     @require_connection
@@ -364,7 +386,7 @@ class Database:
         self.connection.commit()
 
     @require_connection
-    def get_pull_request_review_sha(self, pull_request_id: int, repo_id: int) -> str | None:
+    def get_pull_request_review_sha(self, pull_request_id: int, repo_id: int | str) -> str | None:
         assert self.connection is not None
         row = self.connection.execute(
             core_queries.GET_PULL_REQUEST_REVIEW_SHA,
@@ -373,7 +395,7 @@ class Database:
         return row[0] if row else None
 
     @require_connection
-    def update_pull_request_review(self, pull_request_id: int, repo_id: int, commit_sha: str):
+    def update_pull_request_review(self, pull_request_id: int, repo_id: int | str, commit_sha: str):
         assert self.connection is not None
         self.connection.execute(
             core_queries.INSERT_OR_UPDATE_PULL_REQUEST_REVIEW,
