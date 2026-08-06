@@ -53,11 +53,13 @@ async def run(
                 return
 
             formatted_diffs = format_pr_diffs_for_review(pr_diffs)
+            custom_context = local_repo.read_blamegpt_context()
             prompt = code_review_prompt(
                 pr_number=pull_request_id,
                 title=pull_request.title,
                 description=pull_request.explanation,
                 file_diffs=formatted_diffs.diff,
+                custom_context=custom_context,
             )
 
             llm_task = asyncio.create_task(llm.ainvoke(prompt))

@@ -237,3 +237,16 @@ fi
             except Exception:
                 continue
         return pathspec.PathSpec.from_lines("gitwildmatch", patterns)
+
+    def read_blamegpt_context(self) -> str:
+        """Read BLAMEGPT.md file from repository root for custom context and learnings"""
+        if not self.worktree_path:
+            return ""
+        
+        blamegpt_path = os.path.join(self.worktree_path, "BLAMEGPT.md")
+        
+        try:
+            with open(blamegpt_path, encoding="utf-8", errors="ignore") as f:
+                return f.read().strip()
+        except (FileNotFoundError, OSError):
+            return ""
