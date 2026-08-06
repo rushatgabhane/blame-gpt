@@ -4,6 +4,7 @@ from enum import Enum
 class CommandName(Enum):
     BLAME = "blame"
     CODE_REVIEW = "code_review"
+    DEPENDENCY_ANALYSIS = "dependency_analysis"
     UNKNOWN = "unknown"
 
     # Used in LLM prompt to provide descriptions of commands
@@ -11,6 +12,7 @@ class CommandName(Enum):
         return {
             CommandName.BLAME: "find the culprit PR for an issue. find the PR that introduced this bug. Keywords: culprit, which PR, find PR, cause",
             CommandName.CODE_REVIEW: "perform a code review of a pull request. analyze code changes and provide detailed feedback. Keywords: review, feedback, analyze PR",
+            CommandName.DEPENDENCY_ANALYSIS: "analyze dependency changes in a pull request. detect added, removed, or updated dependencies. Keywords: dependencies, deps, analyze deps, dependency changes",
             CommandName.UNKNOWN: "no matching command",
         }[self]
 
